@@ -2,15 +2,16 @@
 # The DMZ workflow adds an intermediate branch, dmz, that developers use to merge their work (instead of master). If the merge results in breaking the tests, master will still contain working code, as it always should. The problems can be solved on dmz, and only when dmz is working again, its contants are automatically merged in master.
 # Like this, master is always the latest working code.
 name: Main
-on: [push, pull_request]
+on:
+  push:
+    branches: 
+      - master
+      - dmz
+  pull_request:
 
 jobs:
   test:
-    # Tests are only run on pull requests, dmz, and master.
-    if: |
-      github.event_name == 'pull_request'
-      || github.ref == 'refs/heads/dmz'
-      || github.ref == 'refs/heads/master'
+    if: startsWith(github.head_ref, 'experiment/') == false
     runs-on: macos-10.15
     strategy:
       fail-fast: false
