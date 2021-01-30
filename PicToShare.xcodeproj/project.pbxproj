@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		95455B8625C5D1DA00D2F088 /* PythonKit in Frameworks */ = {isa = PBXBuildFile; productRef = 95455B8525C5D1DA00D2F088 /* PythonKit */; };
 		F9A7C1394834D75DFE4FB520 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F9A7CA9D419C2ECDBE045390 /* Preview Assets.xcassets */; };
 		F9A7C35E0461C21638072806 /* PicToShareUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C97B08CE9661BFCE30CE /* PicToShareUITests.swift */; };
 		F9A7C467D4F51BAE2DC32154 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C85AEBC5C7D01E8E86CB /* ContentView.swift */; };
@@ -62,6 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				95455B8625C5D1DA00D2F088 /* PythonKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -187,6 +189,9 @@
 			dependencies = (
 			);
 			name = PicToShare;
+			packageProductDependencies = (
+				95455B8525C5D1DA00D2F088 /* PythonKit */,
+			);
 			productName = PicToShare;
 			productReference = F9A7C15F6BD7440D60F6F856 /* PicToShare.app */;
 			productType = "com.apple.product-type.application";
@@ -208,6 +213,9 @@
 				Base,
 			);
 			mainGroup = F9A7C787E2B36E4AB7AC425A;
+			packageReferences = (
+				95455B8425C5D1DA00D2F088 /* XCRemoteSwiftPackageReference "PythonKit" */,
+			);
 			productRefGroup = F9A7C1C3219107C0EC536E37 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -309,7 +317,10 @@
 				DEVELOPMENT_ASSET_PATHS = "\"PicToShare/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = PicToShare/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.insa-rennes.PicToShare";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -322,7 +333,11 @@
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = PicToShareUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.insa-rennes.PicToShareUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -336,7 +351,11 @@
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/PicToShare.app/Contents/MacOS/PicToShare";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = PicToShareTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.insa-rennes.PicToShareTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -350,7 +369,11 @@
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/PicToShare.app/Contents/MacOS/PicToShare";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = PicToShareTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.insa-rennes.PicToShareTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -368,7 +391,10 @@
 				DEVELOPMENT_ASSET_PATHS = "\"PicToShare/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = PicToShare/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.insa-rennes.PicToShare";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -425,7 +451,8 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 			};
 			name = Release;
 		};
@@ -495,7 +522,11 @@
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = PicToShareUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.insa-rennes.PicToShareUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -543,6 +574,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		95455B8425C5D1DA00D2F088 /* XCRemoteSwiftPackageReference "PythonKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pvieito/PythonKit.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		95455B8525C5D1DA00D2F088 /* PythonKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 95455B8425C5D1DA00D2F088 /* XCRemoteSwiftPackageReference "PythonKit" */;
+			productName = PythonKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F9A7C77B0CB8E0E09346DD0D /* Project object */;
 }
