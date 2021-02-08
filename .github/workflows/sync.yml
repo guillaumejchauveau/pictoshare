@@ -1,0 +1,31 @@
+# Synchronises the GitHub repository with a remote repository (SYNC_REMOTE), using a SSH key pair.
+# The private key is stored in SYNC_PRIVATE_KEY, the public key is registered on the remote repository.
+# The remote's host keys are stored in SYNC_REMOTE_KEYSCAN (see ssh-keyscan(1)).
+name: Sync
+on:
+  # Runs every day at midnight.
+  schedule:
+    - cron: 0 0 * * *
+  # Can be ran manually.
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          # Retrieves all the history, not just the last commit.
+          fetch-depth: 0
+      - uses: webfactory/ssh-agent@v0.4.1
+        with:
+          # Configures the private key for the remote.
+          ssh-private-key: ${{secrets.SYNC_PRIVATE_KEY}}
+      - run: |
+          # The script will push all refs using push --mirror, we do not want refs/remotes/origin/* to be synced.
+          git remote remove origin || true
+          git remote add sync ${{secrets.SYNC_REMOTE}}
+          # Adds the remote's host keys to the known hosts.
+          echo "${{secrets.SYNC_REMOTE_KEYSCAN}}" >> ~/.ssh/known_hosts
+      # Pushes all refs to the remote (see the --mirror flag of git-push).
+      - run: git push --mirror sync
