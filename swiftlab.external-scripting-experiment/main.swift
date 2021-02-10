@@ -39,10 +39,29 @@ class PythonModuleManager {
 
 let manager = PythonModuleManager()
 
+class MyClass : PythonConvertible, ConvertibleFromPython {
+    var data: String
+
+    var pythonObject: PythonObject
+
+    required init?(_ object: PythonObject) {
+        self.data = String(object.string)!
+        pythonObject = object
+    }
+
+    init(data: String) {
+        self.data = data
+        pythonObject = Python.getattr(manager["myscript"]!, "MyClass")(self.data)
+    }
+
+    func updateData() {
+        self.pythonObject.updateData()
+        self.data = String(self.pythonObject.string)!
+    }
+}
+
 manager.loadModule(name: "myscript", path: "/Users/guillaumejchauveau/Documents/Projects/PicToShare/myscript.py")
 
-
-manager["myscript"]!.foo()
-readLine()
-manager.reloadModule(name: "myscript")
-manager["myscript"]!.foo()
+var a = MyClass(data: "lol")
+a.updateData()
+a.updateData()
