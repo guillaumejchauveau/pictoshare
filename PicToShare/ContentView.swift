@@ -21,11 +21,6 @@ struct ContentView_Previews: PreviewProvider {
 }
 
 
-func dockMenu() {
-
-}
-
-
 class NSMenu : NSObject{
     
     var String p "Paramètres"
@@ -37,7 +32,7 @@ class NSMenu : NSObject{
     
     // Initializes and returns a menu having the specified title and with autoenabling of menu items turned on.
     init(title: String){
-        let title = "Paramètres"
+        addItem(withTitle: "Paramètres", action: , keyEquivalent: " ")
     }
     
     init(title: String){
