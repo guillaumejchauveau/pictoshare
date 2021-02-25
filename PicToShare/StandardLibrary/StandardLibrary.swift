@@ -8,15 +8,17 @@
 class StandardLibrary: Library {
     let id: String = "standard"
     let description: String = "Standard"
-    let formats: [(String, AnyClass)]? = [
-        ("text", TextDocument.self),
-        ("image", ImageDocument.self)
+    let formats: Dictionary<String, AnyClass> = [
+        "text": TextDocument.self,
+        "image": ImageDocument.self
     ]
-    let sources: [(String, DocumentSource.Type)]? = [
-        ("filesystem", FileSystemDocumentSource.self)
+    let sources: Dictionary<String, DocumentSource.Type> = [
+        "filesystem": FileSystemDocumentSource.self
     ]
-    let annotators: [(String, DocumentAnnotator.Type)]? = [
-        ("tag", TagAnnotator.self)
+    let annotators: Dictionary<String, DocumentAnnotator.Type> = [
+        "tag": TagAnnotator.self
     ]
-    let exporters: [(String, DocumentExporter.Type)]? = nil
+    let exporters: Dictionary<String, DocumentExporter.Type> = [
+        "pdf": PDFExporter.self
+    ]
 }

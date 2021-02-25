@@ -14,7 +14,10 @@
 		9568616525E80682004D31CA /* FileSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568616025E80682004D31CA /* FileSystem.swift */; };
 		9568616625E80682004D31CA /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568616125E80682004D31CA /* Image.swift */; };
 		9568616725E80682004D31CA /* StandardLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568616225E80682004D31CA /* StandardLibrary.swift */; };
-		9574747F25E6E6B900917EF0 /* Core.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9574747E25E6E6B900917EF0 /* Core.swift */; };
+		9568616B25E80EB7004D31CA /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568616A25E80EB7004D31CA /* Types.swift */; };
+		9568616F25E80F03004D31CA /* Library.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568616E25E80F03004D31CA /* Library.swift */; };
+		9568617325E80FB4004D31CA /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568617225E80FB4004D31CA /* Configuration.swift */; };
+		9574747F25E6E6B900917EF0 /* Importation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9574747E25E6E6B900917EF0 /* Importation.swift */; };
 		F9A7C1394834D75DFE4FB520 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F9A7CA9D419C2ECDBE045390 /* Preview Assets.xcassets */; };
 		F9A7C35E0461C21638072806 /* PicToShareUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C97B08CE9661BFCE30CE /* PicToShareUITests.swift */; };
 		F9A7C972A6D38DB73DBC2167 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F9A7C896C9B4150F73FF2572 /* Assets.xcassets */; };
@@ -59,7 +62,10 @@
 		9568616025E80682004D31CA /* FileSystem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileSystem.swift; sourceTree = "<group>"; };
 		9568616125E80682004D31CA /* Image.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
 		9568616225E80682004D31CA /* StandardLibrary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StandardLibrary.swift; sourceTree = "<group>"; };
-		9574747E25E6E6B900917EF0 /* Core.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core.swift; sourceTree = "<group>"; };
+		9568616A25E80EB7004D31CA /* Types.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
+		9568616E25E80F03004D31CA /* Library.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Library.swift; sourceTree = "<group>"; };
+		9568617225E80FB4004D31CA /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
+		9574747E25E6E6B900917EF0 /* Importation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Importation.swift; sourceTree = "<group>"; };
 		F9A7C0DA563670B4B2CAC7DF /* PicToShareTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PicToShareTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9A7C15F6BD7440D60F6F856 /* PicToShare.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PicToShare.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9A7C43B01C57696130DA3EE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.info; path = Info.plist; sourceTree = "<group>"; };
@@ -101,7 +107,10 @@
 		9574747D25E6E65100917EF0 /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				9574747E25E6E6B900917EF0 /* Core.swift */,
+				9574747E25E6E6B900917EF0 /* Importation.swift */,
+				9568616A25E80EB7004D31CA /* Types.swift */,
+				9568616E25E80F03004D31CA /* Library.swift */,
+				9568617225E80FB4004D31CA /* Configuration.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -311,8 +320,11 @@
 				9568614D25E7B821004D31CA /* main.swift in Sources */,
 				9568616325E80682004D31CA /* PDF.swift in Sources */,
 				9568616525E80682004D31CA /* FileSystem.swift in Sources */,
+				9568616B25E80EB7004D31CA /* Types.swift in Sources */,
+				9568616F25E80F03004D31CA /* Library.swift in Sources */,
 				9568616725E80682004D31CA /* StandardLibrary.swift in Sources */,
-				9574747F25E6E6B900917EF0 /* Core.swift in Sources */,
+				9574747F25E6E6B900917EF0 /* Importation.swift in Sources */,
+				9568617325E80FB4004D31CA /* Configuration.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

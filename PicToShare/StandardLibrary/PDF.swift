@@ -7,12 +7,11 @@
 
 
 class PDFExporter: DocumentExporter {
-    let description: String
+    let description = "PDF Exporter"
     var compatibleFormats: [AnyClass] = [TextDocument.self]
 
 
     required init(with config: Configuration) {
-        self.description = config["name"]!
     }
 
     func export(document: AnyObject, with config: Configuration) throws {
