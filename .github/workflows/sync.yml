@@ -21,11 +21,5 @@ jobs:
         with:
           # Configures the private key for the remote.
           ssh-private-key: ${{secrets.SYNC_PRIVATE_KEY}}
-      - run: |
-          # The script will push all refs using push --mirror, we do not want refs/remotes/origin/* to be synced.
-          git remote remove origin || true
-          git remote add sync ${{secrets.SYNC_REMOTE}}
-          # Adds the remote's host keys to the known hosts.
-          echo "${{secrets.SYNC_REMOTE_KEYSCAN}}" >> ~/.ssh/known_hosts
-      # Pushes all refs to the remote (see the --mirror flag of git-push).
-      - run: git push --mirror sync
+      - run: echo "${{secrets.SYNC_REMOTE_KEYSCAN}}" >> ~/.ssh/known_hosts
+      - run: git push --prune ${{secrets.SYNC_REMOTE}} "+refs/remotes/origin/*:refs/heads/*" "+refs/tags/*:refs/tags/*"
