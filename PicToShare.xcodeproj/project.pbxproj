@@ -21,7 +21,7 @@
 		F9A7C1394834D75DFE4FB520 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F9A7CA9D419C2ECDBE045390 /* Preview Assets.xcassets */; };
 		F9A7C35E0461C21638072806 /* PicToShareUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C97B08CE9661BFCE30CE /* PicToShareUITests.swift */; };
 		F9A7C972A6D38DB73DBC2167 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F9A7C896C9B4150F73FF2572 /* Assets.xcassets */; };
-		F9A7CEF947D2E12EC47CAF47 /* PicToShareTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7CDC85B623930B9EB52F7 /* PicToShareTests.swift */; };
+		F9A7CEF947D2E12EC47CAF47 /* CoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7CDC85B623930B9EB52F7 /* CoreTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -76,7 +76,7 @@
 		F9A7CA9D419C2ECDBE045390 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		F9A7CB18DD8D6263C3BE98F9 /* PicToShareUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PicToShareUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9A7CD6E555B357A08FDF95F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.info; path = Info.plist; sourceTree = "<group>"; };
-		F9A7CDC85B623930B9EB52F7 /* PicToShareTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicToShareTests.swift; sourceTree = "<group>"; };
+		F9A7CDC85B623930B9EB52F7 /* CoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -191,7 +191,7 @@
 			isa = PBXGroup;
 			children = (
 				F9A7C43B01C57696130DA3EE /* Info.plist */,
-				F9A7CDC85B623930B9EB52F7 /* PicToShareTests.swift */,
+				F9A7CDC85B623930B9EB52F7 /* CoreTests.swift */,
 			);
 			path = PicToShareTests;
 			sourceTree = "<group>";
@@ -340,7 +340,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F9A7CEF947D2E12EC47CAF47 /* PicToShareTests.swift in Sources */,
+				F9A7CEF947D2E12EC47CAF47 /* CoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

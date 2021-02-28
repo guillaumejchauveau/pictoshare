@@ -1,6 +1,6 @@
 //
-//  Core.swift
-//  PicToShare
+//  Importation.swift
+//  PicToShare/Core
 //
 //  Created by Guillaume Chauveau on 24/02/2021.
 //
@@ -8,66 +8,87 @@
 import Foundation
 
 
-
+/// Object responsible of the Importation process.
 class ImportationManager {
-    private var sources: Dictionary<UUID, DocumentSource> = [:]
-    private var types: Dictionary<UUID, DocumentType> = [:]
+    enum Error: Swift.Error {
+        /// The given UUID is already used by another instance.
+        case duplicateUUID
+        case invalidUUID
+    }
 
+    private(set) var sources: Dictionary<UUID, DocumentSource> = [:]
+    private(set) var types: Dictionary<UUID, DocumentType> = [:]
+
+    /// Registers a Document Source instance.
+    ///
+    /// - Parameter source: The instance to register.
+    /// - Throws: `ImportationManager.Error.duplicateUUID` if the instance's
+    ///     UUID is already taken.
     func register(source: DocumentSource) throws {
-        guard !self.sources.keys.contains(source.uuid) else {
-            throw UUIDError.duplicateUUID
+        guard !sources.keys.contains(source.uuid) else {
+            throw Error.duplicateUUID
         }
-        self.sources[source.uuid] = source
-        source.setImportCallback(self.promptDocumentType)
+        sources[source.uuid] = source
+        source.setImportCallback(promptDocumentType)
     }
 
+    /// Registers a Document Type instance.
+    ///
+    /// - Parameter type: The instance to register.
+    /// - Throws: `ImportationManager.Error.duplicateUUID` if the instance's
+    ///     UUID is already taken.
     func register(type: DocumentType) throws {
-        guard !self.types.keys.contains(type.uuid) else {
-            throw UUIDError.duplicateUUID
+        guard !types.keys.contains(type.uuid) else {
+            throw Error.duplicateUUID
         }
-        self.types[type.uuid] = type
-    }
-
-    func getSources() -> [(UUID, String)] {
-        return self.sources.values.reduce(into: []) { (result: inout [(UUID, String)], source: DocumentSource) in
-            result.append((source.uuid, source.description))
-        }
-    }
-
-    func getTypes() -> [(UUID, String)] {
-        return self.types.values.reduce(into: []) { (result: inout [(UUID, String)], type: DocumentType) in
-            result.append((type.uuid, type.description))
-        }
-    }
-
-    func get(type uuid: UUID) -> DocumentType {
-        return self.types[uuid]!
+        types[type.uuid] = type
     }
 
     func remove(source uuid: UUID) {
-        self.sources.removeValue(forKey: uuid)
+        sources.removeValue(forKey: uuid)
     }
 
     func remove(type uuid: UUID) {
-        self.types.removeValue(forKey: uuid)
+        types.removeValue(forKey: uuid)
     }
 
-    func promptDocument(from sourceUuid: UUID) {
-        self.sources[sourceUuid]!.promptDocument(with: [:])
+    /// Asks the corresponding Source to provide a Document for importation.
+    ///
+    /// - Parameter from: The UUID of the target Source.
+    /// - Throws: `Error.invalidUUID` if the UUID is invalid.
+    func promptDocument(from sourceUuid: UUID) throws {
+        guard let source = sources[sourceUuid] else {
+            throw Error.invalidUUID
+        }
+        source.promptDocument(with: [:])
     }
 
+    /// Asks the User for a Document Type for importation.
+    ///
+    /// - Parameter document: The Document to import.
     func promptDocumentType(_ document: AnyObject) {
-        self.importDocument(document, withType: self.types.keys.first!)
+        // TODO: Replace with importation window.
+        try? importDocument(document, withType: types.keys.first!)
     }
 
-    func importDocument(_ document: AnyObject, withType typeUuid: UUID) {
-        let type = self.types[typeUuid]!
-
-        for annotator in type.getAnnotators() {
-            try! annotator.annotate(document: document, with: [:])
+    /// Imports a Document given a Document Type.
+    ///
+    /// - Parameters:
+    ///   - document: The Document to import.
+    ///   - withType: The Type UUID to use for importation.
+    /// - Throws: `Error.invalidUUID` if the Type UUID is invalid.
+    func importDocument(_ document: AnyObject, withType typeUuid: UUID) throws {
+        guard let type = types[typeUuid] else {
+            throw Error.invalidUUID
         }
 
-        try! type.exporter.export(document: document, with: [:])
+        for annotator in type.annotators {
+            try annotator.annotate(document: document, with: [:])
+        }
+
+        // TODO: Complete exportation process.
+        try type.exporter!.export(document: document, with: [:])
+        // TODO: Complete integration process.
     }
 }
 

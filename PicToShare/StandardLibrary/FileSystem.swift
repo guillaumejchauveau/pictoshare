@@ -1,6 +1,6 @@
 //
 //  FileSystem.swift
-//  PicToShare
+//  PicToShare/StandardLibrary
 //
 //  Created by Guillaume Chauveau on 24/02/2021.
 //
@@ -11,32 +11,30 @@ import AppKit
 class FileSystemDocumentSource: DocumentSource {
     let uuid: UUID
     let description: String
-    private var importCallback: ((AnyObject) -> ())?
+    private var importCallback: ((AnyObject) -> Void)?
     private let openPanel: NSOpenPanel
 
     required init(with config: Configuration, uuid: UUID) {
         self.uuid = uuid
-        self.description = config["name"]!
-        self.openPanel = NSOpenPanel()
-        self.openPanel.canChooseDirectories = false
-        self.openPanel.allowsMultipleSelection = false
+        description = config["name"]!
+        openPanel = NSOpenPanel()
+        openPanel.canChooseDirectories = false
+        openPanel.allowsMultipleSelection = false
     }
 
-
     func setImportCallback(_ callback: @escaping (AnyObject) -> Void) {
-        self.importCallback = callback
+        importCallback = callback
     }
 
     func promptDocument(with config: Configuration) {
-        openPanel.begin(completionHandler: { (response: NSApplication.ModalResponse) -> Void in
+        openPanel.begin(completionHandler: {
+            (response: NSApplication.ModalResponse) -> Void in
             if (response == NSApplication.ModalResponse.OK) {
                 self.importCallback?(TextDocument())
             }
         })
         openPanel.runModal()
     }
-
-
 }
 
 class TagAnnotator: DocumentAnnotator {
@@ -46,12 +44,12 @@ class TagAnnotator: DocumentAnnotator {
 
     required init(with config: Configuration, uuid: UUID) {
         self.uuid = uuid
-        self.description = config["name"]!
+        description = config["name"]!
     }
 
     func annotate(document: AnyObject, with config: Configuration) throws {
-        guard self.isCompatibleWith(format: type(of: document)) else {
-            throw DocumentAnnotatorError.imcompatibleDocumentFormat
+        guard isCompatibleWith(format: type(of: document)) else {
+            throw DocumentFormatError.incompatibleDocumentFormat
         }
         print("annotator")
     }
