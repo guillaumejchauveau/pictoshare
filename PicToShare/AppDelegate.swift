@@ -32,6 +32,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                         uuid: UUID())!)
         try! importationManager.register(type: doc)
 
-        try! importationManager.promptDocument(from: fs_uuid)
+        // try! importationManager.promptDocument(from: fs_uuid)
     }
 }
