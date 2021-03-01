@@ -7,21 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9568614D25E7B821004D31CA /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568614C25E7B821004D31CA /* main.swift */; };
-		9568615925E7EADC004D31CA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568615825E7EADC004D31CA /* AppDelegate.swift */; };
-		9568616325E80682004D31CA /* PDF.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568615E25E80682004D31CA /* PDF.swift */; };
-		9568616425E80682004D31CA /* Text.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568615F25E80682004D31CA /* Text.swift */; };
-		9568616525E80682004D31CA /* FileSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568616025E80682004D31CA /* FileSystem.swift */; };
-		9568616625E80682004D31CA /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568616125E80682004D31CA /* Image.swift */; };
-		9568616725E80682004D31CA /* StandardLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568616225E80682004D31CA /* StandardLibrary.swift */; };
-		9568616B25E80EB7004D31CA /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568616A25E80EB7004D31CA /* Types.swift */; };
-		9568616F25E80F03004D31CA /* Library.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568616E25E80F03004D31CA /* Library.swift */; };
-		9568617325E80FB4004D31CA /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568617225E80FB4004D31CA /* Configuration.swift */; };
-		9574747F25E6E6B900917EF0 /* Importation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9574747E25E6E6B900917EF0 /* Importation.swift */; };
 		F9A7C1394834D75DFE4FB520 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F9A7CA9D419C2ECDBE045390 /* Preview Assets.xcassets */; };
 		F9A7C35E0461C21638072806 /* PicToShareUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C97B08CE9661BFCE30CE /* PicToShareUITests.swift */; };
+		F9A7C467D4F51BAE2DC32154 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C85AEBC5C7D01E8E86CB /* ContentView.swift */; };
+		F9A7C555224594B9593DFE98 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C5CCE98F18600FDE7978 /* AppDelegate.swift */; };
+		F9A7C8A40BB1CEFDCDD019DE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F9A7C23722B4C6FD2A965C3B /* Main.storyboard */; };
 		F9A7C972A6D38DB73DBC2167 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F9A7C896C9B4150F73FF2572 /* Assets.xcassets */; };
-		F9A7CEF947D2E12EC47CAF47 /* CoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7CDC85B623930B9EB52F7 /* CoreTests.swift */; };
+		F9A7CEF947D2E12EC47CAF47 /* PicToShareTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7CDC85B623930B9EB52F7 /* PicToShareTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,42 +33,21 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		95B41D0725D4130200E5D275 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
-		9568614C25E7B821004D31CA /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		9568615825E7EADC004D31CA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		9568615E25E80682004D31CA /* PDF.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PDF.swift; sourceTree = "<group>"; };
-		9568615F25E80682004D31CA /* Text.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Text.swift; sourceTree = "<group>"; };
-		9568616025E80682004D31CA /* FileSystem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileSystem.swift; sourceTree = "<group>"; };
-		9568616125E80682004D31CA /* Image.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
-		9568616225E80682004D31CA /* StandardLibrary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StandardLibrary.swift; sourceTree = "<group>"; };
-		9568616A25E80EB7004D31CA /* Types.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
-		9568616E25E80F03004D31CA /* Library.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Library.swift; sourceTree = "<group>"; };
-		9568617225E80FB4004D31CA /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
-		9574747E25E6E6B900917EF0 /* Importation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Importation.swift; sourceTree = "<group>"; };
 		F9A7C0DA563670B4B2CAC7DF /* PicToShareTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PicToShareTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9A7C15F6BD7440D60F6F856 /* PicToShare.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PicToShare.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9A7C43B01C57696130DA3EE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.info; path = Info.plist; sourceTree = "<group>"; };
+		F9A7C4BCE66E2D4685707813 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		F9A7C5CCE98F18600FDE7978 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F9A7C6A933547B1F6B8E5D36 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.info; path = Info.plist; sourceTree = "<group>"; };
 		F9A7C7BF6A4D4AA3545A23EC /* PicToShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PicToShare.entitlements; sourceTree = "<group>"; };
+		F9A7C85AEBC5C7D01E8E86CB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		F9A7C896C9B4150F73FF2572 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F9A7C97B08CE9661BFCE30CE /* PicToShareUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicToShareUITests.swift; sourceTree = "<group>"; };
 		F9A7CA9D419C2ECDBE045390 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		F9A7CB18DD8D6263C3BE98F9 /* PicToShareUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PicToShareUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9A7CD6E555B357A08FDF95F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.info; path = Info.plist; sourceTree = "<group>"; };
-		F9A7CDC85B623930B9EB52F7 /* CoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTests.swift; sourceTree = "<group>"; };
+		F9A7CDC85B623930B9EB52F7 /* PicToShareTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicToShareTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,47 +75,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		9574747D25E6E65100917EF0 /* Core */ = {
-			isa = PBXGroup;
-			children = (
-				9574747E25E6E6B900917EF0 /* Importation.swift */,
-				9568616A25E80EB7004D31CA /* Types.swift */,
-				9568616E25E80F03004D31CA /* Library.swift */,
-				9568617225E80FB4004D31CA /* Configuration.swift */,
-			);
-			path = Core;
-			sourceTree = "<group>";
-		};
-		9574748425E6E6E600917EF0 /* StandardLibrary */ = {
-			isa = PBXGroup;
-			children = (
-				9568616025E80682004D31CA /* FileSystem.swift */,
-				9568616125E80682004D31CA /* Image.swift */,
-				9568615E25E80682004D31CA /* PDF.swift */,
-				9568616225E80682004D31CA /* StandardLibrary.swift */,
-				9568615F25E80682004D31CA /* Text.swift */,
-			);
-			path = StandardLibrary;
-			sourceTree = "<group>";
-		};
-		95B41D0225D4130200E5D275 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		F9A7C098D53F7B6AEADF987A /* PicToShare */ = {
 			isa = PBXGroup;
 			children = (
-				9574748425E6E6E600917EF0 /* StandardLibrary */,
-				9574747D25E6E65100917EF0 /* Core */,
 				F9A7CD6E555B357A08FDF95F /* Info.plist */,
 				F9A7C896C9B4150F73FF2572 /* Assets.xcassets */,
 				F9A7C7BF6A4D4AA3545A23EC /* PicToShare.entitlements */,
+				F9A7C5CCE98F18600FDE7978 /* AppDelegate.swift */,
+				F9A7C23722B4C6FD2A965C3B /* Main.storyboard */,
+				F9A7C85AEBC5C7D01E8E86CB /* ContentView.swift */,
 				F9A7CE38BF7BB6D1AE6E6A5C /* Preview Content */,
-				9568614C25E7B821004D31CA /* main.swift */,
-				9568615825E7EADC004D31CA /* AppDelegate.swift */,
 			);
 			path = PicToShare;
 			sourceTree = "<group>";
@@ -166,7 +106,6 @@
 				F9A7C098D53F7B6AEADF987A /* PicToShare */,
 				F9A7CEE1FC3585270F0572FE /* PicToShareTests */,
 				F9A7CE621A59A7945978E05E /* PicToShareUITests */,
-				95B41D0225D4130200E5D275 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -191,7 +130,7 @@
 			isa = PBXGroup;
 			children = (
 				F9A7C43B01C57696130DA3EE /* Info.plist */,
-				F9A7CDC85B623930B9EB52F7 /* CoreTests.swift */,
+				F9A7CDC85B623930B9EB52F7 /* PicToShareTests.swift */,
 			);
 			path = PicToShareTests;
 			sourceTree = "<group>";
@@ -242,7 +181,6 @@
 				F9A7C215A555F1F36A23ABC9 /* Sources */,
 				F9A7C930BA9C0B95A7DD0584 /* Frameworks */,
 				F9A7C4882BFB98CC178A839D /* Resources */,
-				95B41D0725D4130200E5D275 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -259,8 +197,6 @@
 		F9A7C77B0CB8E0E09346DD0D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1240;
-				LastUpgradeCheck = 1240;
 			};
 			buildConfigurationList = F9A7C48C06A2DC43924414AB /* Build configuration list for PBXProject "PicToShare" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -289,6 +225,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F9A7C972A6D38DB73DBC2167 /* Assets.xcassets in Resources */,
+				F9A7C8A40BB1CEFDCDD019DE /* Main.storyboard in Resources */,
 				F9A7C1394834D75DFE4FB520 /* Preview Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -314,17 +251,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9568616625E80682004D31CA /* Image.swift in Sources */,
-				9568615925E7EADC004D31CA /* AppDelegate.swift in Sources */,
-				9568616425E80682004D31CA /* Text.swift in Sources */,
-				9568614D25E7B821004D31CA /* main.swift in Sources */,
-				9568616325E80682004D31CA /* PDF.swift in Sources */,
-				9568616525E80682004D31CA /* FileSystem.swift in Sources */,
-				9568616B25E80EB7004D31CA /* Types.swift in Sources */,
-				9568616F25E80F03004D31CA /* Library.swift in Sources */,
-				9568616725E80682004D31CA /* StandardLibrary.swift in Sources */,
-				9574747F25E6E6B900917EF0 /* Importation.swift in Sources */,
-				9568617325E80FB4004D31CA /* Configuration.swift in Sources */,
+				F9A7C555224594B9593DFE98 /* AppDelegate.swift in Sources */,
+				F9A7C467D4F51BAE2DC32154 /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -340,7 +268,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F9A7CEF947D2E12EC47CAF47 /* CoreTests.swift in Sources */,
+				F9A7CEF947D2E12EC47CAF47 /* PicToShareTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -359,6 +287,17 @@
 		};
 /* End PBXTargetDependency section */
 
+/* Begin PBXVariantGroup section */
+		F9A7C23722B4C6FD2A965C3B /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				F9A7C4BCE66E2D4685707813 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
 /* Begin XCBuildConfiguration section */
 		F9A7C1B109ABA4D9A39525E6 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -366,7 +305,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PicToShare/PicToShare.entitlements;
-				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"PicToShare/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
@@ -426,7 +364,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PicToShare/PicToShare.entitlements;
-				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"PicToShare/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
@@ -443,7 +380,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -497,7 +433,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";

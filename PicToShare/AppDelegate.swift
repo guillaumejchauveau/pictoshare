@@ -2,36 +2,43 @@
 //  AppDelegate.swift
 //  PicToShare
 //
-//  Created by Guillaume Chauveau on 25/02/2021.
+//  Created by Guillaume Chauveau on 28/01/2021.
+//
 //
 
+import Cocoa
 import SwiftUI
 
+
+@main
 class AppDelegate: NSObject, NSApplicationDelegate {
-    let libraryManager = LibraryManager()
-    let importationManager = ImportationManager()
+
+    var window: NSWindow!
+
+
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        try! libraryManager.load(library: StandardLibrary())
+    // Create the SwiftUI view that provides the window contents.
+    let contentView = ContentView()
 
-        let fs_uuid = UUID()
-        try! importationManager.register(
-                source: libraryManager.make(
-                        source: "standard.sources.filesystem",
-                        with: ["name": "This Mac"],
-                        uuid: fs_uuid)!)
 
-        let doc = DocumentType(
-                description: "Doc",
-                uuid: UUID(),
-                format: libraryManager.get(format: "standard.formats.text")!)
-        try! doc.set(
-                exporter: libraryManager.make(
-                        exporter: "standard.exporters.pdf",
-                        with: [:],
-                        uuid: UUID())!)
-        try! importationManager.register(type: doc)
-
-        try! importationManager.promptDocument(from: fs_uuid)
+    // Create the window and set the content view.
+    window = NSWindow(
+        contentRect: NSRect(x: 0, y: 0, width: 480, height: 300),
+        styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
+        backing: .buffered, defer: false)
+    window.isReleasedWhenClosed = false
+    window.center()
+    window.setFrameAutosaveName("Main Window")
+    window.contentView = NSHostingView(rootView: contentView)
+    window.makeKeyAndOrderFront(nil)
     }
+
+
+    func applicationWillTerminate(_ aNotification: Notification) {
+    // Insert code here to tear down your application
+    }
+
+
+
 }
