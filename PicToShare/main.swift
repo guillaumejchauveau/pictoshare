@@ -43,8 +43,27 @@ view.groups = [defaultGroup, classGroup, instanceGroup]
 print(CFPreferencesCopyAppValue("sources/0/configuration/test" as CFString, kCFPreferencesCurrentApplication))
 */
 var preferencesStore = CFPreferencesKeyValueStore()
-preferencesStore["types/0/format"] = "lol"
-preferencesStore["types/0/oui"] = "lol"
-preferencesStore["types/1/format"] = "lol1"
-preferencesStore["types/1/oui"] = "lol1"
-try print(preferencesStore.getIndexes(at: "types/"))
+var s = DocumentSourceConfiguration("standard.sources.fs")
+s.description = "File system"
+s.configuration["a"] = 6 as CFPropertyList
+
+preferencesStore["sources"] = [
+    s.toCFPropertyList()
+]
+
+/*preferencesStore["sources"] = [
+    [
+        "classID": "standard.sources.fs",
+        "description": "File system",
+        "configuration": [
+            "a": 5
+        ]
+    ]
+]*/
+
+guard let sources = preferencesStore["sources"] as? Array<CFPropertyList> else {
+    fatalError()
+}
+
+let source = try DocumentSourceConfiguration(data: sources[0])
+print(source)

@@ -14,11 +14,7 @@ protocol KeyValueStore {
 extension Dictionary: KeyValueStore where Key == String, Value == Any {
 }
 
-protocol IndexedKeyValueStore: KeyValueStore {
-    func getIndexes(at key: String) throws -> Set<Int>
-}
-
-class CFPreferencesKeyValueStore: IndexedKeyValueStore {
+class CFPreferencesKeyValueStore: KeyValueStore {
     private let root: String
 
     init(root: String = "") {
@@ -32,63 +28,179 @@ class CFPreferencesKeyValueStore: IndexedKeyValueStore {
                     kCFPreferencesCurrentApplication)
         }
         set {
-            CFPreferencesSetValue(
+            CFPreferencesSetAppValue(
                     root + key as CFString,
                     newValue as CFPropertyList,
-                    kCFPreferencesCurrentApplication,
-                    kCFPreferencesCurrentUser,
-                    kCFPreferencesCurrentHost)
-        }
-    }
-
-    func getIndexes(at key: String) throws -> Set<Int> {
-        let keys = CFPreferencesCopyKeyList(
-                kCFPreferencesCurrentApplication,
-                kCFPreferencesCurrentUser,
-                kCFPreferencesCurrentHost) as [CFPropertyList]? ?? []
-
-        do {
-            let pattern = try NSRegularExpression(pattern: key + "([0-9]+)[^0-9]")
-            return Set(keys.map { key_ -> Int? in
-                if let key = key_ as? String {
-                    if let match = pattern.firstMatch(in: key, range: NSRange(location: 0, length: key.count)) {
-                        return Int(key[Range(match.range(at: 1), in: key)!])
-                    }
-                }
-                return nil
-            }.compactMap {
-                $0
-            })
-        } catch {
-            throw error
+                    kCFPreferencesCurrentApplication)
         }
     }
 }
 
+protocol CFPropertyListable {
+    func toCFPropertyList() -> CFPropertyList
+}
 
-struct DocumentSourceConfiguration {
+extension String: CFPropertyListable {
+    func toCFPropertyList() -> CFPropertyList {
+        self as CFPropertyList
+    }
+}
+
+
+struct DocumentSourceConfiguration: CFPropertyListable {
     var classID: ClassID
-    var description: String
-    var configuration: Dictionary<String, CFPropertyList>
+    var description: String = ""
+    var configuration: Dictionary<String, CFPropertyList> = [:]
+
+    init(_ classID: ClassID) {
+        self.classID = classID
+    }
+
+    init(data: CFPropertyList) throws {
+        guard let dictionary = data as? Dictionary<String, CFPropertyList> else {
+            throw ConfigurationManager.Error.preferencesError
+        }
+        guard let classID = dictionary["classID"] as? ClassID else {
+            throw ConfigurationManager.Error.preferencesError
+        }
+        self.classID = classID
+        guard let description = dictionary["description"] as? String else {
+            throw ConfigurationManager.Error.preferencesError
+        }
+        self.description = description
+        guard let configuration = dictionary["configuration"] as? Dictionary<String, CFPropertyList> else {
+            throw ConfigurationManager.Error.preferencesError
+        }
+        self.configuration = configuration
+    }
+
+    func toCFPropertyList() -> CFPropertyList {
+        [
+            "classID": classID,
+            "description": description,
+            "configuration": configuration
+        ] as CFPropertyList
+    }
 }
 
 struct DocumentAnnotatorConfiguration {
     var classID: ClassID
-    var configuration: Dictionary<String, CFPropertyList>
+    var configuration: Dictionary<String, CFPropertyList> = [:]
+
+    init(_ classID: ClassID) {
+        self.classID = classID
+    }
+
+    init(data: CFPropertyList) throws {
+        guard let dictionary = data as? Dictionary<String, CFPropertyList> else {
+            throw ConfigurationManager.Error.preferencesError
+        }
+        guard let classID = dictionary["classID"] as? ClassID else {
+            throw ConfigurationManager.Error.preferencesError
+        }
+        self.classID = classID
+        guard let configuration = dictionary["configuration"] as? Dictionary<String, CFPropertyList> else {
+            throw ConfigurationManager.Error.preferencesError
+        }
+        self.configuration = configuration
+
+    }
+
+    func toCFPropertyList() -> CFPropertyList {
+        [
+            "classID": classID,
+            "configuration": configuration
+        ] as CFPropertyList
+    }
 }
 
 struct DocumentTypeConfiguration {
     var format: ClassID
-    var description: String
-    var annotators: [DocumentAnnotatorConfiguration]
+    var description: String = ""
+    var annotators: [DocumentAnnotatorConfiguration] = []
+    var exporter: ClassID
+    var exporterConfiguration: Dictionary<String, CFPropertyList> = [:]
+
+    init(_ format: ClassID, _ exporter: ClassID) {
+        self.format = format
+        self.exporter = exporter
+    }
+
+    init(data: CFPropertyList) throws {
+        guard let dictionary = data as? Dictionary<String, CFPropertyList> else {
+            throw ConfigurationManager.Error.preferencesError
+        }
+        guard let format = dictionary["format"] as? ClassID else {
+            throw ConfigurationManager.Error.preferencesError
+        }
+        self.format = format
+        guard let description = dictionary["description"] as? String else {
+            throw ConfigurationManager.Error.preferencesError
+        }
+        self.description = description
+        guard let annotators = dictionary["annotators"] as? Array<CFPropertyList> else {
+            throw ConfigurationManager.Error.preferencesError
+        }
+        for annotator in annotators {
+            do {
+                self.annotators.append(try DocumentAnnotatorConfiguration(data: annotator))
+            } catch {
+                continue
+            }
+        }
+        guard let exporter = dictionary["exporter"] as? ClassID else {
+            throw ConfigurationManager.Error.preferencesError
+        }
+        self.exporter = exporter
+        guard let exporterConfiguration = dictionary["exporterConfiguration"] as? Dictionary<String, CFPropertyList> else {
+            throw ConfigurationManager.Error.preferencesError
+        }
+        self.exporterConfiguration = exporterConfiguration
+
+    }
+
+    func toCFPropertyList() -> CFPropertyList {
+        [
+            "format": format,
+            "description": description,
+            "annotators": annotators.map { annotator -> CFPropertyList in
+                annotator.toCFPropertyList()
+            }
+        ] as CFPropertyList
+    }
 }
 
 
 class ConfigurationManager {
+    enum Error: Swift.Error {
+        case preferencesError
+    }
+
     private var preferencesStore = CFPreferencesKeyValueStore()
+    var sources: [DocumentSourceConfiguration] = []
+    var types: [DocumentTypeConfiguration] = []
+
+    init() {
+        let sources = preferencesStore["sources"] as? Array<CFPropertyList> ?? []
+        for source in sources {
+            do {
+                self.sources.append(try DocumentSourceConfiguration(data: source))
+            } catch {
+                continue
+            }
+        }
+        let types = preferencesStore["types"] as? Array<CFPropertyList> ?? []
+        for type in types {
+            do {
+                self.types.append(try DocumentTypeConfiguration(data: type))
+            } catch {
+                continue
+            }
+        }
+    }
 
     subscript(class id: ClassID) -> Dictionary<String, CFPropertyList>? {
-        get {
+        get { // TODO: Lazy load and store.
             preferencesStore[id] as? Dictionary<String, CFPropertyList>
         }
 
@@ -98,37 +210,15 @@ class ConfigurationManager {
     }
 
     func save() {
-
+        preferencesStore["sources"] = sources.map { $0.toCFPropertyList() }
+        preferencesStore["types"] = types.map { $0.toCFPropertyList() }
+        CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
     }
 
 }
 
 
-class ConfigurationGroup {
-    private let pathTemplate: String
-    private var store: KeyValueStore
-
-    var pathTemplateVars: Dictionary<String, CVarArg> = [:]
-
-    init(pathTemplate: String, store: KeyValueStore) {
-        self.pathTemplate = pathTemplate
-        self.store = store
-    }
-
-    private var groupPath: String {
-        String(format: pathTemplate, arguments: Array(pathTemplateVars.values))
-    }
-
-    subscript(key: String) -> Any? {
-        get {
-            store[groupPath + key]
-        }
-        set {
-            store[groupPath + key] = newValue
-        }
-    }
-}
-
+// Make somehow a reference to the right dictionaries.
 class ConfigurationView {
     var groups: [ConfigurationGroup] = []
 
