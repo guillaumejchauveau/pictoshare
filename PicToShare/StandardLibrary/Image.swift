@@ -7,5 +7,4 @@
 
 class ImageDocument: CustomStringConvertible {
     let description: String = "Image"
-
 }

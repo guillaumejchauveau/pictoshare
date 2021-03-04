@@ -21,7 +21,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                         with: ["name": "This Mac"],
                         uuid: fs_uuid)!)
 
-        let doc = DocumentType(
+        var doc = DocumentType(
                 description: "Doc",
                 uuid: UUID(),
                 format: libraryManager.get(format: "standard.formats.text")!)

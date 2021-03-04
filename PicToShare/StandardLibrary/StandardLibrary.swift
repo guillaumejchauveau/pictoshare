@@ -5,10 +5,10 @@
 //  Created by Guillaume Chauveau on 24/02/2021.
 //
 
-class StandardLibrary: Library {
+struct StandardLibrary: Library {
     let id: String = "standard"
     let description: String = "Standard"
-    let formats: Dictionary<String, AnyClass> = [
+    let formats: Dictionary<String, Any> = [
         "text": TextDocument.self,
         "image": ImageDocument.self
     ]

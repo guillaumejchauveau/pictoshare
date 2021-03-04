@@ -27,22 +27,22 @@ class FileSystemDocumentSource: DocumentSource {
     }
 
     func promptDocument(with config: Configuration) {
-        openPanel.begin(completionHandler: {
+        openPanel.begin(completionHandler: { [self]
             (response: NSApplication.ModalResponse) -> Void in
             if (response == NSApplication.ModalResponse.OK) {
-                self.importCallback?(TextDocument())
+                importCallback?(TextDocument())
             }
         })
         openPanel.runModal()
     }
 }
 
-class TagAnnotator: DocumentAnnotator {
+struct TagAnnotator: DocumentAnnotator {
     let uuid: UUID
     let description: String
     var compatibleFormats: [AnyClass] = [TextDocument.self]
 
-    required init(with config: Configuration, uuid: UUID) {
+    init(with config: Configuration, uuid: UUID) {
         self.uuid = uuid
         description = config["name"]!
     }

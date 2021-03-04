@@ -36,7 +36,7 @@ extension DocumentFormatCompatible {
     ///
     /// - Complexity: O(n)
     func isCompatibleWith(format: AnyClass) -> Bool {
-        compatibleFormats.contains(where: { (compatibleFormat: AnyClass) in
+        compatibleFormats.contains(where: { compatibleFormat in
             compatibleFormat == format
         })
     }
@@ -109,7 +109,7 @@ protocol DocumentExporter: DocumentFormatCompatible, CustomStringConvertible {
 /// Source into a file.
 ///
 /// The exportation and integration process are a work in progress.
-class DocumentType: CustomStringConvertible {
+struct DocumentType: CustomStringConvertible {
     let description: String
     /// The identifier of this specific Document Type. It is used to
     /// differentiate Type instances consistently on loading.
@@ -138,7 +138,7 @@ class DocumentType: CustomStringConvertible {
     /// - Parameter annotator: The Annotator to add.
     /// - Throws: `CoreError.incompatibleDocumentFormat` if the Annotator cannot
     ///     process this Type's Format.
-    func append(annotator: DocumentAnnotator) throws {
+    mutating func append(annotator: DocumentAnnotator) throws {
         guard annotator.isCompatibleWith(format: format) else {
             throw DocumentFormatError.incompatibleDocumentFormat
         }
@@ -148,7 +148,7 @@ class DocumentType: CustomStringConvertible {
     /// Removes an Annotator at a given index in the list.
     ///
     /// - Parameter at: The index to remove.
-    func removeAnnotator(at index: Int) {
+    mutating func removeAnnotator(at index: Int) {
         annotators.remove(at: index)
     }
 
@@ -159,7 +159,7 @@ class DocumentType: CustomStringConvertible {
     ///   - i: The index on which the Annotator should be inserted.
     /// - Throws: `CoreError.incompatibleDocumentFormat` if the Annotator cannot
     ///     process this Type's Format.
-    func insert(annotator: DocumentAnnotator, at i: Int) throws {
+    mutating func insert(annotator: DocumentAnnotator, at i: Int) throws {
         guard annotator.isCompatibleWith(format: format) else {
             throw DocumentFormatError.incompatibleDocumentFormat
         }
@@ -167,7 +167,7 @@ class DocumentType: CustomStringConvertible {
     }
 
     /// Removes all the Annotators of the list.
-    func removeAllAnnotators() {
+    mutating func removeAllAnnotators() {
         annotators.removeAll()
     }
 
@@ -176,7 +176,7 @@ class DocumentType: CustomStringConvertible {
     /// - Parameter exporter: The Exporter to use.
     /// - Throws: `CoreError.incompatibleDocumentFormat` if the Exporter cannot
     ///     process this Type's Format.
-    func set(exporter: DocumentExporter) throws {
+    mutating func set(exporter: DocumentExporter) throws {
         guard exporter.isCompatibleWith(format: format) else {
             throw DocumentFormatError.incompatibleDocumentFormat
         }

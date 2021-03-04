@@ -7,13 +7,13 @@
 
 import Foundation
 
-class PDFExporter: DocumentExporter {
+struct PDFExporter: DocumentExporter {
     let description = "PDF Exporter"
     let uuid: UUID
     var compatibleFormats: [AnyClass] = [TextDocument.self]
 
 
-    required init(with config: Configuration, uuid: UUID) {
+    init(with config: Configuration, uuid: UUID) {
         self.uuid = uuid
     }
 
