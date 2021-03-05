@@ -18,6 +18,7 @@
 		9568616F25E80F03004D31CA /* Library.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568616E25E80F03004D31CA /* Library.swift */; };
 		9568617325E80FB4004D31CA /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568617225E80FB4004D31CA /* Configuration.swift */; };
 		9574747F25E6E6B900917EF0 /* Importation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9574747E25E6E6B900917EF0 /* Importation.swift */; };
+		B0E9B63925EFDF6F0054C504 /* PDFTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E9B63825EFDF6F0054C504 /* PDFTests.swift */; };
 		F9A7C1394834D75DFE4FB520 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F9A7CA9D419C2ECDBE045390 /* Preview Assets.xcassets */; };
 		F9A7C35E0461C21638072806 /* PicToShareUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C97B08CE9661BFCE30CE /* PicToShareUITests.swift */; };
 		F9A7C4E9CF7551D5FE45D70E /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C9DDE0631E7485095086 /* Utils.swift */; };
@@ -67,6 +68,7 @@
 		9568616E25E80F03004D31CA /* Library.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Library.swift; sourceTree = "<group>"; };
 		9568617225E80FB4004D31CA /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		9574747E25E6E6B900917EF0 /* Importation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Importation.swift; sourceTree = "<group>"; };
+		B0E9B63825EFDF6F0054C504 /* PDFTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFTests.swift; sourceTree = "<group>"; };
 		F9A7C0DA563670B4B2CAC7DF /* PicToShareTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PicToShareTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9A7C15F6BD7440D60F6F856 /* PicToShare.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PicToShare.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9A7C43B01C57696130DA3EE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.info; path = Info.plist; sourceTree = "<group>"; };
@@ -195,6 +197,7 @@
 			children = (
 				F9A7C43B01C57696130DA3EE /* Info.plist */,
 				F9A7CDC85B623930B9EB52F7 /* CoreTests.swift */,
+				B0E9B63825EFDF6F0054C504 /* PDFTests.swift */,
 			);
 			path = PicToShareTests;
 			sourceTree = "<group>";
@@ -344,6 +347,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B0E9B63925EFDF6F0054C504 /* PDFTests.swift in Sources */,
 				F9A7CEF947D2E12EC47CAF47 /* CoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
