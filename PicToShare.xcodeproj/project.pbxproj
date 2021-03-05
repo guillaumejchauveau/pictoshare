@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2B20F7BA1D19A3159AFB15E7 /* Pods_PicToShareTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAB2563EB615A71FB9457D00 /* Pods_PicToShareTests.framework */; };
+		39F81AAA819B6186656778A9 /* Pods_PicToShare.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F54825A8057B8E2D927313D /* Pods_PicToShare.framework */; };
 		9568614D25E7B821004D31CA /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568614C25E7B821004D31CA /* main.swift */; };
 		9568615925E7EADC004D31CA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568615825E7EADC004D31CA /* AppDelegate.swift */; };
 		9568616325E80682004D31CA /* PDF.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568615E25E80682004D31CA /* PDF.swift */; };
@@ -19,6 +21,7 @@
 		9568617325E80FB4004D31CA /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568617225E80FB4004D31CA /* Configuration.swift */; };
 		9574747F25E6E6B900917EF0 /* Importation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9574747E25E6E6B900917EF0 /* Importation.swift */; };
 		B0E9B63925EFDF6F0054C504 /* PDFTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E9B63825EFDF6F0054C504 /* PDFTests.swift */; };
+		F309C0B0C36AD9BEF67E1049 /* Pods_PicToShare_PicToShareUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86C52B90235BCED3520E4B6E /* Pods_PicToShare_PicToShareUITests.framework */; };
 		F9A7C1394834D75DFE4FB520 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F9A7CA9D419C2ECDBE045390 /* Preview Assets.xcassets */; };
 		F9A7C35E0461C21638072806 /* PicToShareUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C97B08CE9661BFCE30CE /* PicToShareUITests.swift */; };
 		F9A7C972A6D38DB73DBC2167 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F9A7C896C9B4150F73FF2572 /* Assets.xcassets */; };
@@ -56,6 +59,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0B3D47B35FEDF5CEBFC62D16 /* Pods-PicToShare.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PicToShare.release.xcconfig"; path = "Target Support Files/Pods-PicToShare/Pods-PicToShare.release.xcconfig"; sourceTree = "<group>"; };
+		19091AF128617ED2C1A9EB41 /* Pods-PicToShare-PicToShareUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PicToShare-PicToShareUITests.release.xcconfig"; path = "Target Support Files/Pods-PicToShare-PicToShareUITests/Pods-PicToShare-PicToShareUITests.release.xcconfig"; sourceTree = "<group>"; };
+		1EF89B03E446F51689385B4D /* Pods-PicToShareTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PicToShareTests.debug.xcconfig"; path = "Target Support Files/Pods-PicToShareTests/Pods-PicToShareTests.debug.xcconfig"; sourceTree = "<group>"; };
+		3DB0F2663406C6025F1551EA /* Pods-PicToShare.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PicToShare.debug.xcconfig"; path = "Target Support Files/Pods-PicToShare/Pods-PicToShare.debug.xcconfig"; sourceTree = "<group>"; };
+		4778663D098335BBC7C3587B /* Pods-PicToShare-PicToShareUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PicToShare-PicToShareUITests.debug.xcconfig"; path = "Target Support Files/Pods-PicToShare-PicToShareUITests/Pods-PicToShare-PicToShareUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		6F54825A8057B8E2D927313D /* Pods_PicToShare.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PicToShare.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		86C52B90235BCED3520E4B6E /* Pods_PicToShare_PicToShareUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PicToShare_PicToShareUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9568614C25E7B821004D31CA /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		9568615825E7EADC004D31CA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9568615E25E80682004D31CA /* PDF.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PDF.swift; sourceTree = "<group>"; };
@@ -68,6 +78,8 @@
 		9568617225E80FB4004D31CA /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		9574747E25E6E6B900917EF0 /* Importation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Importation.swift; sourceTree = "<group>"; };
 		B0E9B63825EFDF6F0054C504 /* PDFTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFTests.swift; sourceTree = "<group>"; };
+		BAB2563EB615A71FB9457D00 /* Pods_PicToShareTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PicToShareTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F3B1E7615E5E0DE140EB1E18 /* Pods-PicToShareTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PicToShareTests.release.xcconfig"; path = "Target Support Files/Pods-PicToShareTests/Pods-PicToShareTests.release.xcconfig"; sourceTree = "<group>"; };
 		F9A7C0DA563670B4B2CAC7DF /* PicToShareTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PicToShareTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9A7C15F6BD7440D60F6F856 /* PicToShare.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PicToShare.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9A7C43B01C57696130DA3EE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.info; path = Info.plist; sourceTree = "<group>"; };
@@ -86,6 +98,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F309C0B0C36AD9BEF67E1049 /* Pods_PicToShare_PicToShareUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,6 +106,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				39F81AAA819B6186656778A9 /* Pods_PicToShare.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -100,12 +114,27 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2B20F7BA1D19A3159AFB15E7 /* Pods_PicToShareTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		791F27A78A386BD1A24E478F /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				3DB0F2663406C6025F1551EA /* Pods-PicToShare.debug.xcconfig */,
+				0B3D47B35FEDF5CEBFC62D16 /* Pods-PicToShare.release.xcconfig */,
+				4778663D098335BBC7C3587B /* Pods-PicToShare-PicToShareUITests.debug.xcconfig */,
+				19091AF128617ED2C1A9EB41 /* Pods-PicToShare-PicToShareUITests.release.xcconfig */,
+				1EF89B03E446F51689385B4D /* Pods-PicToShareTests.debug.xcconfig */,
+				F3B1E7615E5E0DE140EB1E18 /* Pods-PicToShareTests.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		9574747D25E6E65100917EF0 /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -132,6 +161,9 @@
 		95B41D0225D4130200E5D275 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				6F54825A8057B8E2D927313D /* Pods_PicToShare.framework */,
+				86C52B90235BCED3520E4B6E /* Pods_PicToShare_PicToShareUITests.framework */,
+				BAB2563EB615A71FB9457D00 /* Pods_PicToShareTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -169,6 +201,7 @@
 				F9A7CEE1FC3585270F0572FE /* PicToShareTests */,
 				F9A7CE621A59A7945978E05E /* PicToShareUITests */,
 				95B41D0225D4130200E5D275 /* Frameworks */,
+				791F27A78A386BD1A24E478F /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -206,6 +239,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F9A7C56609DC0B1EAF2D1413 /* Build configuration list for PBXNativeTarget "PicToShareTests" */;
 			buildPhases = (
+				437EEC2397067F5C7D1ACD8A /* [CP] Check Pods Manifest.lock */,
 				F9A7CDAF09DEC7F379541B8F /* Sources */,
 				F9A7CBC4BCCE6B827DD24DD0 /* Frameworks */,
 				F9A7CEA57784805D7909937B /* Resources */,
@@ -224,9 +258,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F9A7C60E150B417489F4056B /* Build configuration list for PBXNativeTarget "PicToShareUITests" */;
 			buildPhases = (
+				F32D50675B02F73714139B43 /* [CP] Check Pods Manifest.lock */,
 				F9A7C5DA2BF86B5C9B17D540 /* Sources */,
 				F9A7C44879A6EF29143E9721 /* Frameworks */,
 				F9A7CD31E1BF146B5AD3D7B5 /* Resources */,
+				B019E659EB6D8F5E98E8C0A9 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -242,10 +278,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F9A7C0EC5DB57D1290FABC3F /* Build configuration list for PBXNativeTarget "PicToShare" */;
 			buildPhases = (
+				CF1F884ACFBF90FB3461878D /* [CP] Check Pods Manifest.lock */,
 				F9A7C215A555F1F36A23ABC9 /* Sources */,
 				F9A7C930BA9C0B95A7DD0584 /* Frameworks */,
 				F9A7C4882BFB98CC178A839D /* Resources */,
 				95B41D0725D4130200E5D275 /* Embed Frameworks */,
+				69EFF983ACC59EDECBA76680 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -312,6 +350,111 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		437EEC2397067F5C7D1ACD8A /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PicToShareTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		69EFF983ACC59EDECBA76680 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PicToShare/Pods-PicToShare-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/GraphicsRenderer/GraphicsRenderer.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GraphicsRenderer.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PicToShare/Pods-PicToShare-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B019E659EB6D8F5E98E8C0A9 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PicToShare-PicToShareUITests/Pods-PicToShare-PicToShareUITests-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/GraphicsRenderer/GraphicsRenderer.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GraphicsRenderer.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PicToShare-PicToShareUITests/Pods-PicToShare-PicToShareUITests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		CF1F884ACFBF90FB3461878D /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PicToShare-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F32D50675B02F73714139B43 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PicToShare-PicToShareUITests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		F9A7C215A555F1F36A23ABC9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -366,6 +509,7 @@
 /* Begin XCBuildConfiguration section */
 		F9A7C1B109ABA4D9A39525E6 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0B3D47B35FEDF5CEBFC62D16 /* Pods-PicToShare.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -385,6 +529,7 @@
 		};
 		F9A7C4340FB877FFD06DE5FA /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 19091AF128617ED2C1A9EB41 /* Pods-PicToShare-PicToShareUITests.release.xcconfig */;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = PicToShareUITests/Info.plist;
@@ -398,6 +543,7 @@
 		};
 		F9A7C7610DF5DBB3DC55D3D7 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1EF89B03E446F51689385B4D /* Pods-PicToShareTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/PicToShare.app/Contents/MacOS/PicToShare";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -412,6 +558,7 @@
 		};
 		F9A7C7794135CA2763C03B68 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F3B1E7615E5E0DE140EB1E18 /* Pods-PicToShareTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/PicToShare.app/Contents/MacOS/PicToShare";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -426,6 +573,7 @@
 		};
 		F9A7C9C2B7F4AD22086AB65E /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3DB0F2663406C6025F1551EA /* Pods-PicToShare.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -561,6 +709,7 @@
 		};
 		F9A7CFD4BDA7E196F6210EB1 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4778663D098335BBC7C3587B /* Pods-PicToShare-PicToShareUITests.debug.xcconfig */;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = PicToShareUITests/Info.plist;

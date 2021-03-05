@@ -12,6 +12,8 @@ import WebKit
 import Cocoa
 import WebKit
 
+import GraphicsRenderer
+
 class PDFExporter: DocumentExporter {
     let description = "PDF Exporter"
     let uuid: UUID
@@ -158,40 +160,68 @@ class PDFExporter: DocumentExporter {
         return parsedString
     }
     
-    // https://github.com/owlswipe/CocoaPDFCreator
-    // Fonctionne pas correctement avec WKWebView
-    // Soit il faut passer par WebView qui est deprecated, soit passer par NSView comme au dessus
-    /*
-    public func CreatePDF(htmlString: String) throws {
-        guard var directoryURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            // Create a proper error
-            throw DocumentFormatError.incompatibleDocumentFormat
+    func maybeTheGraal(textToBePrinted: String) {
+        let url = try? FileManager.default.url(for: .documentDirectory,
+                                               in: .userDomainMask,
+                                               appropriateFor: nil,
+                                               create: true)
+        let docURL = url!.appendingPathComponent("THEdoc.pdf")
+        
+        
+        try? PDFRenderer(bounds: CGRect(x: 0, y: 0, width: 612, height: 792)).writePDF(to: docURL) { context in
+            context.beginPage()
+            var text = "C'est ça que tu veux ?"
+            let frame = CGRect(x: 0, y: 0, width: 612, height: 792)
+            addBodyText(pageRect: frame, body: textToBePrinted)
+            //performDrawing(context: context)
+            context.beginPage()
+            text = "C'EST CA CE QUE TU VEUX ????"
+            addBodyText(pageRect: frame, body: text)
+            //performDrawing(context: context)
         }
-        directoryURL.appendPathComponent("testpdf5.pdf")
         
-        let newWebView = WKWebView(frame: NSRect(x: 0, y: 0, width: 570, height: 740))
-        newWebView.loadHTMLString(htmlString, baseURL: nil)
+        print("PDF saved to :\(docURL)")
         
-        print("Not ?")
-        let printOpts: [NSPrintInfo.AttributeKey: Any] =
-            [NSPrintInfo.AttributeKey.jobDisposition: NSPrintInfo.JobDisposition.save,
-             NSPrintInfo.AttributeKey.jobSavingURL: directoryURL]
-        let printInfo = NSPrintInfo(dictionary: printOpts)
         
-        printInfo.paperSize = NSMakeSize(595.22, 841.85)
-        printInfo.topMargin = 10.0
-        printInfo.leftMargin = 10.0
-        printInfo.rightMargin = 10.0
-        printInfo.bottomMargin = 10.0
-        
-        let printOp = NSPrintOperation(view: newWebView, printInfo: printInfo)
-        //let printOp: NSPrintOperation = NSPrintOperation(view: webView.mainFrame.frameView.documentView, printInfo: printInfo)
-        printOp.showsPrintPanel = true
-        printOp.showsProgressPanel = true
-        
-        print("J'ai fini, je run la save")
-        printOp.run()
     }
- */
-
+    
+    private func performDrawing<Context>(context: Context) where Context: RendererContext, Context.ContextType == CGContext {
+        let rect = context.format.bounds
+        
+        NSColor.white.setFill()
+        context.fill(rect)
+        
+        NSColor.blue.setStroke()
+        let frame = CGRect(x: 10, y: 10, width: 40, height: 40)
+        context.stroke(frame)
+        
+        NSColor.red.setStroke()
+        context.stroke(rect.insetBy(dx: 5, dy: 5))
+    }
+    
+    func addBodyText(pageRect: CGRect, body: String) {
+        
+        //let textFont = UIFont.systemFont(ofSize: 12.0, weight: .regular)
+        // 1
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .natural
+        paragraphStyle.lineBreakMode = .byWordWrapping
+        // 2
+        let textAttributes = [
+            NSAttributedString.Key.paragraphStyle: paragraphStyle /*,
+            NSAttributedString.Key.font: textFont*/
+        ]
+        let attributedText = NSAttributedString(
+            string: body,
+            attributes: textAttributes
+        )
+        // 3
+        let textRect = CGRect(
+            x: 10,
+            y: 10,
+            width: pageRect.width - 20,
+            height: pageRect.height - 10 - pageRect.height / 5.0
+        )
+        attributedText.draw(in: textRect)
+    }
 }
