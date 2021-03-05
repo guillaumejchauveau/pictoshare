@@ -7,4 +7,9 @@
 
 class TextDocument: CustomStringConvertible {
     let description = "Text"
+    //var content: String
+    
+    //init(content: String) {
+        //self.content = content
+    //}
 }
