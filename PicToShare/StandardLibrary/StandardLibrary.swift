@@ -8,17 +8,17 @@
 struct StandardLibrary: Library {
     let id: String = "standard"
     let description: String = "Standard"
-    let formats: Dictionary<String, Any> = [
-        "text": TextDocument.self,
-        "image": ImageDocument.self
+    let formats: Formats = [
+        "text": ("Text", TextDocument.self),
+        "image": ("Image", ImageDocument.self)
     ]
-    let sources: Dictionary<String, DocumentSource.Type> = [
-        "filesystem": FileSystemDocumentSource.self
+    let sources: Sources = [
+        "filesystem": ("File system", FileSystemDocumentSource.self, nil)
     ]
-    let annotators: Dictionary<String, DocumentAnnotator.Type> = [
-        "tag": TagAnnotator.self
+    let annotators: Annotators = [
+        "tag": ("Tag", TagAnnotator.self, nil)
     ]
-    let exporters: Dictionary<String, DocumentExporter.Type> = [
-        "pdf": PDFExporter.self
+    let exporters: Exporters = [
+        "pdf": ("PDF", PDFExporter.self, nil)
     ]
 }

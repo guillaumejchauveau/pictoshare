@@ -9,14 +9,13 @@ import AppKit
 
 
 class FileSystemDocumentSource: DocumentSource {
-    let uuid: UUID
-    let description: String
     private var importCallback: ((AnyObject) -> Void)?
     private let openPanel: NSOpenPanel
 
-    required init(with config: Configuration, uuid: UUID) {
-        self.uuid = uuid
-        description = config["name"]!
+    private let configuration: Configuration
+
+    required init(with configuration: Configuration) {
+        self.configuration = configuration
         openPanel = NSOpenPanel()
         openPanel.canChooseDirectories = false
         openPanel.allowsMultipleSelection = false
@@ -26,7 +25,7 @@ class FileSystemDocumentSource: DocumentSource {
         importCallback = callback
     }
 
-    func promptDocument(with config: Configuration) {
+    func promptDocument() {
         openPanel.begin(completionHandler: { [self]
             (response: NSApplication.ModalResponse) -> Void in
             if (response == NSApplication.ModalResponse.OK) {
@@ -37,17 +36,13 @@ class FileSystemDocumentSource: DocumentSource {
     }
 }
 
-struct TagAnnotator: DocumentAnnotator {
-    let uuid: UUID
-    let description: String
+class TagAnnotator: DocumentAnnotator {
     var compatibleFormats: [AnyClass] = [TextDocument.self]
 
-    init(with config: Configuration, uuid: UUID) {
-        self.uuid = uuid
-        description = config["name"]!
+    required init(with configuration: Configuration) {
     }
 
-    func annotate(document: AnyObject, with config: Configuration) throws {
+    func annotate(document: AnyObject) throws {
         guard isCompatibleWith(format: type(of: document)) else {
             throw DocumentFormatError.incompatibleDocumentFormat
         }
