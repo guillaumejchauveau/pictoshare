@@ -24,28 +24,28 @@ class PDFExporter: DocumentExporter {
         self.uuid = uuid
     }
 
-    
+    /// Creates a PDF file from a Document
+    ///
+    /// - Parameters:
+    ///   - document: AnyObject that will be converted to the right Document after.
+    ///   - with config: The Configuration.
     func export(document: AnyObject, with config: Configuration) throws {
         guard isCompatibleWith(format: type(of: document)) else {
             throw DocumentFormatError.incompatibleDocumentFormat
         }
         
-        // WIP : Document given, later we will use the document parameter
-        //let arbitraryTempDocument = TextDocument(content: "UNE Ligne pour la victoire")
-        
-        // Temporary name file
-        let file = "testPdf.pdf"
+        // WIP : Assuming for now that is a TextDocument. Need more flexibility later
+        let castDocument = document as! TextDocument
         
         // For now, we can't give the direct URL without going through the app container
-        // Otherwise, we don't have the right to write a file in a directory
+        // We don't have the rights to write a file in a directory outside of it
         let url = try? FileManager.default.url(for: .documentDirectory,
                                                in: .userDomainMask,
                                                appropriateFor: nil,
-                                               create: true)
-        let docURL = url!.appendingPathComponent(file)
+                                               create: true).appendingPathComponent("PDFFolder", isDirectory: true)
+        let docURL = url!.appendingPathComponent("\(castDocument.documentName).pdf")
         
-        //createPDF(textToBePrinted: document.text) // To be changed
-        createPDF(textToBePrinted: "String de test", to: docURL)
+        createPDF(textToBePrinted: castDocument.content, to: docURL)
        
         
 //        switch type(of: document) {
@@ -58,18 +58,18 @@ class PDFExporter: DocumentExporter {
     }
 
     
+    // Must be more flexible to automaticaly handle several pages
     func createPDF(textToBePrinted: String, to docURL: URL) {
         
         try? PDFRenderer(bounds: CGRect(x: 0, y: 0, width: 612, height: 792)).writePDF(to: docURL) { context in
             context.beginPage()
-            var text = "C'est ça que tu veux ?"
             let frame = CGRect(x: 0, y: 0, width: 612, height: 792)
             addBodyText(pageRect: frame, body: textToBePrinted)
-            //performDrawing(context: context)
+
             context.beginPage()
-            text = "C'EST CA CE QUE TU VEUX ????"
+            let text = "C'EST CA CE QUE TU VEUX ????"
             addBodyText(pageRect: frame, body: text)
-            //performDrawing(context: context)
+
         }
         
         print("PDF saved to :\(docURL)")

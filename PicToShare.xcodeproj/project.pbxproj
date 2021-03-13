@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -21,6 +21,7 @@
 		9568617325E80FB4004D31CA /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568617225E80FB4004D31CA /* Configuration.swift */; };
 		9574747F25E6E6B900917EF0 /* Importation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9574747E25E6E6B900917EF0 /* Importation.swift */; };
 		B0E9B63925EFDF6F0054C504 /* PDFTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E9B63825EFDF6F0054C504 /* PDFTests.swift */; };
+		B0F331BB25FCF1D1006F3703 /* EonilFSEvents in Frameworks */ = {isa = PBXBuildFile; productRef = B0F331BA25FCF1D1006F3703 /* EonilFSEvents */; };
 		F309C0B0C36AD9BEF67E1049 /* Pods_PicToShare_PicToShareUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86C52B90235BCED3520E4B6E /* Pods_PicToShare_PicToShareUITests.framework */; };
 		F9A7C1394834D75DFE4FB520 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F9A7CA9D419C2ECDBE045390 /* Preview Assets.xcassets */; };
 		F9A7C35E0461C21638072806 /* PicToShareUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C97B08CE9661BFCE30CE /* PicToShareUITests.swift */; };
@@ -106,6 +107,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B0F331BB25FCF1D1006F3703 /* EonilFSEvents in Frameworks */,
 				39F81AAA819B6186656778A9 /* Pods_PicToShare.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -131,7 +133,6 @@
 				1EF89B03E446F51689385B4D /* Pods-PicToShareTests.debug.xcconfig */,
 				F3B1E7615E5E0DE140EB1E18 /* Pods-PicToShareTests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -290,6 +291,9 @@
 			dependencies = (
 			);
 			name = PicToShare;
+			packageProductDependencies = (
+				B0F331BA25FCF1D1006F3703 /* EonilFSEvents */,
+			);
 			productName = PicToShare;
 			productReference = F9A7C15F6BD7440D60F6F856 /* PicToShare.app */;
 			productType = "com.apple.product-type.application";
@@ -313,6 +317,9 @@
 				Base,
 			);
 			mainGroup = F9A7C787E2B36E4AB7AC425A;
+			packageReferences = (
+				B0F331B925FCF1D1006F3703 /* XCRemoteSwiftPackageReference "FSEvents" */,
+			);
 			productRefGroup = F9A7C1C3219107C0EC536E37 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -519,7 +526,10 @@
 				DEVELOPMENT_ASSET_PATHS = "\"PicToShare/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = PicToShare/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.insa-rennes.PicToShare";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -533,7 +543,11 @@
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = PicToShareUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.insa-rennes.PicToShareUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -548,7 +562,11 @@
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/PicToShare.app/Contents/MacOS/PicToShare";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = PicToShareTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.insa-rennes.PicToShareTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -563,7 +581,11 @@
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/PicToShare.app/Contents/MacOS/PicToShare";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = PicToShareTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.insa-rennes.PicToShareTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -583,7 +605,10 @@
 				DEVELOPMENT_ASSET_PATHS = "\"PicToShare/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = PicToShare/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.insa-rennes.PicToShare";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -641,7 +666,8 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 			};
 			name = Release;
 		};
@@ -713,7 +739,11 @@
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = PicToShareUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "fr.insa-rennes.PicToShareUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -761,6 +791,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B0F331B925FCF1D1006F3703 /* XCRemoteSwiftPackageReference "FSEvents" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:eonil/FSEvents.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B0F331BA25FCF1D1006F3703 /* EonilFSEvents */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B0F331B925FCF1D1006F3703 /* XCRemoteSwiftPackageReference "FSEvents" */;
+			productName = EonilFSEvents;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F9A7C77B0CB8E0E09346DD0D /* Project object */;
 }
