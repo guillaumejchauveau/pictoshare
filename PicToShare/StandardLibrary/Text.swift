@@ -6,4 +6,11 @@
 //
 
 class TextDocument {
+    let documentName: String
+    var content: String
+
+    init(content: String, documentName: String) {
+        self.content = content
+        self.documentName = documentName
+    }
 }
