@@ -52,7 +52,7 @@ protocol DocumentSource {
     /// - Parameters:
     ///   - with: The Configuration object corresponding to this specific
     /// Source's scope.
-    init(with: Configuration)
+    init(with: Configuration) throws
     /// Sets the callback function to call when the Source has a Document ready
     /// for importation.
     ///
@@ -75,7 +75,7 @@ protocol DocumentAnnotator: DocumentFormatCompatible {
     /// - Parameters:
     ///   - with: The Configuration object corresponding to this specific
     /// Annotator's scope.
-    init(with: Configuration)
+    init(with: Configuration) throws
     /// Annotates the given Document.
     ///
     /// - Parameters:
@@ -87,12 +87,11 @@ protocol DocumentAnnotator: DocumentFormatCompatible {
 
 /// The exportation process is still a work in progress.
 protocol DocumentExporter: DocumentFormatCompatible {
-    init(with: Configuration)
+    init(with: Configuration) throws
     func export(document: AnyObject) throws
 }
 
-/// Object defining how to process a Document of a specific Format from a
-/// Source into a file.
+/// Object defining how to process a Document of a specific Format into a file.
 ///
 /// The exportation and integration process are a work in progress.
 protocol DocumentType {

@@ -4,26 +4,16 @@
 
 import CoreFoundation
 
-class DictionaryRef<Key, Value> where Key: Hashable {
-    var dictionary: Dictionary<Key, Value>
+class SafePointer<T> {
+    var pointee: T
 
-    init(_ dictionary: Dictionary<Key, Value>) {
-        self.dictionary = dictionary
+    init(_ pointee: T) {
+        self.pointee = pointee
     }
+}
 
-    subscript(key: Key) -> Value? {
-        get {
-            dictionary[key]
-        }
-
-        set {
-            dictionary[key] = newValue
-        }
-    }
-
-    func removeAll() {
-        dictionary.removeAll()
-    }
+func makeSafe<T>(_ pointee: T) -> SafePointer<T> {
+    SafePointer<T>(pointee)
 }
 
 
@@ -34,11 +24,5 @@ protocol CFPropertyListable {
 extension String: CFPropertyListable {
     func toCFPropertyList() -> CFPropertyList {
         self as CFPropertyList
-    }
-}
-
-extension DictionaryRef: CFPropertyListable where Key == String {
-    func toCFPropertyList() -> CFPropertyList {
-        dictionary as CFPropertyList
     }
 }

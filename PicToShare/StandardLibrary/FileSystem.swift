@@ -26,27 +26,11 @@ class FileSystemDocumentSource: DocumentSource {
     }
 
     func promptDocument() {
-        openPanel.begin(completionHandler: { [self]
-            (response: NSApplication.ModalResponse) -> Void in
-            if (response == NSApplication.ModalResponse.OK) {
+        openPanel.begin(completionHandler: { [self] response in
+            if response == NSApplication.ModalResponse.OK {
                 importCallback?(TextDocument())
             }
         })
         openPanel.runModal()
     }
 }
-
-class TagAnnotator: DocumentAnnotator {
-    var compatibleFormats: [AnyClass] = [TextDocument.self]
-
-    required init(with configuration: Configuration) {
-    }
-
-    func annotate(document: AnyObject) throws {
-        guard isCompatibleWith(format: type(of: document)) else {
-            throw DocumentFormatError.incompatibleDocumentFormat
-        }
-        print("annotator")
-    }
-}
-

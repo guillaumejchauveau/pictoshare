@@ -12,13 +12,10 @@ struct StandardLibrary: Library {
         "text": ("Text", TextDocument.self),
         "image": ("Image", ImageDocument.self)
     ]
-    let sources: Sources = [
+    let sourceTypes: SourceTypes = [
         "filesystem": ("File system", FileSystemDocumentSource.self, nil)
     ]
-    let annotators: Annotators = [
-        "tag": ("Tag", TagAnnotator.self, nil)
-    ]
-    let exporters: Exporters = [
+    let exporterTypes: ExporterTypes = [
         "pdf": ("PDF", PDFExporter.self, nil)
     ]
 }

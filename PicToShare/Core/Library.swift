@@ -7,253 +7,334 @@
 
 import Foundation
 
-typealias ClassID = String
 
-
-/// An object providing Core types as a package.
+/// An object providing Core Types as a package.
+///
+/// A Core Type is the class of an object used by the Core to create and process
+/// Documents (a Core Object). These Types are provided by Libraries, not by the
+/// Core, so the actual classes are not known. This is why they are called
+/// "Types".
+/// There are four different kinds of Core Types: Document Formats, Document
+/// Sources, Document Annotators and Document Exporters. Each kind has a
+/// corresponding protocol, defined in `Types.swift`, and referred as Core Type
+/// Protocols.
+///
+/// This `Library` protocol is used to create classes like `StandardLibrary`,
+/// that once instantiated provide Core Types that conform to the Core Type
+/// Protocols. It consists mainly of four (optional) Dictionaries, storing
+/// the necessary information needed to use the Core Types.
 protocol Library: CustomStringConvertible {
-    /// An identifier for the library.
+    /// Identifies a specific Core Type registered in the Library Manager.
+    ///
+    /// A ClassID has three parts:
+    /// - The Library ID, that indicates the Library that registered the Core
+    ///     Type corresponding to the ClassID.
+    /// - The Type Protocol, which can be either Document Format, Document
+    ///     Source, Document Annotator or Document Exporter.
+    /// - The Type ID, that identifies the specific Type in the Library.
+    ///
+    /// For example: `standard.format.text`, corresponds to the `text` Document
+    /// Format in the `standard` Library.
+    typealias ClassID = String
+
+    /// An identifier for the Library.
     var id: String { get }
 
+    /// Helper type.
     typealias Formats = Dictionary<ClassID, (description: String,
                                              type: AnyClass)>
-    /// Formats associated to an identifier.
+    /// Document Formats associated to an identifier.
     var formats: Formats { get }
 
-    typealias Sources =
+    /// Helper type.
+    typealias SourceTypes =
             Dictionary<ClassID, (description: String,
                                  type: DocumentSource.Type,
-                                 defaults: Dictionary<String, Any>?)>
-    /// Sources information associated to an identifier.
-    var sources: Sources { get }
+                                 defaultLayer: Configuration.Layer?)>
+    /// Document Source Types information associated to an identifier.
+    var sourceTypes: SourceTypes { get }
 
-    typealias Annotators =
+    /// Helper type.
+    typealias AnnotatorTypes =
             Dictionary<ClassID, (description: String,
                                  type: DocumentAnnotator.Type,
-                                 defaults: Dictionary<String, Any>?)>
-    /// Annotators information associated to an identifier.
-    var annotators: Annotators { get }
+                                 defaultLayer: Configuration.Layer?)>
+    /// Document Annotator Types information associated to an identifier.
+    var annotatorTypes: AnnotatorTypes { get }
 
-    typealias Exporters =
+    /// Helper type.
+    typealias ExporterTypes =
             Dictionary<ClassID, (description: String,
                                  type: DocumentExporter.Type,
-                                 defaults: Dictionary<String, Any>?)>
-    /// Exporters information associated to an identifier.
-    var exporters
-            : Exporters { get }
+                                 defaultLayer: Configuration.Layer?)>
+    /// Document Exporter Types information associated to an identifier.
+    var exporterTypes: ExporterTypes { get }
 }
 
+/// Helper extension that provides default values for the four Dictionaries of
+/// a Library definition, allowing the developer to skip unnecessary
+/// declarations.
 extension Library {
     var formats: Formats {
         [:]
     }
-    var sources: Sources {
+    var sourceTypes: SourceTypes {
         [:]
     }
-    var annotators: Annotators {
+    var annotatorTypes: AnnotatorTypes {
         [:]
     }
-    var exporters: Exporters {
+    var exporterTypes: ExporterTypes {
         [:]
     }
 }
 
-/// Object responsible for loading libraries and providing a facade to access
-/// the Core types made available.
-///
-/// Types are available under a classID:
-/// `<library identifier>.[formats|sources|...].<type identifier>`.
+/// Object responsible for loading Libraries and providing access to the
+/// registered Core Types and utilities.
 class LibraryManager {
+    /// Helper for specifying a Core Type Protocol when processing ClassIDs.
+    enum CoreTypeProtocol: String {
+        case format = "format"
+        case source = "source"
+        case annotator = "annotator"
+        case exporter = "exporter"
+    }
+
+    /// Internal representation of a registered Core Type.
+    struct CoreTypeMetadata<T>: CustomStringConvertible {
+        let description: String
+        let type: T
+        let defaultLayer: SafePointer<Configuration.Layer>
+        var typeLayer: SafePointer<Configuration.Layer>
+    }
+
+    /// Internal representation of a registered Library.
+    struct LibraryMetadata: CustomStringConvertible {
+        var description: String
+        var formats: Library.Formats = [:]
+        var sourceTypes: Dictionary<String, CoreTypeMetadata<
+                DocumentSource.Type>> = [:]
+        var annotatorTypes: Dictionary<String, CoreTypeMetadata<
+                DocumentAnnotator.Type>> = [:]
+        var exporterTypes: Dictionary<String, CoreTypeMetadata<
+                DocumentExporter.Type>> = [:]
+    }
+
     enum Error: Swift.Error {
-        case duplicateClassID(ClassID)
-        case invalidClassID(ClassID)
+        case duplicateClassID(Library.ClassID)
+        case invalidClassID(Library.ClassID)
     }
 
-    private var formats: Library.Formats = [:]
-    private var sourceTypes:
-            Dictionary<ClassID, (description: String,
-                                 type: DocumentSource.Type,
-                                 defaults: DictionaryRef<String, Any>)> = [:]
-    private var annotatorTypes:
-            Dictionary<ClassID, (description: String,
-                                 type: DocumentAnnotator.Type,
-                                 defaults: DictionaryRef<String, Any>)> = [:]
-    private var exporterTypes:
-            Dictionary<ClassID, (description: String,
-                                 type: DocumentExporter.Type,
-                                 defaults: DictionaryRef<String, Any>)> = [:]
+    /// The registered Libraries.
+    var libraries: Dictionary<String, LibraryMetadata> = [:]
 
-    /// Loads a library by registering the Types it provides.
+    /// Helper function for registering Core Types from a Library.
+    private func saveCoreTypeDefinition<T>(
+            _ metadataStorage: inout Dictionary<String, CoreTypeMetadata<T>>,
+            _ typeId: String,
+            _ typeDefinition: (description: String,
+                               type: T,
+                               defaultLayer: Configuration.Layer?)
+    ) {
+        metadataStorage[typeId] = CoreTypeMetadata<T>(
+                description: typeDefinition.description,
+                type: typeDefinition.type,
+                defaultLayer: makeSafe(typeDefinition.defaultLayer ?? [:]),
+                typeLayer: makeSafe([:]))
+    }
+
+    /// Loads a Library by registering the Core Types it provides.
     ///
-    /// - Parameter library: The library to load.
-    /// - Throws: `LibraryManage.Error.duplicateClassID` if a new Type as the
-    ///     same classID as an existing one.
+    /// - Parameter library: The Library to load.
+    /// - Throws: `LibraryManage.Error.duplicateClassID` if the Library has the
+    ///     same ID as an existing one.
     func load(library: Library) throws {
-        try library.formats.forEach { id, format in
-            let classID = "\(library.id).formats.\(id)"
-            guard !formats.keys.contains(classID) else {
-                throw Error.duplicateClassID(classID)
-            }
-            formats[classID] = format
+        guard !libraries.keys.contains(library.id) else {
+            throw Error.duplicateClassID(library.id)
         }
-        try library.sources.forEach { id, sourceType in
-            let classID = "\(library.id).sources.\(id)"
-            guard !sourceTypes.keys.contains(classID) else {
-                throw Error.duplicateClassID(classID)
-            }
-            sourceTypes[classID] = (sourceType.description,
-                    sourceType.type,
-                    DictionaryRef<String, Any>(sourceType.defaults ?? [:]))
+        var libraryMetadata = LibraryMetadata(description: library.description)
+
+        for (id, format) in library.formats {
+            libraryMetadata.formats[id] = format
         }
-        try library.annotators.forEach { id, annotatorType in
-            let classID = "\(library.id).annotators.\(id)"
-            guard !annotatorTypes.keys.contains(classID) else {
-                throw Error.duplicateClassID(classID)
-            }
-            annotatorTypes[classID] = (annotatorType.description,
-                    annotatorType.type,
-                    DictionaryRef<String, Any>(annotatorType.defaults ?? [:]))
+        for (id, sourceType) in library.sourceTypes {
+            saveCoreTypeDefinition(
+                    &libraryMetadata.sourceTypes,
+                    id,
+                    sourceType)
         }
-        try library.exporters.forEach { id, exporterType in
-            let classID = "\(library.id).exporters.\(id)"
-            guard !exporterTypes.keys.contains(classID) else {
-                throw Error.duplicateClassID(classID)
-            }
-            exporterTypes[classID] = (exporterType.description,
-                    exporterType.type,
-                    DictionaryRef<String, Any>(exporterType.defaults ?? [:]))
+        for (id, annotatorType) in library.annotatorTypes {
+            saveCoreTypeDefinition(
+                    &libraryMetadata.annotatorTypes,
+                    id,
+                    annotatorType)
+        }
+        for (id, exporterType) in library.exporterTypes {
+            saveCoreTypeDefinition(
+                    &libraryMetadata.exporterTypes,
+                    id,
+                    exporterType)
+        }
+        libraries[library.id] = libraryMetadata
+    }
+
+    /// Parses the given ClassID.
+    ///
+    /// - Parameters:
+    ///   - classID: The ClassID to parse.
+    ///   - typeProtocol: The Core Type Protocol the ClassID should correspond
+    ///     to. Leave nil if you do not wish to validate it.
+    /// - Returns: The three parts of the ClassID.
+    func parse(_ classID: Library.ClassID,
+               withTypeProtocol validTypeProtocol: CoreTypeProtocol? = nil)
+                    -> (libraryID: String,
+                        typeType: CoreTypeProtocol,
+                        typeID: String)? {
+        let parts = classID.split(separator: ".").map(String.init)
+        guard parts.count == 3 && libraries.keys.contains(parts[0]) else {
+            return nil
+        }
+
+        let libraryID = parts[0]
+        let typeProtocol = CoreTypeProtocol(rawValue: parts[1])
+        let typeID = parts[2]
+
+        guard typeProtocol != nil && (validTypeProtocol == nil
+                || typeProtocol == validTypeProtocol) else {
+            return nil
+        }
+
+        // Avoids testing if the Type ID exists in each case of the switch.
+        let contains: (String) -> Bool
+        let library = libraries[libraryID]!
+        switch typeProtocol! {
+        case .format:
+            contains = library.formats.keys.contains
+        case .source:
+            contains = library.sourceTypes.keys.contains
+        case .annotator:
+            contains = library.annotatorTypes.keys.contains
+        case .exporter:
+            contains = library.exporterTypes.keys.contains
+        }
+        guard contains(typeID) else {
+            return nil
+        }
+
+        return (libraryID, typeProtocol!, typeID)
+    }
+
+    /// Retrieves a human-readable description of a Core Type.
+    ///
+    /// - Parameter classID: The ClassID of the Core Type.
+    /// - Returns: The description.
+    func get(description classID: Library.ClassID) -> String? {
+        guard let (library, typeType, type) = parse(classID) else {
+            return nil
+        }
+        switch typeType {
+        case .format:
+            return libraries[library]!.formats[type]!.description
+        case .source:
+            return libraries[library]!.sourceTypes[type]!.description
+        case .annotator:
+            return libraries[library]!.annotatorTypes[type]!.description
+        case .exporter:
+            return libraries[library]!.exporterTypes[type]!.description
         }
     }
 
-    /// Test if the given classID in associated with a Format.
+    /// Creates a Configuration for the specified Core Type, containing the
+    /// Default Configuration Layer and the Type Configuration Layer.
     ///
-    /// - Parameter classID: The classID to test.
-    /// - Returns: The result of the test.
-    func contains(format classID: ClassID) -> Bool {
-        formats.keys.contains(classID)
+    /// - Parameter classID: The ClassID of the corresponding Core Type.
+    /// - Returns: The Configuration created.
+    func make(configuration classID: Library.ClassID) -> Configuration? {
+        guard let (library, typeProtocol, type) = parse(classID) else {
+            return nil
+        }
+
+        let configuration: Configuration
+        switch typeProtocol {
+        case .format:
+            return nil
+        case .source:
+            let metadata = libraries[library]!.sourceTypes[type]!
+            configuration = Configuration([metadata.defaultLayer,
+                                           metadata.typeLayer])
+        case .annotator:
+            let metadata = libraries[library]!.annotatorTypes[type]!
+            configuration = Configuration([metadata.defaultLayer,
+                                           metadata.typeLayer])
+        case .exporter:
+            let metadata = libraries[library]!.exporterTypes[type]!
+            configuration = Configuration([metadata.defaultLayer,
+                                           metadata.typeLayer])
+        }
+        return configuration
     }
 
-    /// Retrieves a Format (Document class).
+    /// Retrieves a Document Format (Document class).
     ///
-    /// - Parameter format: The classID of the Format.
+    /// - Parameter format: The ClassID of the Format.
     /// - Returns: The Format.
-    func get(format classID: ClassID) -> AnyClass? {
-        formats[classID]?.type
+    func get(format classID: Library.ClassID) -> AnyClass? {
+        guard let (library, _, type) = parse(
+                classID,
+                withTypeProtocol: .format) else {
+            return nil
+        }
+        return libraries[library]!.formats[type]!.type
     }
 
-    /// Retrieves a human-readable description of a Format.
-    ///
-    /// - Parameter classID: The classID of the Format.
-    /// - Returns: The description.
-    func get(formatDescription classID: ClassID) -> String? {
-        formats[classID]?.description
-    }
-
-    /// Test if the given classID in associated with a Source Type.
-    ///
-    /// - Parameter classID: The classID to test.
-    /// - Returns: The result of the test.
-    func contains(source classID: ClassID) -> Bool {
-        sourceTypes.keys.contains(classID)
-    }
-
-    /// Instantiates a Source Type.
+    /// Instantiates a Document Source Type.
     ///
     /// - Parameters:
-    ///   - source: The classID of the Source Type.
+    ///   - source: The ClassID of the Source Type.
     ///   - with: The Configuration for this instance.
     /// - Returns: The instance.
-    func make(source classID: ClassID,
-              with config: Configuration) -> DocumentSource? {
-        sourceTypes[classID]?.type.init(with: config)
+    func make(source classID: Library.ClassID,
+              with config: Configuration) throws -> DocumentSource? {
+        guard let (library, _, type) = parse(
+                classID,
+                withTypeProtocol: .source) else {
+            return nil
+        }
+        return try libraries[library]!.sourceTypes[type]!
+                .type.init(with: config)
     }
 
-    /// Retrieves a human-readable description of a Source Type.
-    ///
-    /// - Parameter classID: The classID of the Source Type.
-    /// - Returns: The description.
-    func get(sourceDescription classID: ClassID) -> String? {
-        sourceTypes[classID]?.description
-    }
-
-    /// Retrieves the default Configuration Group of a Source Type.
-    ///
-    /// - Parameter classID: The classID of the Source Type.
-    /// - Returns: The default Configuration Group.
-    func get(sourceDefaults classID: ClassID) -> DictionaryRef<String, Any>? {
-        sourceTypes[classID]?.defaults
-    }
-
-    /// Test if the given classID in associated with a Annotator Type.
-    ///
-    /// - Parameter classID: The classID to test.
-    /// - Returns: The result of the test.
-    func contains(annotator classID: ClassID) -> Bool {
-        annotatorTypes.keys.contains(classID)
-    }
-
-    /// Instantiates an Annotator Type.
+    /// Instantiates a Document Annotator Type.
     ///
     /// - Parameters:
-    ///   - annotator: The classID of the Annotator Type.
+    ///   - annotator: The ClassID of the Annotator Type.
     ///   - with: The Configuration for this instance.
     /// - Returns: The instance.
-    func make(annotator classID: ClassID,
-              with config: Configuration) -> DocumentAnnotator? {
-        annotatorTypes[classID]?.type.init(with: config)
+    func make(annotator classID: Library.ClassID,
+              with config: Configuration) throws -> DocumentAnnotator? {
+        guard let (library, _, type) = parse(
+                classID,
+                withTypeProtocol: .annotator) else {
+            return nil
+        }
+        return try libraries[library]!.annotatorTypes[type]!
+                .type.init(with: config)
     }
 
-    /// Retrieves a human-readable description of a Annotator Type.
-    ///
-    /// - Parameter classID: The classID of the Annotator Type.
-    /// - Returns: The description.
-    func get(annotatorDescription classID: ClassID) -> String? {
-        annotatorTypes[classID]?.description
-    }
-
-    /// Retrieves the default Configuration Group of a Annotator Type.
-    ///
-    /// - Parameter classID: The classID of the Annotator Type.
-    /// - Returns: The default Configuration Group.
-    func get(annotatorDefaults classID: ClassID)
-                    -> DictionaryRef<String, Any>? {
-        annotatorTypes[classID]?.defaults
-    }
-
-    /// Test if the given classID in associated with an Exporter Type.
-    ///
-    /// - Parameter classID: The classID to test.
-    /// - Returns: The result of the test.
-    func contains(exporter classID: ClassID) -> Bool {
-        exporterTypes.keys.contains(classID)
-    }
-
-    /// Instantiates an Exporter Type.
+    /// Instantiates a Document Exporter Type.
     ///
     /// - Parameters:
-    ///   - exporter: The classID of the Exporter Type.
+    ///   - exporter: The ClassID of the Exporter Type.
     ///   - with: The Configuration for this instance.
     /// - Returns: The instance.
-    /// - Throws: `LibraryManage.Error.invalidClassID if no types correspond to `
-    ///     the given classID.
-    func make(exporter classID: ClassID,
-              with config: Configuration) -> DocumentExporter? {
-        exporterTypes[classID]?.type.init(with: config)
-    }
-
-    /// Retrieves a human-readable description of a Exporter Type.
-    ///
-    /// - Parameter classID: The classID of the Exporter Type.
-    /// - Returns: The description.
-    func get(exporterDescription classID: ClassID) -> String? {
-        exporterTypes[classID]?.description
-    }
-
-    /// Retrieves the default Configuration Group of a Exporter Type.
-    ///
-    /// - Parameter classID: The classID of the Exporter Type.
-    /// - Returns: The default Configuration Group.
-    func get(exporterDefaults classID: ClassID) -> DictionaryRef<String, Any>? {
-        exporterTypes[classID]?.defaults
+    func make(exporter classID: Library.ClassID,
+              with config: Configuration) throws -> DocumentExporter? {
+        guard let (library, _, type) = parse(
+                classID,
+                withTypeProtocol: .exporter) else {
+            return nil
+        }
+        return try libraries[library]!.exporterTypes[type]!
+                .type.init(with: config)
     }
 }
