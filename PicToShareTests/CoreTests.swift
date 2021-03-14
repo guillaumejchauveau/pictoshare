@@ -27,6 +27,9 @@ class PicToShareTests: XCTestCase {
         var lastDocumentAnnotated: AnyObject? = nil
 
         required init(with configuration: Configuration) {
+            if let formats = configuration["formats"] as? [AnyClass] {
+                compatibleFormats = formats
+            }
         }
 
         func annotate(document: AnyObject) throws {
@@ -39,6 +42,9 @@ class PicToShareTests: XCTestCase {
         var lastDocumentExported: AnyObject? = nil
 
         required init(with configuration: Configuration) {
+            if let formats = configuration["formats"] as? [AnyClass] {
+                compatibleFormats = formats
+            }
         }
 
         func export(document: AnyObject) throws {
@@ -69,12 +75,11 @@ class PicToShareTests: XCTestCase {
         }
     }
 
-    func testClassID() throws {
-
-    }
-
     func testLibraryManager() throws {
         let manager = LibraryManager()
+
+        XCTAssertNil(manager.validate(""))
+        XCTAssertNil(manager.validate("a.format.formatA"))
 
         XCTAssertNil(manager.get(format: "a.format.formatA"))
         try XCTAssertNoThrow(XCTAssertNil(
@@ -88,6 +93,17 @@ class PicToShareTests: XCTestCase {
         library1.formats["formatA"] = ("test", TestFormatA.self)
         try XCTAssertNoThrow(manager.load(library: library1))
         try XCTAssertThrowsError(manager.load(library: library1))
+
+        let classID = manager.validate("b.format.formatA")
+        XCTAssertNotNil(classID)
+        XCTAssertEqual(classID!.libraryID, "b")
+        XCTAssertEqual(classID!.typeProtocol,
+                LibraryManager.CoreTypeProtocol.format)
+        XCTAssertEqual(classID!.typeID, "formatA")
+        XCTAssertNil(manager.validate("b.test.formatA"))
+        XCTAssertNil(manager.validate("b.format.formatA",
+                withTypeProtocol: .exporter))
+
         XCTAssertNotNil(manager.get(format: "b.format.formatA"))
         XCTAssertEqual(manager.get(description: "b.format.formatA"), "test")
 
@@ -134,8 +150,10 @@ class PicToShareTests: XCTestCase {
 
     class TestSource: DocumentSource {
         var importCallback: ((AnyObject) -> Void)?
+        let configuration: Configuration
 
         required init(with: Configuration) {
+            configuration = with
         }
 
         func setImportCallback(_ callback: @escaping (AnyObject) -> Void) {
@@ -148,39 +166,100 @@ class PicToShareTests: XCTestCase {
     }
 
     func testConfiguration() throws {
+        let firstLayer = makeSafe(Configuration.Layer())
+        let secondLayer = makeSafe(Configuration.Layer())
+        let thirdLayer = makeSafe(Configuration.Layer())
+
+        firstLayer.pointee["a"] = 1
+        let config1 = Configuration([firstLayer])
+        XCTAssertNil(config1["b"])
+        XCTAssertNotNil(config1["a"] as? Int)
+        XCTAssertEqual(config1["a"] as! Int, 1)
+
+        firstLayer.pointee["b"] = 0
+        XCTAssertNotNil(config1["b"])
+
+        secondLayer.pointee["a"] = 2
+        thirdLayer.pointee["a"] = 3
+        let config2 = Configuration([firstLayer, secondLayer, thirdLayer])
+        XCTAssertNil(config2["c"])
+        XCTAssertNotNil(config2["b"] as? Int)
+        XCTAssertEqual(config2["b"] as! Int, 0)
+        XCTAssertNotNil(config2["a"] as? Int)
+        XCTAssertEqual(config2["a"] as! Int, 3)
+
+        secondLayer.pointee["c"] = 4
+        XCTAssertNotNil(config2["c"] as? Int)
+        XCTAssertEqual(config2["c"] as! Int, 4)
+        thirdLayer.pointee.removeValue(forKey: "a")
+        XCTAssertNotNil(config2["a"] as? Int)
+        XCTAssertEqual(config2["a"] as! Int, 2)
+    }
+
+    func testConfigurationManager() throws {
+        let importationManager = ImportationManager()
         let libraryManager = LibraryManager()
         let library = TestLibrary("a")
         library.formats["formatA"] = ("", TestFormatA.self)
         library.sourceTypes["sourceA"] = ("", TestSource.self, [
             "a": 5
         ])
-        CFPreferencesSetAppValue(
-                "a.format.sourceA" as CFString,
-                nil,
-                kCFPreferencesCurrentApplication)
+        library.exporterTypes["exporterA"] = ("", TestExporter.self, [
+            "a": 1
+        ])
+        library.annotatorTypes["annotatorA"] = ("", TestAnnotator.self, [
+            "a": 2
+        ])
         try libraryManager.load(library: library)
+
+        let configurationManager = ConfigurationManager(
+                libraryManager,
+                importationManager)
+
+        try XCTAssertThrowsError(configurationManager.add(
+                source: ConfigurationManager.CoreObjectMetadata("")))
+        try XCTAssertThrowsError(configurationManager.add(
+                source: ConfigurationManager.CoreObjectMetadata(
+                        "a.format.formatA")))
+
+        try XCTAssertNoThrow(configurationManager.add(
+                source: ConfigurationManager.CoreObjectMetadata(
+                        "a.source.sourceA",
+                        objectLayer: [
+                            "b": 4
+                        ])))
+        XCTAssertEqual(configurationManager.sources.count, 1)
+        XCTAssertNotNil(configurationManager.sources[0].source as? TestSource)
+        XCTAssertEqual((configurationManager.sources[0].source as! TestSource)
+                .configuration["a"] as? Int, 5)
+        XCTAssertEqual((configurationManager.sources[0].source as! TestSource)
+                .configuration["b"] as? Int, 4)
+        configurationManager.sources[0].metadata.objectLayer.pointee["b"] = 1
+        XCTAssertEqual((configurationManager.sources[0].source as! TestSource)
+                .configuration["b"] as? Int, 1)
+
+
+        try XCTAssertThrowsError(configurationManager.addType(
+                "a.format.formatA",
+                "",
+                ConfigurationManager.CoreObjectMetadata("a.exporter.exporterA"),
+                [
+                    ConfigurationManager.CoreObjectMetadata(
+                            "a.annotator.annotatorA"
+                    )
+                ]))
+        try XCTAssertNoThrow(configurationManager.addType(
+                "a.format.formatA",
+                "",
+                ConfigurationManager.CoreObjectMetadata(
+                        "a.exporter.exporterA",
+                        objectLayer: ["formats": [TestFormatA.self]]),
+                [
+                    ConfigurationManager.CoreObjectMetadata(
+                            "a.annotator.annotatorA",
+                            objectLayer: ["formats": [TestFormatA.self]]
+                    )
+                ]))
+        XCTAssertEqual(configurationManager.types.count, 1)
     }
-
-    /*func testDocumentType() throws {
-        var type = DocumentType(format: FormatA.self)
-
-        XCTAssertEqual(type.annotators.count, 0)
-        try XCTAssertThrowsError(type.add(annotator: Annotator(with: Configuration())))
-
-        let annotator1 = Annotator(with: Configuration())
-        annotator1.compatibleFormats = [FormatA.self]
-        try XCTAssertNoThrow(type.add(annotator: annotator1))
-        XCTAssertEqual(type.annotators.count, 1)
-
-        type.remove(annotator: 0)
-        XCTAssertEqual(type.annotators.count, 0)
-
-        XCTAssertNil(type.exporter)
-        try XCTAssertThrowsError(type.set(exporter: Exporter(with: Configuration())))
-
-        let exporter = Exporter(with: Configuration())
-        exporter.compatibleFormats = [FormatA.self]
-        try XCTAssertNoThrow(type.set(exporter: exporter))
-        XCTAssertNotNil(type.exporter)
-    }*/
 }

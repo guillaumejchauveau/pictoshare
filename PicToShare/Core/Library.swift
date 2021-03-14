@@ -178,17 +178,18 @@ class LibraryManager {
         libraries[library.id] = libraryMetadata
     }
 
-    /// Parses the given ClassID.
+    /// Validates the given ClassID by checking the Library ID, Type Protocol,
+    /// and the Type ID.
     ///
     /// - Parameters:
     ///   - classID: The ClassID to parse.
     ///   - typeProtocol: The Core Type Protocol the ClassID should correspond
     ///     to. Leave nil if you do not wish to validate it.
     /// - Returns: The three parts of the ClassID.
-    func parse(_ classID: Library.ClassID,
-               withTypeProtocol validTypeProtocol: CoreTypeProtocol? = nil)
+    func validate(_ classID: Library.ClassID,
+                  withTypeProtocol validTypeProtocol: CoreTypeProtocol? = nil)
                     -> (libraryID: String,
-                        typeType: CoreTypeProtocol,
+                        typeProtocol: CoreTypeProtocol,
                         typeID: String)? {
         let parts = classID.split(separator: ".").map(String.init)
         guard parts.count == 3 && libraries.keys.contains(parts[0]) else {
@@ -228,11 +229,15 @@ class LibraryManager {
     ///
     /// - Parameter classID: The ClassID of the Core Type.
     /// - Returns: The description.
-    func get(description classID: Library.ClassID) -> String? {
-        guard let (library, typeType, type) = parse(classID) else {
+    func get(description classID: Library.ClassID,
+             withTypeProtocol validTypeProtocol: CoreTypeProtocol? = nil)
+                    -> String? {
+        guard let (library, typeProtocol, type) = validate(
+                classID,
+                withTypeProtocol: validTypeProtocol) else {
             return nil
         }
-        switch typeType {
+        switch typeProtocol {
         case .format:
             return libraries[library]!.formats[type]!.description
         case .source:
@@ -249,8 +254,10 @@ class LibraryManager {
     ///
     /// - Parameter classID: The ClassID of the corresponding Core Type.
     /// - Returns: The Configuration created.
-    func make(configuration classID: Library.ClassID) -> Configuration? {
-        guard let (library, typeProtocol, type) = parse(classID) else {
+    func make(configuration classID: Library.ClassID,
+              withTypeProtocol validTypeProtocol: CoreTypeProtocol? = nil)
+                    -> Configuration? {
+        guard let (library, typeProtocol, type) = validate(classID) else {
             return nil
         }
 
@@ -279,7 +286,7 @@ class LibraryManager {
     /// - Parameter format: The ClassID of the Format.
     /// - Returns: The Format.
     func get(format classID: Library.ClassID) -> AnyClass? {
-        guard let (library, _, type) = parse(
+        guard let (library, _, type) = validate(
                 classID,
                 withTypeProtocol: .format) else {
             return nil
@@ -295,7 +302,7 @@ class LibraryManager {
     /// - Returns: The instance.
     func make(source classID: Library.ClassID,
               with config: Configuration) throws -> DocumentSource? {
-        guard let (library, _, type) = parse(
+        guard let (library, _, type) = validate(
                 classID,
                 withTypeProtocol: .source) else {
             return nil
@@ -312,7 +319,7 @@ class LibraryManager {
     /// - Returns: The instance.
     func make(annotator classID: Library.ClassID,
               with config: Configuration) throws -> DocumentAnnotator? {
-        guard let (library, _, type) = parse(
+        guard let (library, _, type) = validate(
                 classID,
                 withTypeProtocol: .annotator) else {
             return nil
@@ -329,7 +336,7 @@ class LibraryManager {
     /// - Returns: The instance.
     func make(exporter classID: Library.ClassID,
               with config: Configuration) throws -> DocumentExporter? {
-        guard let (library, _, type) = parse(
+        guard let (library, _, type) = validate(
                 classID,
                 withTypeProtocol: .exporter) else {
             return nil

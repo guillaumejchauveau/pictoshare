@@ -134,28 +134,6 @@ class ConfigurationManager {
     /// The Document Types configured.
     private(set) var types: [DocumentTypeMetadata] = []
 
-    /// Helper function to read data from key-value persistent storage.
-    ///
-    /// - Parameter key: The key of the value to read.
-    /// - Returns: The value or nil if not found.
-    private func getPreference(_ key: String) -> CFPropertyList? {
-        CFPreferencesCopyAppValue(
-                key as CFString,
-                kCFPreferencesCurrentApplication)
-    }
-
-    /// Helper function to write data from key-value persistent storage.
-    ///
-    /// - Parameters:
-    ///   - key: The key of the value to write.
-    ///   - value: The value to write.
-    private func setPreference(_ key: String, _ value: CFPropertyList) {
-        CFPreferencesSetAppValue(
-                key as CFString,
-                value as CFPropertyList,
-                kCFPreferencesCurrentApplication)
-    }
-
     /// Creates a Configuration Manager.
     ///
     /// - Parameters:
@@ -176,7 +154,8 @@ class ConfigurationManager {
     ///     Any error thrown by the Source on initialization.
     func add(source metadata: CoreObjectMetadata) throws {
         guard let configuration = libraryManager.make(
-                configuration: metadata.classID) else {
+                configuration: metadata.classID,
+                withTypeProtocol: .source) else {
             throw LibraryManager.Error.invalidClassID(metadata.classID)
         }
         configuration.layers.append(metadata.objectLayer)
@@ -208,40 +187,50 @@ class ConfigurationManager {
     ///     Any error thrown by the Annotators or Exporter on initialization.
     func addType(_ formatID: Library.ClassID,
                  _ description: String,
-                 _ exporter: CoreObjectMetadata,
-                 _ annotators: [CoreObjectMetadata] = []) throws {
-        guard libraryManager.parse(formatID, withTypeProtocol: .format) != nil
-                else {
+                 _ exporterMeta: CoreObjectMetadata,
+                 _ annotatorsMeta: [CoreObjectMetadata] = []) throws {
+        guard libraryManager.validate(
+                formatID, withTypeProtocol: .format) != nil else {
             throw LibraryManager.Error.invalidClassID(formatID)
         }
+        let format: AnyClass = libraryManager.get(format: formatID)!
 
         guard let exporterConfig = libraryManager.make(
-                configuration: exporter.classID) else {
-            throw LibraryManager.Error.invalidClassID(exporter.classID)
+                configuration: exporterMeta.classID,
+                withTypeProtocol: .exporter) else {
+            throw LibraryManager.Error.invalidClassID(exporterMeta.classID)
         }
-        exporterConfig.layers.append(exporter.objectLayer)
+        exporterConfig.layers.append(exporterMeta.objectLayer)
+        let exporter = try libraryManager.make(
+                exporter: exporterMeta.classID,
+                with: exporterConfig)!
 
-        var type = try DocumentTypeMetadata(
+        guard exporter.isCompatibleWith(format: format) else {
+            throw DocumentFormatError.incompatibleDocumentFormat
+        }
+
+        var type = DocumentTypeMetadata(
                 formatID: formatID,
-                format: libraryManager.get(format: formatID)!,
+                format: format,
                 description: description,
-                exporterMetadata: exporter,
-                exporter: libraryManager.make(
-                        exporter: exporter.classID,
-                        with: exporterConfig)!)
+                exporterMetadata: exporterMeta,
+                exporter: exporter)
 
-        for annotator in annotators {
+        for annotatorMeta in annotatorsMeta {
             guard let configuration = libraryManager.make(
-                    configuration: annotator.classID) else {
-                throw LibraryManager.Error.invalidClassID(annotator.classID)
+                    configuration: annotatorMeta.classID,
+                    withTypeProtocol: .annotator) else {
+                throw LibraryManager.Error.invalidClassID(annotatorMeta.classID)
             }
-            configuration.layers.append(annotator.objectLayer)
+            configuration.layers.append(annotatorMeta.objectLayer)
+            let annotator = try libraryManager.make(
+                    annotator: annotatorMeta.classID,
+                    with: configuration)!
+            guard annotator.isCompatibleWith(format: format) else {
+                throw DocumentFormatError.incompatibleDocumentFormat
+            }
 
-            try type.annotatorsMetadata.append((
-                    annotator,
-                    libraryManager.make(
-                            annotator: annotator.classID,
-                            with: configuration)!))
+            type.annotatorsMetadata.append((annotatorMeta, annotator))
         }
         types.append(type)
     }
@@ -251,6 +240,33 @@ class ConfigurationManager {
     /// - Parameter index: The index of the Type in the list.
     func remove(type index: Int) {
         types.remove(at: index)
+    }
+
+    //**************************************************************************
+    // The following methods are responsible of the persistence of the
+    // configured Core Objects.
+    //**************************************************************************
+
+    /// Helper function to read data from key-value persistent storage.
+    ///
+    /// - Parameter key: The key of the value to read.
+    /// - Returns: The value or nil if not found.
+    private func getPreference(_ key: String) -> CFPropertyList? {
+        CFPreferencesCopyAppValue(
+                key as CFString,
+                kCFPreferencesCurrentApplication)
+    }
+
+    /// Helper function to write data from key-value persistent storage.
+    ///
+    /// - Parameters:
+    ///   - key: The key of the value to write.
+    ///   - value: The value to write.
+    private func setPreference(_ key: String, _ value: CFPropertyList) {
+        CFPreferencesSetAppValue(
+                key as CFString,
+                value as CFPropertyList,
+                kCFPreferencesCurrentApplication)
     }
 
     /// Helper function to load the Type Configuration Layer of a Library's set
@@ -274,7 +290,7 @@ class ConfigurationManager {
         }
     }
 
-    /// Configure Core Objects by reading data from persistent storage.
+    /// Configures Core Objects by reading data from persistent storage.
     func load() {
         CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
 
@@ -362,7 +378,7 @@ class ConfigurationManager {
 
     }
 
-    /// Save configured Core Objects to persistent storage.
+    /// Saves configured Core Objects to persistent storage.
     func save() {
         setPreference("sources",
                 sources.map {
