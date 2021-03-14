@@ -10,28 +10,22 @@ import SwiftUI
 class AppDelegate: NSObject, NSApplicationDelegate {
     let libraryManager = LibraryManager()
     let importationManager = ImportationManager()
+    var configurationManager: ConfigurationManager?
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         try! libraryManager.load(library: StandardLibrary())
+        configurationManager = ConfigurationManager(
+                libraryManager,
+                importationManager)
+        try! configurationManager?.add(
+                source: ConfigurationManager.CoreObjectMetadata(
+                        "standard.source.filesystem"))
+        try! configurationManager?.addType(
+                "standard.format.text",
+                "Text file to PDF",
+                ConfigurationManager.CoreObjectMetadata(
+                        "standard.exporter.pdf"))
 
-        let fs_uuid = UUID()
-        try! importationManager.register(
-                source: libraryManager.make(
-                        source: "standard.sources.filesystem",
-                        with: ["name": "This Mac"],
-                        uuid: fs_uuid)!)
-
-        let doc = DocumentType(
-                description: "Doc",
-                uuid: UUID(),
-                format: libraryManager.get(format: "standard.formats.text")!)
-        try! doc.set(
-                exporter: libraryManager.make(
-                        exporter: "standard.exporters.pdf",
-                        with: [:],
-                        uuid: UUID())!)
-        try! importationManager.register(type: doc)
-
-        // try! importationManager.promptDocument(from: fs_uuid)
+        // configurationManager?.sources[0].source.promptDocument()
     }
 }
