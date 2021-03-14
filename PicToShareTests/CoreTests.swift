@@ -14,40 +14,40 @@ class PicToShareTests: XCTestCase {
         var compatibleFormats: [AnyClass] = []
     }
 
-    class FormatA {
+    class TestFormatA {
 
     }
 
-    class FormatB {
+    class TestFormatB {
 
     }
 
-    class Annotator: DocumentAnnotator {
+    class TestAnnotator: DocumentAnnotator {
         var compatibleFormats: [AnyClass] = []
-        var description: String = ""
-        var uuid: UUID
         var lastDocumentAnnotated: AnyObject? = nil
 
-        required init(with: Configuration, uuid: UUID) {
-            self.uuid = uuid
+        required init(with configuration: Configuration) {
+            if let formats = configuration["formats"] as? [AnyClass] {
+                compatibleFormats = formats
+            }
         }
 
-        func annotate(document: AnyObject, with: Configuration) throws {
+        func annotate(document: AnyObject) throws {
             lastDocumentAnnotated = document
         }
     }
 
-    class Exporter: DocumentExporter {
+    class TestExporter: DocumentExporter {
         var compatibleFormats: [AnyClass] = []
-        var description: String = ""
-        var uuid: UUID
         var lastDocumentExported: AnyObject? = nil
 
-        required init(with: Configuration, uuid: UUID) {
-            self.uuid = uuid
+        required init(with configuration: Configuration) {
+            if let formats = configuration["formats"] as? [AnyClass] {
+                compatibleFormats = formats
+            }
         }
 
-        func export(document: AnyObject, with: Configuration) throws {
+        func export(document: AnyObject) throws {
             lastDocumentExported = document
         }
     }
@@ -55,126 +55,211 @@ class PicToShareTests: XCTestCase {
     func testDocumentFormatCompatible() throws {
         let stub = DocumentFormatCompatibleStub()
 
-        XCTAssertFalse(stub.isCompatibleWith(format: FormatA.self))
-        stub.compatibleFormats.append(FormatB.self)
-        stub.compatibleFormats.append(FormatA.self)
-        XCTAssertTrue(stub.isCompatibleWith(format: FormatA.self))
+        XCTAssertFalse(stub.isCompatibleWith(format: TestFormatA.self))
+        stub.compatibleFormats.append(TestFormatB.self)
+        stub.compatibleFormats.append(TestFormatA.self)
+        XCTAssertTrue(stub.isCompatibleWith(format: TestFormatA.self))
     }
 
-    func testDocumentType() throws {
-        let type = DocumentType(description: "test", uuid: UUID(), format: FormatA.self)
-
-        XCTAssertEqual(type.annotators.count, 0)
-        try XCTAssertThrowsError(type.append(annotator: Annotator(with: [:], uuid: UUID())))
-        try XCTAssertThrowsError(type.insert(annotator: Annotator(with: [:], uuid: UUID()), at: 0))
-
-        let annotator1 = Annotator(with: [:], uuid: UUID())
-        annotator1.compatibleFormats = [FormatA.self]
-        try XCTAssertNoThrow(type.append(annotator: annotator1))
-        XCTAssertEqual(type.annotators.count, 1)
-
-        let annotator2 = Annotator(with: [:], uuid: UUID())
-        annotator2.compatibleFormats = [FormatA.self]
-        try XCTAssertNoThrow(type.insert(annotator: annotator2, at: 0))
-        XCTAssertEqual(type.annotators.count, 2)
-        XCTAssertEqual(type.annotators[0].uuid, annotator2.uuid)
-        XCTAssertEqual(type.annotators[1].uuid, annotator1.uuid)
-
-        type.removeAnnotator(at: 0)
-        XCTAssertEqual(type.annotators.count, 1)
-        XCTAssertEqual(type.annotators[0].uuid, annotator1.uuid)
-
-        type.removeAllAnnotators()
-        XCTAssertEqual(type.annotators.count, 0)
-
-        XCTAssertNil(type.exporter)
-        try XCTAssertThrowsError(type.set(exporter: Exporter(with: [:], uuid: UUID())))
-
-        let exporter = Exporter(with: [:], uuid: UUID())
-        exporter.compatibleFormats = [FormatA.self]
-        try XCTAssertNoThrow(type.set(exporter: exporter))
-        XCTAssertNotNil(type.exporter)
-        XCTAssertEqual(type.exporter?.uuid, exporter.uuid)
-    }
-
-    class LibraryA: Library {
-        let id = "a"
+    class TestLibrary: Library {
+        let id: String
         let description = ""
 
-        var formats: Dictionary<String, AnyClass> = [:]
-        var sources: Dictionary<String, DocumentSource.Type> = [:]
-        var annotators: Dictionary<String, DocumentAnnotator.Type> = [:]
-        var exporters: Dictionary<String, DocumentExporter.Type> = [:]
+        var formats: Formats = [:]
+        var sourceTypes: SourceTypes = [:]
+        var annotatorTypes: AnnotatorTypes = [:]
+        var exporterTypes: ExporterTypes = [:]
+
+        init(_ id: String) {
+            self.id = id
+        }
     }
 
     func testLibraryManager() throws {
         let manager = LibraryManager()
 
-        XCTAssertNil(manager.get(format: "a.formats.formatA"))
-        XCTAssertNil(manager.make(annotator: "a.annotators.AnnotatorA", with: [:], uuid: UUID()))
-        try XCTAssertNoThrow(manager.load(library: LibraryA()))
-        try XCTAssertNoThrow(manager.load(library: LibraryA()))
+        XCTAssertNil(manager.validate(""))
+        XCTAssertNil(manager.validate("a.format.formatA"))
 
-        let library1 = LibraryA()
-        library1.formats["formatA"] = FormatA.self
+        XCTAssertNil(manager.get(format: "a.format.formatA"))
+        try XCTAssertNoThrow(XCTAssertNil(
+                manager.make(
+                        annotator: "a.annotator.AnnotatorA",
+                        with: Configuration())))
+        try XCTAssertNoThrow(manager.load(library: TestLibrary("a")))
+        try XCTAssertThrowsError(manager.load(library: TestLibrary("a")))
+
+        let library1 = TestLibrary("b")
+        library1.formats["formatA"] = ("test", TestFormatA.self)
         try XCTAssertNoThrow(manager.load(library: library1))
         try XCTAssertThrowsError(manager.load(library: library1))
-        XCTAssertNotNil(manager.get(format: "a.formats.formatA"))
 
-        let library2 = LibraryA()
-        library2.annotators["AnnotatorA"] = Annotator.self
+        let classID = manager.validate("b.format.formatA")
+        XCTAssertNotNil(classID)
+        XCTAssertEqual(classID!.libraryID, "b")
+        XCTAssertEqual(classID!.typeProtocol,
+                LibraryManager.CoreTypeProtocol.format)
+        XCTAssertEqual(classID!.typeID, "formatA")
+        XCTAssertNil(manager.validate("b.test.formatA"))
+        XCTAssertNil(manager.validate("b.format.formatA",
+                withTypeProtocol: .exporter))
+
+        XCTAssertNotNil(manager.get(format: "b.format.formatA"))
+        XCTAssertEqual(manager.get(description: "b.format.formatA"), "test")
+
+        let library2 = TestLibrary("c")
+        library2.annotatorTypes["AnnotatorA"] = ("", TestAnnotator.self, nil)
         try XCTAssertNoThrow(manager.load(library: library2))
         try XCTAssertThrowsError(manager.load(library: library2))
-        XCTAssertNotNil(manager.make(annotator: "a.annotators.AnnotatorA", with: [:], uuid: UUID()))
+        try XCTAssertNoThrow(XCTAssertNotNil(
+                manager.make(annotator: "c.annotator.AnnotatorA",
+                        with: Configuration())))
     }
 
-    class Source: DocumentSource {
-        let uuid: UUID
-        let description = ""
-        var importCallback: ((AnyObject) -> Void)?
+    class DocumentTypeStub: DocumentType {
+        var format: AnyClass
 
-        required init(with: Configuration, uuid: UUID) {
-            self.uuid = uuid
-        }
+        var annotators: [DocumentAnnotator]
 
-        func setImportCallback(_ callback: @escaping (AnyObject) -> Void) {
-            importCallback = callback
-        }
+        var exporter: DocumentExporter
 
-        func promptDocument(with: Configuration) {
-            importCallback?(FormatA())
+        init(_ format: AnyClass,
+             _ annotators: [DocumentAnnotator],
+             _ exporter: DocumentExporter) {
+            self.format = format
+            self.annotators = annotators
+            self.exporter = exporter
         }
     }
 
     func testImportationManager() throws {
         let manager = ImportationManager()
 
-        try XCTAssertThrowsError(manager.promptDocument(from: UUID()))
-        try XCTAssertThrowsError(manager.importDocument(FormatA(), withType: UUID()))
+        let annotator = TestAnnotator(with: Configuration())
+        let exporter = TestExporter(with: Configuration())
+        exporter.compatibleFormats = [TestFormatA.self]
+        let type = DocumentTypeStub(
+                TestFormatA.self,
+                [annotator],
+                exporter)
 
-        let source_uuid = UUID()
-        try XCTAssertNoThrow(manager.register(source: Source(with: [:], uuid: source_uuid)))
-        try XCTAssertThrowsError(manager.register(source: Source(with: [:], uuid: source_uuid)))
-        XCTAssertTrue(manager.sources.keys.contains(source_uuid))
-        var failed = true
-        manager.sources[source_uuid]!.setImportCallback({
-            (document: AnyObject) in
-            failed = false
-        })
-        try XCTAssertNoThrow(manager.promptDocument(from: source_uuid))
-        XCTAssertFalse(failed)
-
-        let type = DocumentType(description: "", uuid: UUID(), format: FormatA.self)
-        let exporter = Exporter(with: [:], uuid: UUID())
-        exporter.compatibleFormats = [FormatA.self]
-        try type.set(exporter: exporter)
-        let annotator = Annotator(with: [:], uuid: UUID())
-        annotator.compatibleFormats = [FormatA.self]
-        try type.append(annotator: annotator)
-        try XCTAssertNoThrow(manager.register(type: type))
-        try XCTAssertThrowsError(manager.register(type: type))
-        try XCTAssertNoThrow(manager.importDocument(FormatA(), withType: type.uuid))
+        try XCTAssertNoThrow(manager.importDocument(TestFormatA(), withType: type))
         XCTAssertNotNil(annotator.lastDocumentAnnotated)
         XCTAssertNotNil(exporter.lastDocumentExported)
+    }
+
+    class TestSource: DocumentSource {
+        var importCallback: ((AnyObject) -> Void)?
+        let configuration: Configuration
+
+        required init(with: Configuration) {
+            configuration = with
+        }
+
+        func setImportCallback(_ callback: @escaping (AnyObject) -> Void) {
+            importCallback = callback
+        }
+
+        func promptDocument() {
+            importCallback?(TestFormatA())
+        }
+    }
+
+    func testConfiguration() throws {
+        let firstLayer = makeSafe(Configuration.Layer())
+        let secondLayer = makeSafe(Configuration.Layer())
+        let thirdLayer = makeSafe(Configuration.Layer())
+
+        firstLayer.pointee["a"] = 1
+        let config1 = Configuration([firstLayer])
+        XCTAssertNil(config1["b"])
+        XCTAssertNotNil(config1["a"] as? Int)
+        XCTAssertEqual(config1["a"] as! Int, 1)
+
+        firstLayer.pointee["b"] = 0
+        XCTAssertNotNil(config1["b"])
+
+        secondLayer.pointee["a"] = 2
+        thirdLayer.pointee["a"] = 3
+        let config2 = Configuration([firstLayer, secondLayer, thirdLayer])
+        XCTAssertNil(config2["c"])
+        XCTAssertNotNil(config2["b"] as? Int)
+        XCTAssertEqual(config2["b"] as! Int, 0)
+        XCTAssertNotNil(config2["a"] as? Int)
+        XCTAssertEqual(config2["a"] as! Int, 3)
+
+        secondLayer.pointee["c"] = 4
+        XCTAssertNotNil(config2["c"] as? Int)
+        XCTAssertEqual(config2["c"] as! Int, 4)
+        thirdLayer.pointee.removeValue(forKey: "a")
+        XCTAssertNotNil(config2["a"] as? Int)
+        XCTAssertEqual(config2["a"] as! Int, 2)
+    }
+
+    func testConfigurationManager() throws {
+        let importationManager = ImportationManager()
+        let libraryManager = LibraryManager()
+        let library = TestLibrary("a")
+        library.formats["formatA"] = ("", TestFormatA.self)
+        library.sourceTypes["sourceA"] = ("", TestSource.self, [
+            "a": 5
+        ])
+        library.exporterTypes["exporterA"] = ("", TestExporter.self, [
+            "a": 1
+        ])
+        library.annotatorTypes["annotatorA"] = ("", TestAnnotator.self, [
+            "a": 2
+        ])
+        try libraryManager.load(library: library)
+
+        let configurationManager = ConfigurationManager(
+                libraryManager,
+                importationManager)
+
+        try XCTAssertThrowsError(configurationManager.add(
+                source: ConfigurationManager.CoreObjectMetadata("")))
+        try XCTAssertThrowsError(configurationManager.add(
+                source: ConfigurationManager.CoreObjectMetadata(
+                        "a.format.formatA")))
+
+        try XCTAssertNoThrow(configurationManager.add(
+                source: ConfigurationManager.CoreObjectMetadata(
+                        "a.source.sourceA",
+                        objectLayer: [
+                            "b": 4
+                        ])))
+        XCTAssertEqual(configurationManager.sources.count, 1)
+        XCTAssertNotNil(configurationManager.sources[0].source as? TestSource)
+        XCTAssertEqual((configurationManager.sources[0].source as! TestSource)
+                .configuration["a"] as? Int, 5)
+        XCTAssertEqual((configurationManager.sources[0].source as! TestSource)
+                .configuration["b"] as? Int, 4)
+        configurationManager.sources[0].metadata.objectLayer.pointee["b"] = 1
+        XCTAssertEqual((configurationManager.sources[0].source as! TestSource)
+                .configuration["b"] as? Int, 1)
+
+
+        try XCTAssertThrowsError(configurationManager.addType(
+                "a.format.formatA",
+                "",
+                ConfigurationManager.CoreObjectMetadata("a.exporter.exporterA"),
+                [
+                    ConfigurationManager.CoreObjectMetadata(
+                            "a.annotator.annotatorA"
+                    )
+                ]))
+        try XCTAssertNoThrow(configurationManager.addType(
+                "a.format.formatA",
+                "",
+                ConfigurationManager.CoreObjectMetadata(
+                        "a.exporter.exporterA",
+                        objectLayer: ["formats": [TestFormatA.self]]),
+                [
+                    ConfigurationManager.CoreObjectMetadata(
+                            "a.annotator.annotatorA",
+                            objectLayer: ["formats": [TestFormatA.self]]
+                    )
+                ]))
+        XCTAssertEqual(configurationManager.types.count, 1)
     }
 }

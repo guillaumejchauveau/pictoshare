@@ -8,16 +8,12 @@
 import Foundation
 
 class PDFExporter: DocumentExporter {
-    let description = "PDF Exporter"
-    let uuid: UUID
     var compatibleFormats: [AnyClass] = [TextDocument.self]
 
-
-    required init(with config: Configuration, uuid: UUID) {
-        self.uuid = uuid
+    required init(with configuration: Configuration) {
     }
 
-    func export(document: AnyObject, with config: Configuration) throws {
+    func export(document: AnyObject) throws {
         guard isCompatibleWith(format: type(of: document)) else {
             throw DocumentFormatError.incompatibleDocumentFormat
         }
