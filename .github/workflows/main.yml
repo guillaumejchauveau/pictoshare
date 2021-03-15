@@ -23,7 +23,6 @@ jobs:
       XCODE_PATH: /Applications/Xcode_12.2.app
     steps:
       - uses: actions/checkout@v2
-      - run: ssh-keyscan github.com
       - run: |
           sudo xcode-select -s $XCODE_PATH
           xcode-select -p
