@@ -20,6 +20,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         super.init()
     }
 
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         try! libraryManager.load(library: StandardLibrary())
         try! configurationManager.add(
@@ -27,7 +28,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                         "standard.source.filesystem"))
         try! configurationManager.addType(
                 "standard.format.text",
-                "Text file to PDF",
+                "Fichier texte",
                 ConfigurationManager.CoreObjectMetadata(
                         "standard.exporter.pdf"))
 
