@@ -20,6 +20,7 @@
 		9568616F25E80F03004D31CA /* Library.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568616E25E80F03004D31CA /* Library.swift */; };
 		9568617325E80FB4004D31CA /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568617225E80FB4004D31CA /* Configuration.swift */; };
 		9574747F25E6E6B900917EF0 /* Importation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9574747E25E6E6B900917EF0 /* Importation.swift */; };
+		9587146225FF834A003FA2C3 /* EonilFSEvents in Frameworks */ = {isa = PBXBuildFile; productRef = 9587146125FF834A003FA2C3 /* EonilFSEvents */; };
 		B0E9B63925EFDF6F0054C504 /* PDFExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E9B63825EFDF6F0054C504 /* PDFExporterTests.swift */; };
 		F309C0B0C36AD9BEF67E1049 /* Pods_PicToShare_PicToShareUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86C52B90235BCED3520E4B6E /* Pods_PicToShare_PicToShareUITests.framework */; };
 		F9A7C1394834D75DFE4FB520 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F9A7CA9D419C2ECDBE045390 /* Preview Assets.xcassets */; };
@@ -108,6 +109,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9587146225FF834A003FA2C3 /* EonilFSEvents in Frameworks */,
 				39F81AAA819B6186656778A9 /* Pods_PicToShare.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -293,7 +295,7 @@
 			);
 			name = PicToShare;
 			packageProductDependencies = (
-				B0F331BA25FCF1D1006F3703,
+				9587146125FF834A003FA2C3 /* EonilFSEvents */,
 			);
 			productName = PicToShare;
 			productReference = F9A7C15F6BD7440D60F6F856 /* PicToShare.app */;
@@ -319,7 +321,7 @@
 			);
 			mainGroup = F9A7C787E2B36E4AB7AC425A;
 			packageReferences = (
-				B0F331B925FCF1D1006F3703,
+				9587146025FF834A003FA2C3 /* XCRemoteSwiftPackageReference "FSEvents" */,
 			);
 			productRefGroup = F9A7C1C3219107C0EC536E37 /* Products */;
 			projectDirPath = "";
@@ -795,20 +797,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		B0F331B925FCF1D1006F3703 = {
+		9587146025FF834A003FA2C3 /* XCRemoteSwiftPackageReference "FSEvents" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:eonil/FSEvents.git";
+			repositoryURL = "https://github.com/eonil/FSEvents";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.0.0;
+				minimumVersion = 0.1.7;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		B0F331BA25FCF1D1006F3703 = {
+		9587146125FF834A003FA2C3 /* EonilFSEvents */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B0F331B925FCF1D1006F3703;
+			package = 9587146025FF834A003FA2C3 /* XCRemoteSwiftPackageReference "FSEvents" */;
 			productName = EonilFSEvents;
 		};
 /* End XCSwiftPackageProductDependency section */
