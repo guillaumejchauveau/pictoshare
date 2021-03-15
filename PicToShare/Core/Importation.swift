@@ -10,12 +10,19 @@ import Foundation
 
 /// Object responsible of the Importation process.
 class ImportationManager {
+    private var configurationManager: ConfigurationManager?
+
+    func setConfigurationManager(_ configurationManager: ConfigurationManager) {
+        self.configurationManager = configurationManager
+    }
+
     /// Asks the User for a Document Type for importation.
     ///
     /// - Parameter document: The Document to import.
     func promptDocumentType(_ document: AnyObject) {
         // TODO: Replace with importation window.
         //try? importDocument(document, withType: types.keys.first!)
+        print("lol")
     }
 
     /// Imports a Document given a Document Type.
