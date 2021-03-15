@@ -4,7 +4,7 @@
 name: Main
 on:
   push:
-    branches: 
+    branches:
       - master
       - dmz
   pull_request:
@@ -26,7 +26,8 @@ jobs:
       - run: |
           sudo xcode-select -s $XCODE_PATH
           xcode-select -p
-      - run: set -o pipefail && xcodebuild test -scheme '${{ matrix.test-config.scheme }}' -destination '${{ matrix.test-config.destination }}' | xcpretty
+      - run: pod install
+      - run: set -o pipefail && xcodebuild test -workspace PicToShare.xcworkspace -scheme '${{ matrix.test-config.scheme }}' -destination '${{ matrix.test-config.destination }}' | xcpretty
 
   # DMZ job for automatic merging of the dmz branch on master.
   dmz:
