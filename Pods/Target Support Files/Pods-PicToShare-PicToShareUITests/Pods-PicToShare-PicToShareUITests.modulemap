@@ -1,6 +1,0 @@
-framework module Pods_PicToShare_PicToShareUITests {
-  umbrella header "Pods-PicToShare-PicToShareUITests-umbrella.h"
-
-  export *
-  module * { export * }
-}
