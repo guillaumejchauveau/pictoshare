@@ -10,22 +10,27 @@ import SwiftUI
 class AppDelegate: NSObject, NSApplicationDelegate {
     let libraryManager = LibraryManager()
     let importationManager = ImportationManager()
-    var configurationManager: ConfigurationManager?
+    var configurationManager: ConfigurationManager
 
-    func applicationDidFinishLaunching(_ aNotification: Notification) {
-        try! libraryManager.load(library: StandardLibrary())
+    override init() {
         configurationManager = ConfigurationManager(
                 libraryManager,
                 importationManager)
-        try! configurationManager?.add(
+        importationManager.setConfigurationManager(configurationManager)
+        super.init()
+    }
+
+    func applicationDidFinishLaunching(_ aNotification: Notification) {
+        try! libraryManager.load(library: StandardLibrary())
+        try! configurationManager.add(
                 source: ConfigurationManager.CoreObjectMetadata(
                         "standard.source.filesystem"))
-        try! configurationManager?.addType(
+        try! configurationManager.addType(
                 "standard.format.text",
                 "Text file to PDF",
                 ConfigurationManager.CoreObjectMetadata(
                         "standard.exporter.pdf"))
 
-        // configurationManager?.sources[0].source.promptDocument()
+        configurationManager.sources[0].source.promptDocument()
     }
 }
