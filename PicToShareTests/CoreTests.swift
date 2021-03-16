@@ -147,8 +147,6 @@ class PicToShareTests: XCTestCase {
         try manager.load(library: library3)
         let formats = manager.getFormats()
         XCTAssertEqual(formats.count, 2)
-        XCTAssertEqual(formats[0].classID, "b.format.formatA")
-        XCTAssertEqual(formats[1].classID, "d.format.formatB")
         XCTAssertEqual(manager.getAnnotatorTypes(
                 compatibleWithFormat: "d.format.formatB").count,
                 0)
