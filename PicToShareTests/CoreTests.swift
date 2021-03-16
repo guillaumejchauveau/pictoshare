@@ -10,10 +10,6 @@ import XCTest
 @testable import PicToShare
 
 class PicToShareTests: XCTestCase {
-    class DocumentFormatCompatibleStub: DocumentFormatCompatible {
-        var compatibleFormats: [AnyClass] = []
-    }
-
     class TestFormatA {
 
     }
@@ -22,14 +18,11 @@ class PicToShareTests: XCTestCase {
 
     }
 
-    class TestAnnotator: DocumentAnnotator {
-        var compatibleFormats: [AnyClass] = []
+    class TestAnnotatorA: DocumentAnnotator {
+        static var compatibleFormats: [AnyClass] = [TestFormatA.self]
         var lastDocumentAnnotated: AnyObject? = nil
 
         required init(with configuration: Configuration) {
-            if let formats = configuration["formats"] as? [AnyClass] {
-                compatibleFormats = formats
-            }
         }
 
         func annotate(document: AnyObject) throws {
@@ -37,14 +30,23 @@ class PicToShareTests: XCTestCase {
         }
     }
 
-    class TestExporter: DocumentExporter {
-        var compatibleFormats: [AnyClass] = []
+    class TestAnnotatorB: DocumentAnnotator {
+        static var compatibleFormats: [AnyClass] = [TestFormatB.self]
+        var lastDocumentAnnotated: AnyObject? = nil
+
+        required init(with configuration: Configuration) {
+        }
+
+        func annotate(document: AnyObject) throws {
+            lastDocumentAnnotated = document
+        }
+    }
+
+    class TestExporterA: DocumentExporter {
+        static var compatibleFormats: [AnyClass] = [TestFormatA.self]
         var lastDocumentExported: AnyObject? = nil
 
         required init(with configuration: Configuration) {
-            if let formats = configuration["formats"] as? [AnyClass] {
-                compatibleFormats = formats
-            }
         }
 
         func export(document: AnyObject) throws {
@@ -52,13 +54,38 @@ class PicToShareTests: XCTestCase {
         }
     }
 
-    func testDocumentFormatCompatible() throws {
-        let stub = DocumentFormatCompatibleStub()
+    class TestExporterB: DocumentExporter {
+        static var compatibleFormats: [AnyClass] = [TestFormatB.self]
+        var lastDocumentExported: AnyObject? = nil
 
-        XCTAssertFalse(stub.isCompatibleWith(format: TestFormatA.self))
-        stub.compatibleFormats.append(TestFormatB.self)
-        stub.compatibleFormats.append(TestFormatA.self)
-        XCTAssertTrue(stub.isCompatibleWith(format: TestFormatA.self))
+        required init(with configuration: Configuration) {
+        }
+
+        func export(document: AnyObject) throws {
+            lastDocumentExported = document
+        }
+    }
+
+    class TestSource: DocumentSource {
+        var importCallback: ((AnyObject) -> Void)?
+        let configuration: Configuration
+
+        required init(with: Configuration) {
+            configuration = with
+        }
+
+        func setImportCallback(_ callback: @escaping (AnyObject) -> Void) {
+            importCallback = callback
+        }
+
+        func promptDocument() {
+            importCallback?(TestFormatA())
+        }
+    }
+
+    func testDocumentFormatCompatible() throws {
+        XCTAssertFalse(TestExporterA.isCompatibleWith(format: TestFormatB.self))
+        XCTAssertTrue(TestExporterA.isCompatibleWith(format: TestFormatA.self))
     }
 
     class TestLibrary: Library {
@@ -108,12 +135,27 @@ class PicToShareTests: XCTestCase {
         XCTAssertEqual(manager.get(description: "b.format.formatA"), "test")
 
         let library2 = TestLibrary("c")
-        library2.annotatorTypes["AnnotatorA"] = ("", TestAnnotator.self, nil)
+        library2.annotatorTypes["AnnotatorA"] = ("", TestAnnotatorA.self, nil)
         try XCTAssertNoThrow(manager.load(library: library2))
         try XCTAssertThrowsError(manager.load(library: library2))
         try XCTAssertNoThrow(XCTAssertNotNil(
                 manager.make(annotator: "c.annotator.AnnotatorA",
                         with: Configuration())))
+
+        let library3 = TestLibrary("d")
+        library3.formats["formatB"] = ("", TestFormatB.self)
+        try manager.load(library: library3)
+        let formats = manager.getFormats()
+        XCTAssertEqual(formats.count, 2)
+        XCTAssertEqual(formats[0].classID, "b.format.formatA")
+        XCTAssertEqual(formats[1].classID, "d.format.formatB")
+        XCTAssertEqual(manager.getAnnotatorTypes(
+                compatibleWithFormat: "d.format.formatB").count,
+                0)
+        let annotators = manager.getAnnotatorTypes(
+                compatibleWithFormat: "b.format.formatA")
+        XCTAssertEqual(annotators.count, 1)
+        XCTAssertEqual(annotators[0].classID, "c.annotator.AnnotatorA")
     }
 
     class DocumentTypeStub: DocumentType {
@@ -135,9 +177,8 @@ class PicToShareTests: XCTestCase {
     func testImportationManager() throws {
         let manager = ImportationManager()
 
-        let annotator = TestAnnotator(with: Configuration())
-        let exporter = TestExporter(with: Configuration())
-        exporter.compatibleFormats = [TestFormatA.self]
+        let annotator = TestAnnotatorA(with: Configuration())
+        let exporter = TestExporterA(with: Configuration())
         let type = DocumentTypeStub(
                 TestFormatA.self,
                 [annotator],
@@ -146,23 +187,6 @@ class PicToShareTests: XCTestCase {
         try XCTAssertNoThrow(manager.importDocument(TestFormatA(), withType: type))
         XCTAssertNotNil(annotator.lastDocumentAnnotated)
         XCTAssertNotNil(exporter.lastDocumentExported)
-    }
-
-    class TestSource: DocumentSource {
-        var importCallback: ((AnyObject) -> Void)?
-        let configuration: Configuration
-
-        required init(with: Configuration) {
-            configuration = with
-        }
-
-        func setImportCallback(_ callback: @escaping (AnyObject) -> Void) {
-            importCallback = callback
-        }
-
-        func promptDocument() {
-            importCallback?(TestFormatA())
-        }
     }
 
     func testConfiguration() throws {
@@ -204,12 +228,14 @@ class PicToShareTests: XCTestCase {
         library.sourceTypes["sourceA"] = ("", TestSource.self, [
             "a": 5
         ])
-        library.exporterTypes["exporterA"] = ("", TestExporter.self, [
+        library.exporterTypes["exporterA"] = ("", TestExporterA.self, [
             "a": 1
         ])
-        library.annotatorTypes["annotatorA"] = ("", TestAnnotator.self, [
+        library.annotatorTypes["annotatorA"] = ("", TestAnnotatorA.self, [
             "a": 2
         ])
+        library.exporterTypes["exporterB"] = ("", TestExporterB.self, nil)
+        library.annotatorTypes["annotatorB"] = ("", TestAnnotatorB.self, nil)
         try libraryManager.load(library: library)
 
         let configurationManager = ConfigurationManager(
@@ -242,22 +268,19 @@ class PicToShareTests: XCTestCase {
         try XCTAssertThrowsError(configurationManager.addType(
                 "a.format.formatA",
                 "",
-                ConfigurationManager.CoreObjectMetadata("a.exporter.exporterA"),
+                ConfigurationManager.CoreObjectMetadata("a.exporter.exporterB"),
                 [
                     ConfigurationManager.CoreObjectMetadata(
-                            "a.annotator.annotatorA"
+                            "a.annotator.annotatorB"
                     )
                 ]))
         try XCTAssertNoThrow(configurationManager.addType(
                 "a.format.formatA",
                 "",
-                ConfigurationManager.CoreObjectMetadata(
-                        "a.exporter.exporterA",
-                        objectLayer: ["formats": [TestFormatA.self]]),
+                ConfigurationManager.CoreObjectMetadata("a.exporter.exporterA"),
                 [
                     ConfigurationManager.CoreObjectMetadata(
-                            "a.annotator.annotatorA",
-                            objectLayer: ["formats": [TestFormatA.self]]
+                            "a.annotator.annotatorA"
                     )
                 ]))
         XCTAssertEqual(configurationManager.types.count, 1)

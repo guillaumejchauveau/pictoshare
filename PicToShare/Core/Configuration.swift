@@ -140,7 +140,8 @@ class ConfigurationManager {
     ///   - libraryManager: A Library Manager with all the libraries loaded.
     ///   - importationManager: An Importation Manager that will be the target
     ///     of the Document Sources configured with this Configuration Manager.
-    init(_ libraryManager: LibraryManager, _ importationManager: ImportationManager) {
+    init(_ libraryManager: LibraryManager,
+         _ importationManager: ImportationManager) {
         self.libraryManager = libraryManager
         self.importationManager = importationManager
     }
@@ -193,8 +194,12 @@ class ConfigurationManager {
                 formatID, withTypeProtocol: .format) != nil else {
             throw LibraryManager.Error.invalidClassID(formatID)
         }
-        let format: AnyClass = libraryManager.get(format: formatID)!
 
+        guard libraryManager.isType(
+                exporterMeta.classID,
+                compatibleWithFormat: formatID) else {
+            throw DocumentFormatError.incompatibleDocumentFormat
+        }
         guard let exporterConfig = libraryManager.make(
                 configuration: exporterMeta.classID,
                 withTypeProtocol: .exporter) else {
@@ -205,18 +210,19 @@ class ConfigurationManager {
                 exporter: exporterMeta.classID,
                 with: exporterConfig)!
 
-        guard exporter.isCompatibleWith(format: format) else {
-            throw DocumentFormatError.incompatibleDocumentFormat
-        }
-
         var type = DocumentTypeMetadata(
                 formatID: formatID,
-                format: format,
+                format: libraryManager.get(format: formatID)!,
                 description: description,
                 exporterMetadata: exporterMeta,
                 exporter: exporter)
 
         for annotatorMeta in annotatorsMeta {
+            guard libraryManager.isType(
+                    annotatorMeta.classID,
+                    compatibleWithFormat: formatID) else {
+                throw DocumentFormatError.incompatibleDocumentFormat
+            }
             guard let configuration = libraryManager.make(
                     configuration: annotatorMeta.classID,
                     withTypeProtocol: .annotator) else {
@@ -226,9 +232,6 @@ class ConfigurationManager {
             let annotator = try libraryManager.make(
                     annotator: annotatorMeta.classID,
                     with: configuration)!
-            guard annotator.isCompatibleWith(format: format) else {
-                throw DocumentFormatError.incompatibleDocumentFormat
-            }
 
             type.annotatorsMetadata.append((annotatorMeta, annotator))
         }
@@ -290,10 +293,7 @@ class ConfigurationManager {
         }
     }
 
-    /// Configures Core Objects by reading data from persistent storage.
-    func load() {
-        CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
-
+    func loadTypeConfigurationLayers() {
         for (libraryID, library) in libraryManager.libraries {
             loadTypeConfigurationLayer(libraryID, .source, library.sourceTypes)
             loadTypeConfigurationLayer(libraryID, .annotator,
@@ -301,7 +301,9 @@ class ConfigurationManager {
             loadTypeConfigurationLayer(libraryID, .exporter,
                     library.exporterTypes)
         }
+    }
 
+    func loadSources() {
         sources.removeAll()
         let sourceDeclarations = getPreference("sources")
                 as? Array<CFPropertyList> ?? []
@@ -312,7 +314,9 @@ class ConfigurationManager {
                 continue
             }
         }
+    }
 
+    func loadTypes() {
         types.removeAll()
         let typeDeclarations = getPreference("types")
                 as? Array<CFPropertyList> ?? []
@@ -358,6 +362,14 @@ class ConfigurationManager {
         }
     }
 
+    /// Configures Core Objects by reading data from persistent storage.
+    func load() {
+        CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
+        loadTypeConfigurationLayers()
+        loadSources()
+        loadTypes()
+    }
+
     /// Helper function to save the Type Configuration Layer of a Library's set
     /// of a given Core Type Protocol.
     ///
@@ -378,17 +390,21 @@ class ConfigurationManager {
 
     }
 
-    /// Saves configured Core Objects to persistent storage.
-    func save() {
+    func saveSources() {
         setPreference("sources",
                 sources.map {
                     $0.metadata.toCFPropertyList()
                 } as CFArray)
+    }
+
+    func saveTypes() {
         setPreference("types",
                 types.map {
                     $0.toCFPropertyList()
                 } as CFArray)
+    }
 
+    func saveTypeConfigurationLayers() {
         for (libraryID, library) in libraryManager.libraries {
             saveTypeConfigurationLayer(libraryID, .source, library.sourceTypes)
             saveTypeConfigurationLayer(libraryID, .annotator,
@@ -396,7 +412,13 @@ class ConfigurationManager {
             saveTypeConfigurationLayer(libraryID, .exporter,
                     library.exporterTypes)
         }
+    }
 
+    /// Saves configured Core Objects to persistent storage.
+    func save() {
+        saveSources()
+        saveTypes()
+        saveTypeConfigurationLayers()
         CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
     }
 }
