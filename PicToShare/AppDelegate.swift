@@ -19,7 +19,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         importationManager.setConfigurationManager(configurationManager)
         super.init()
     }
-
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         try! libraryManager.load(library: StandardLibrary())
@@ -32,6 +31,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 ConfigurationManager.CoreObjectMetadata(
                         "standard.exporter.pdf"))
 
-        configurationManager.sources[0].source.promptDocument()
+        //configurationManager.sources[0].source.promptDocument()
     }
 }
