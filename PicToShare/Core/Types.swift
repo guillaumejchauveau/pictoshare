@@ -18,13 +18,13 @@ enum DocumentFormatError: Error {
 /// An object capable of providing a list of compatible Document Formats.
 protocol DocumentFormatCompatible {
     /// A list of the types of compatible Formats.
-    var compatibleFormats: [AnyClass] { get }
+    static var compatibleFormats: [AnyClass] { get }
     /// Helper function to determine if the object in compatible with a given
     /// Format.
     ///
     /// - Parameter format: The Format to test the compatibility against
     /// - Returns: The result of the test
-    func isCompatibleWith(format: AnyClass) -> Bool
+    static func isCompatibleWith(format: AnyClass) -> Bool
 }
 
 extension DocumentFormatCompatible {
@@ -35,7 +35,7 @@ extension DocumentFormatCompatible {
     /// - Returns: The result of the test
     ///
     /// - Complexity: O(n)
-    func isCompatibleWith(format: AnyClass) -> Bool {
+    static func isCompatibleWith(format: AnyClass) -> Bool {
         compatibleFormats.contains(where: { compatibleFormat in
             compatibleFormat == format
         })

@@ -225,6 +225,27 @@ class LibraryManager {
         return (libraryID, typeProtocol!, typeID)
     }
 
+    func isType(_ classID: Library.ClassID,
+                compatibleWithFormat formatClassID: Library.ClassID) -> Bool {
+        guard let (library, typeProtocol, type) = validate(classID) else {
+            return false
+        }
+        guard let format = get(format: formatClassID) else {
+            return false
+        }
+
+        switch typeProtocol {
+        case .format, .source:
+            return false
+        case .annotator:
+            return libraries[library]!.annotatorTypes[type]!.type
+                    .isCompatibleWith(format: format)
+        case .exporter:
+            return libraries[library]!.exporterTypes[type]!.type
+                    .isCompatibleWith(format: format)
+        }
+    }
+
     /// Retrieves a human-readable description of a Core Type.
     ///
     /// - Parameter classID: The ClassID of the Core Type.
@@ -343,5 +364,42 @@ class LibraryManager {
         }
         return try libraries[library]!.exporterTypes[type]!
                 .type.init(with: config)
+    }
+
+    /// Returns a list of all the registered Document Formats.
+    func getFormats() -> [(classID: Library.ClassID, description: String)] {
+        libraries.flatMap { libraryID, library in
+            library.formats.map { formatID, format in
+                ("\(libraryID).format.\(formatID)", format.description)
+            }
+        }
+    }
+
+    /// Returns a list of all the registered Document Annotators compatible
+    /// with a given Format.
+    func getAnnotatorTypes(compatibleWithFormat formatClassID: Library.ClassID)
+                    -> [(classID: Library.ClassID, description: String)] {
+        libraries.flatMap { libraryID, library in
+            library.annotatorTypes.map { annotatorTypeID, annotatorType in
+                ("\(libraryID).annotator.\(annotatorTypeID)",
+                        annotatorType.description)
+            }
+        }.filter { annotatorTypeID, _ in
+            isType(annotatorTypeID, compatibleWithFormat: formatClassID)
+        }
+    }
+
+    /// Returns a list of all the registered Document Exporters compatible
+    /// with a given Format.
+    func getExporterTypes(compatibleWithFormat formatClassID: Library.ClassID)
+                    -> [(classID: Library.ClassID, description: String)] {
+        libraries.flatMap { libraryID, library in
+            library.exporterTypes.map { exporterTypeID, exporterType in
+                ("\(libraryID).exporter.\(exporterTypeID)",
+                        exporterType.description)
+            }
+        }.filter { exporterTypeID, _ in
+            isType(exporterTypeID, compatibleWithFormat: formatClassID)
+        }
     }
 }
