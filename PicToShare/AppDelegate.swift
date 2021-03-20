@@ -19,12 +19,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         importationManager.setConfigurationManager(configurationManager)
         super.init()
     }
-    
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         try! libraryManager.load(library: StandardLibrary())
         try! configurationManager.add(
                 source: ConfigurationManager.CoreObjectMetadata(
-                        "standard.source.filesystem"))
+                        "standard.source.filesystem",
+                        objectLayer: [
+                            "path": "PTSFolder"
+                        ]))
         try! configurationManager.addType(
                 "standard.format.text",
                 "Fichier texte",

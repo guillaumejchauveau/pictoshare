@@ -5,69 +5,65 @@
 //  Created by Guillaume Chauveau on 24/02/2021.
 //
 
-import Foundation
 import SwiftUI
 
+private struct ImportationView: View {
+    @State var selected = 0
+    private let types: [String]
+    private let callback: (Int) -> ()
+
+    init(_ types: [String], _ callback: @escaping (Int) -> ()) {
+        self.types = types
+        self.callback = callback
+    }
+
+    var body: some View {
+        VStack {
+            GroupBox {
+                ScrollView {
+                    Picker("", selection: $selected) {
+                        ForEach(0..<types.count) { index in
+                            Text(types[index]).frame(width: 200)
+                        }
+                    }.pickerStyle(RadioGroupPickerStyle())
+                }
+            }
+            Spacer()
+            HStack {
+                Button("Annuler") {
+                    callback(-1)
+                }
+                // Manually style this button just to set it blue.
+                Button("Importer") {
+                    callback(selected)
+                }
+                        .body.padding(EdgeInsets(top: 2,
+                                leading: 7,
+                                bottom: 2,
+                                trailing: 7))
+                        .background(Color.accentColor)
+                        .buttonStyle(PlainButtonStyle())
+                        .cornerRadius(5)
+            }
+        }.padding()
+    }
+}
 
 /// Object responsible of the Importation process.
 class ImportationManager {
+    private var configurationManager: ConfigurationManager!
 
-    struct ContentView: View {
-        @State var selected = 0
-        private let types: [String]
-        private let manager: ImportationManager
-
-        init(_ types: [String], _ manager: ImportationManager) {
-            self.types = types
-            self.manager = manager
-        }
-
-        var body: some View {
-            VStack {
-                GroupBox {
-                    ScrollView {
-                        Picker("", selection: $selected) {
-                            ForEach(0..<types.count, content: { index in
-                                Text(types[index])
-                            })
-                        }
-                                .pickerStyle(RadioGroupPickerStyle())
-                    }
-                }
-                        .padding()
-                Text("Type selectionné: \(types[selected])")
-                Button("OK", action: { manager.ok(selected) })
-                        .padding()
-            }
-                    .frame(width: 300, height: 300, alignment: .center)
-        }
-    }
-
-    // Fontion du bouton OK qui enregistre et transmet le choix de type
-    fileprivate func ok(_ index: Int) {
-        guard document != nil else {
-            return
-        }
-        guard index < configurationManager!.types.count else {
-            return
-        }
-        try! importDocument(document!, withType: configurationManager!.types[index])
-        document = nil
-    }
-
-    private var configurationManager: ConfigurationManager?
-
-    private let panel: NSPanel
+    private let window: NSWindow
     private var document: AnyObject?
 
     init() {
-        // Create the window and set the content view.
-        panel = NSPanel(
+        window = NSWindow(
                 contentRect: NSRect(x: 0, y: 0, width: 480, height: 300),
-                styleMask: [.titled, .closable, .fullSizeContentView],
+                styleMask: [.titled, .fullSizeContentView],
                 backing: .buffered, defer: true)
-        panel.center()
-        panel.setFrameAutosaveName("Choix du type")
+        window.center()
+        window.title = "PicToShare - Importer un document"
+        window.level = NSWindow.Level.modalPanel
     }
 
     func setConfigurationManager(_ configurationManager: ConfigurationManager) {
@@ -82,14 +78,27 @@ class ImportationManager {
             return
         }
         self.document = document
-        let contentView = ContentView(
-                configurationManager!.types.map {
+        window.contentView = NSHostingView(rootView: ImportationView(
+                configurationManager.types.map {
                     $0.description
-                }, self
-        )
-        panel.contentView = NSHostingView(rootView: contentView)
-        //panel.orderFront(nil)
-        //ok(0)
+                }, promptDocumentTypeCallback))
+        window.makeKeyAndOrderFront(nil)
+    }
+
+    /// Callback used by the ImportationView to indicate witch type was
+    /// selected.
+    ///
+    /// - Parameter index: The index of the selected type, or -1 if canceled.
+    private func promptDocumentTypeCallback(_ index: Int) {
+        window.orderOut(nil)
+        guard document != nil else {
+            return
+        }
+        if index >= 0 && index < configurationManager.types.count {
+            try! importDocument(document!,
+                    withType: configurationManager.types[index])
+        }
+        document = nil
     }
 
     /// Imports a Document given a Document Type.
@@ -106,6 +115,12 @@ class ImportationManager {
         // TODO: Complete exportation process.
         try type.exporter.export(document: document)
         // TODO: Complete integration process.
+    }
+}
+
+struct ImportationManager_Previews: PreviewProvider {
+    static var previews: some View {
+        ImportationView(["Carte de visite", "Image", "Document"], { _ in })
     }
 }
 
