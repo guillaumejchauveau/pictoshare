@@ -6,6 +6,7 @@
 //
 
 import CoreFoundation
+import SwiftUI
 
 
 /// Provides read access to a dynamic dictionary-based configuration system to
@@ -481,6 +482,29 @@ class ConfigurationManager {
         saveTypeConfigurationLayers()
         CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
     }
+    
+    /// TODO : WIP
+    
+    func startConfig() {
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 480, height: 300),
+            styleMask: [.titled, .closable, .fullSizeContentView],
+            backing: .buffered, defer: true)
+        window.center()
+        window.title = "PicToShare - Configuration"
+        window.contentView = NSHostingView(rootView: ConfigurationView(config : self))
+        window.makeKeyAndOrderFront(nil)
+    }
+    
+    func removeTemp(type index: Int) {
+        NSLog("Congratz, si la méthode remove de base marche, tu auras remove le type à l'indice : \(index)")
+    }
+    
+    func addTypeTemp(_ formatID: Library.ClassID,
+                     _ description: String,
+                     _ exporterMeta: CoreObjectMetadata) {
+        NSLog("Congratz, si la méthode addType de base marche, tu auras add un type \(description)")
+    }
 }
 
 extension ConfigurationManager.CoreObjectMetadata: CFPropertyListable {
@@ -506,3 +530,112 @@ extension ConfigurationManager.DocumentTypeMetadata: CFPropertyListable {
         ] as CFPropertyList
     }
 }
+
+/// May be moved to another file if needed
+private struct ConfigurationView: View {
+    
+    private let config: ConfigurationManager
+    
+    init(config : ConfigurationManager) {
+        self.config = config
+    }
+
+    var body: some View {
+        NavigationView {
+            VStack {
+                NavigationLink(destination: ConfigurationAddDocumentTypeView(config: config)) {
+                    Text("Ajouter un nouveau type de document")
+                }
+                NavigationLink(destination: ConfigurationManageExistingDocumentTypeView(config: config)) {
+                    Text("Supprimer un type existant")
+                }
+            }.frame(width: 250, height: 480, alignment: .center)
+        }.frame(width: 600, height: 480, alignment: .center)
+    }
+}
+
+
+private struct ConfigurationAddDocumentTypeView: View {
+    
+    @State private var newTypeDescription = ""
+    private let config: ConfigurationManager
+    
+    init(config: ConfigurationManager) {
+        self.config = config
+    }
+    
+    var body: some View{
+        VStack {
+            Text("Taper le nom du nouveau type de document que vous voulez :")
+            TextField("type here", text:$newTypeDescription)
+            Button(action: {
+                config.addTypeTemp("standard.format.text",
+                                   newTypeDescription,
+                                   ConfigurationManager.CoreObjectMetadata(
+                                           "standard.exporter.pdf"))
+            }) {
+                Text("Ajouter")
+            }
+            
+        }.padding()
+    }
+}
+
+private struct ConfigurationManageExistingDocumentTypeView: View {
+    
+    @State var selected = 0
+    
+    private let config : ConfigurationManager
+    private let types : [ConfigurationManager.DocumentTypeMetadata]
+    private var typesAsString : [String]
+    
+    /// To be cleaned up after
+    init(config: ConfigurationManager) {
+        self.config = config
+        self.types = config.types
+        self.typesAsString = []
+        for type in types {
+            print("Voici le type : \(type.description)")
+            self.typesAsString.append(type.description)
+        }
+        NSLog("Set end")
+    }
+    
+    var body: some View {
+        VStack {
+            Picker("", selection: $selected) {
+                ForEach(0..<typesAsString.count) { type in
+                    Text(typesAsString[type]).frame(width: 200)
+                }
+            }.pickerStyle(RadioGroupPickerStyle())
+            Spacer()
+            Button(action: {
+                config.removeTemp(type: selected)
+            }) {
+                Text("Supprimer")
+            }
+            
+            
+            /*
+            // the id attribute is some magic to loop on a string array
+            List(typesAsString, id: \.self) { type in
+                Text(type).frame(width: 200)
+            }
+            Button(action: {
+                NSLog("Yes")
+            }) {
+                Text("Manage")
+            }
+             */
+        }
+        
+    }
+}
+
+
+//struct ConfigurationView_Preview: PreviewProvider {
+//    static var previews: some View {
+//        ConfigurationView()
+//    }
+//}
+

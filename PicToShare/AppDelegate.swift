@@ -33,7 +33,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 "Fichier texte",
                 ConfigurationManager.CoreObjectMetadata(
                         "standard.exporter.pdf"))
+        try! configurationManager.addType(
+                "standard.format.text",
+                "Carte de visite",
+                ConfigurationManager.CoreObjectMetadata(
+                        "standard.exporter.pdf"))
+        try! configurationManager.addType(
+                "standard.format.text",
+                "Photo tableau blanc",
+                ConfigurationManager.CoreObjectMetadata(
+                        "standard.exporter.pdf"))
 
         //configurationManager.sources[0].source.promptDocument()
+        configurationManager.startConfig()
     }
 }
+
+
