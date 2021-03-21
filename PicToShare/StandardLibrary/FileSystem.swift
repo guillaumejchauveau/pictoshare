@@ -11,24 +11,31 @@ import EonilFSEvents
 
 class FileSystemDocumentSource: DocumentSource {
     private var importCallback: ((AnyObject) -> Void)?
-    private let openPanel: NSOpenPanel
+    private let openPanel = NSOpenPanel()
     private var monitoredFolder: String
 
     private let configuration: Configuration
 
     required init(with configuration: Configuration) throws {
         self.configuration = configuration
-        openPanel = NSOpenPanel()
+
+        guard configuration["path"] != nil else {
+            throw Configuration.Error.unsetKey("path")
+        }
+        guard let path = configuration["path"] as? String else {
+            throw Configuration.Error.invalidValue("path")
+        }
+
         openPanel.canChooseDirectories = false
         openPanel.allowsMultipleSelection = false
 
-        // Next update : get path from config AND get rid of permissions issues
+        // Next update : get rid of permissions issues
         try monitoredFolder = FileManager.default
                 .url(for: .documentDirectory,
                         in: .userDomainMask,
                         appropriateFor: nil,
                         create: true)
-                .appendingPathComponent("PTSFolder", isDirectory: true).path
+                .appendingPathComponent(path, isDirectory: true).path
 
         try EonilFSEvents.startWatching(
                 paths: [monitoredFolder],
@@ -45,14 +52,13 @@ class FileSystemDocumentSource: DocumentSource {
     }
 
     func promptDocument() {
-        openPanel.begin(completionHandler: { [self] response in
+        openPanel.begin { [self] response in
             guard response == NSApplication.ModalResponse.OK
                           && openPanel.urls.count > 0 else {
                 return
             }
             processTxt(openPanel.urls[0].path)
-        })
-        openPanel.runModal()
+        }
     }
 
     /// Creates a document and calls the callback method to process the file
@@ -73,7 +79,6 @@ class FileSystemDocumentSource: DocumentSource {
             return
         }
 
-        print("Event detected : \(event.path)")
         processTxt(event.path)
     }
 
