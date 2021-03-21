@@ -168,6 +168,15 @@ class ConfigurationManager {
         sources.append((metadata, source))
     }
 
+    /// Updates the description of a configured Document Source.
+    ///
+    /// - Parameters:
+    ///   - source: The index of the Source in the list.
+    ///   - description: The new description.
+    func update(source index: Int, description: String) {
+        sources[index].metadata.description = description
+    }
+
     /// Removes a configured Document Source.
     ///
     /// - Parameter index: The index of the Source in the list.
@@ -209,31 +218,79 @@ class ConfigurationManager {
             throw DocumentFormatError.incompatibleDocumentFormat
         }
 
-        var type = DocumentTypeMetadata(
+        types.append(DocumentTypeMetadata(
                 formatID: formatID,
                 format: format,
                 description: description,
                 exporterMetadata: exporterMeta,
-                exporter: exporter)
+                exporter: exporter))
+        let typeIndex = types.count - 1
 
         for annotatorMeta in annotatorsMeta {
-            guard let configuration = libraryManager.make(
-                    configuration: annotatorMeta.classID,
-                    withTypeProtocol: .annotator) else {
-                throw LibraryManager.Error.invalidClassID(annotatorMeta.classID)
-            }
-            configuration.layers.append(annotatorMeta.objectLayer)
-            let annotator = try libraryManager.make(
-                    annotator: annotatorMeta.classID,
-                    with: configuration)!
-            guard annotator.isCompatibleWith(format: format) else {
-                throw DocumentFormatError.incompatibleDocumentFormat
-            }
-
-            type.annotatorsMetadata.append((annotatorMeta, annotator))
+            try update(type: typeIndex, addAnnotator: annotatorMeta)
         }
-        types.append(type)
     }
+
+    /// Updates the description of a configured Document Type.
+    ///
+    /// - Parameters:
+    ///   - type: The index of the Type in the list.
+    ///   - description: The new description.
+    func update(type index: Int, description: String) {
+        types[index].description = description
+    }
+
+    /// Updates a configured Document Type by adding a new Document Annotator.
+    ///
+    /// - Parameters:
+    ///   - type: The index of the Type in the list.
+    ///   - addAnnotator: The metadata of the new Annotator.
+    /// - Throws:`LibraryManager.Error.invalidClassID` if the ClassID in the
+    ///     metadata is not registered in the Library Manager, or
+    ///     any error thrown by the Annotator on initialization.
+    func update(type typeIndex: Int,
+                addAnnotator metadata: CoreObjectMetadata) throws {
+        let format: AnyClass = types[typeIndex].format
+        guard let configuration = libraryManager.make(
+                configuration: metadata.classID,
+                withTypeProtocol: .annotator) else {
+            throw LibraryManager.Error.invalidClassID(metadata.classID)
+        }
+        configuration.layers.append(metadata.objectLayer)
+        let annotator = try libraryManager.make(
+                annotator: metadata.classID,
+                with: configuration)!
+        guard annotator.isCompatibleWith(format: format) else {
+            throw DocumentFormatError.incompatibleDocumentFormat
+        }
+
+        types[typeIndex].annotatorsMetadata.append((metadata, annotator))
+    }
+
+    /// Updates a configured Document Type by removing one of its Document
+    /// Annotators.
+    ///
+    /// - Parameters:
+    ///   - type: The index of the Type in the list.
+    ///   - removeAnnotator: The index of the Annotator in the list.
+    func update(type typeIndex: Int, removeAnnotator annotatorIndex: Int) {
+        types[typeIndex].annotatorsMetadata.remove(at: annotatorIndex)
+    }
+
+    /// Updates a configured Document Type by modifying one of its Document
+    /// Annotators' description.
+    ///
+    /// - Parameters:
+    ///   - type: The index of the Type in the list.
+    ///   - annotator: The index of the Annotator in the list.
+    ///   - description: The new description.
+    func update(type typeIndex: Int,
+                annotator annotatorIndex: Int,
+                description: String) {
+        types[typeIndex].annotatorsMetadata[annotatorIndex]
+                .metadata.description = description
+    }
+
 
     /// Removes a configured Document Type.
     ///
@@ -375,7 +432,6 @@ class ConfigurationManager {
                     "\(libraryID).\(typesProtocol).\(typeID)",
                     typeMetadata.typeLayer.pointee as CFPropertyList)
         }
-
     }
 
     /// Saves configured Core Objects to persistent storage.
