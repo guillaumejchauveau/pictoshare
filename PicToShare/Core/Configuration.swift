@@ -48,6 +48,11 @@ class Configuration {
         }
         return nil
     }
+
+    enum Error: Swift.Error {
+        case unsetKey(String)
+        case invalidValue(String)
+    }
 }
 
 

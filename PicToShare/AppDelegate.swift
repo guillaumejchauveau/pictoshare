@@ -24,13 +24,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         try! libraryManager.load(library: StandardLibrary())
         try! configurationManager.add(
                 source: ConfigurationManager.CoreObjectMetadata(
-                        "standard.source.filesystem"))
+                        "standard.source.filesystem",
+                        objectLayer: [
+                            "path": "PTSFolder"
+                        ]))
         try! configurationManager.addType(
                 "standard.format.text",
-                "Text file to PDF",
+                "Fichier texte",
                 ConfigurationManager.CoreObjectMetadata(
                         "standard.exporter.pdf"))
 
-        configurationManager.sources[0].source.promptDocument()
+        //configurationManager.sources[0].source.promptDocument()
     }
 }
