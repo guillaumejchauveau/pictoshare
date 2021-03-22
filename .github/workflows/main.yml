@@ -18,7 +18,7 @@ jobs:
       matrix:
         test-config:
           - { scheme: PicToShareTests, destination: platform=macOS }
-          - { scheme: PicToShareUITests, destination: platform=macOS }
+          #- { scheme: PicToShareUITests, destination: platform=macOS }
     env:
       XCODE_PATH: /Applications/Xcode_12.2.app
     steps:
