@@ -7,18 +7,16 @@
 
 import Foundation
 
+/// Placeholder for Context Annotators. They will use Spotlight metadata.
 protocol ContextAnnotator {
-    /// Annotates the given Document.
-    ///
-    /// - Parameters:
-    ///   - document: The Document to annotate.
-    // func annotate(document: URL) -> []
 }
 
 
-/// Object defining how to process a Document of a specific Format into a file.
-///
-/// The exportation and integration process are a work in progress.
+/// Object defining how to process a Document with two components: the Content Annotator, and Context
+/// Annotators.
+/// The first component is the URL of an AppleScript, that will process the input file into the output file at the
+/// proper destination. The Context Annotators will then add Spotlight metadata to the output file.
+/// The implementation of the integration of the output file to external applications is not yet planned.
 protocol DocumentType {
     /// The Exporter used to create the file.
     var contentAnnotatorScript: URL { get }

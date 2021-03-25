@@ -24,8 +24,6 @@ class FileSystemDocumentSource {
                         create: true)
                 .appendingPathComponent(path, isDirectory: true).path
 
-        print(monitoredFolder)
-
         try EonilFSEvents.startWatching(
                 paths: [monitoredFolder],
                 for: ObjectIdentifier(self),

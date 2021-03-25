@@ -15,7 +15,6 @@
 		9568616B25E80EB7004D31CA /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568616A25E80EB7004D31CA /* Types.swift */; };
 		9568617325E80FB4004D31CA /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9568617225E80FB4004D31CA /* Configuration.swift */; };
 		9574747F25E6E6B900917EF0 /* Importation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9574747E25E6E6B900917EF0 /* Importation.swift */; };
-		B0E9B63925EFDF6F0054C504 /* PDFExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E9B63825EFDF6F0054C504 /* PDFExporterTests.swift */; };
 		F309C0B0C36AD9BEF67E1049 /* Pods_PicToShare_PicToShareUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86C52B90235BCED3520E4B6E /* Pods_PicToShare_PicToShareUITests.framework */; };
 		F9A7C1394834D75DFE4FB520 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F9A7CA9D419C2ECDBE045390 /* Preview Assets.xcassets */; };
 		F9A7C35E0461C21638072806 /* PicToShareUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C97B08CE9661BFCE30CE /* PicToShareUITests.swift */; };
@@ -78,7 +77,6 @@
 		9568616A25E80EB7004D31CA /* Types.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
 		9568617225E80FB4004D31CA /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		9574747E25E6E6B900917EF0 /* Importation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Importation.swift; sourceTree = "<group>"; };
-		B0E9B63825EFDF6F0054C504 /* PDFExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFExporterTests.swift; sourceTree = "<group>"; };
 		BAB2563EB615A71FB9457D00 /* Pods_PicToShareTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PicToShareTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F3B1E7615E5E0DE140EB1E18 /* Pods-PicToShareTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PicToShareTests.release.xcconfig"; path = "Target Support Files/Pods-PicToShareTests/Pods-PicToShareTests.release.xcconfig"; sourceTree = "<group>"; };
 		F9A7C0DA563670B4B2CAC7DF /* PicToShareTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PicToShareTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -218,7 +216,6 @@
 			children = (
 				F9A7C43B01C57696130DA3EE /* Info.plist */,
 				F9A7CDC85B623930B9EB52F7 /* CoreTests.swift */,
-				B0E9B63825EFDF6F0054C504 /* PDFExporterTests.swift */,
 			);
 			path = PicToShareTests;
 			sourceTree = "<group>";
@@ -480,7 +477,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B0E9B63925EFDF6F0054C504 /* PDFExporterTests.swift in Sources */,
 				F9A7CEF947D2E12EC47CAF47 /* CoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

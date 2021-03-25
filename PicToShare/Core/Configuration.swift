@@ -7,9 +7,8 @@
 
 import Foundation
 
-/// Responsible of Core Objects configuration and storage.
+/// Responsible of Document Types configuration and storage.
 class ConfigurationManager {
-
     /// Internal representation of a configured Document Type.
     ///
     /// Compatible with the Core `DocumentType` protocol to use directly with an
@@ -24,26 +23,14 @@ class ConfigurationManager {
         case preferencesError
     }
 
-    private let importationManager: ImportationManager
-
     /// The Document Types configured.
     private(set) var types: [DocumentTypeMetadata] = []
-
-    /// Creates a Configuration Manager.
-    ///
-    /// - Parameters:
-    ///   - importationManager: An Importation Manager that will be the target
-    ///     of the Document Sources configured with this Configuration Manager.
-    init(_ importationManager: ImportationManager) {
-        self.importationManager = importationManager
-    }
 
     /// Configures a Document Type.
     ///
     /// - Parameters:
     ///   - description: A human-readable description.
     ///   - contentAnnotatorURL: The URL of the AppleScript.
-    ///   - contextAnnotators:
     func addType(_ description: String,
                  _ contentAnnotatorURL: URL) throws {
 
@@ -51,11 +38,6 @@ class ConfigurationManager {
                 description: description,
                 contentAnnotatorScript: contentAnnotatorURL,
                 contextAnnotators: []))
-        let typeIndex = types.count - 1
-/*
-        for annotatorMeta in annotatorsMeta {
-            try update(type: typeIndex, addAnnotator: annotatorMeta)
-        }*/
     }
 
     /// Updates the description of a configured Document Type.
@@ -66,34 +48,6 @@ class ConfigurationManager {
     func update(type index: Int, description: String) {
         types[index].description = description
     }
-
-    /// Updates a configured Document Type by adding a new Document Annotator.
-    ///
-    /// - Parameters:
-    ///   - type: The index of the Type in the list.
-    ///   - addAnnotator: The metadata of the new Annotator.
-    /// - Throws:`LibraryManager.Error.invalidClassID` if the ClassID in the
-    ///     metadata is not registered in the Library Manager, or
-    ///     any error thrown by the Annotator on initialization.
-    /*func update(type typeIndex: Int,
-                addContextAnnotator metadata: CoreObjectMetadata) throws {
-        guard libraryManager.isType(
-                metadata.classID,
-                compatibleWithFormat: types[typeIndex].formatID) else {
-            throw DocumentFormatError.incompatibleDocumentFormat
-        }
-        guard let configuration = libraryManager.make(
-                configuration: metadata.classID,
-                withTypeProtocol: .annotator) else {
-            throw LibraryManager.Error.invalidClassID(metadata.classID)
-        }
-        configuration.layers.append(metadata.objectLayer)
-        let annotator = try libraryManager.make(
-                annotator: metadata.classID,
-                with: configuration)!
-
-        types[typeIndex].annotatorsMetadata.append((metadata, annotator))
-    }*/
 
     /// Updates a configured Document Type by removing one of its Context
     /// Annotators.
@@ -139,7 +93,7 @@ class ConfigurationManager {
                 kCFPreferencesCurrentApplication)
     }
 
-    /// Configures Core Objects by reading data from persistent storage.
+    /// Configures Document Types by reading data from persistent storage.
     func load() {
         CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
 
@@ -166,25 +120,14 @@ class ConfigurationManager {
                 URL(string: contentAnnotatorPath) else {
                     throw ConfigurationManager.Error.preferencesError
                 }
-/*
-                guard let annotators = declaration["annotators"]
-                        as? Array<CFPropertyList> else {
-                    throw ConfigurationManager.Error.preferencesError
-                }
-                var annotatorsMetadata: [CoreObjectMetadata] = []
-                for annotator in annotators {
-                    annotatorsMetadata.append(
-                            try CoreObjectMetadata(annotator))
-                }*/
-                try addType(description,
-                        contentAnnotatorURL)
+                try addType(description, contentAnnotatorURL)
             } catch {
                 continue
             }
         }
     }
 
-    /// Saves configured Core Objects to persistent storage.
+    /// Saves configured Document Types to persistent storage.
     func save() {
         setPreference("types",
                 types.map {
@@ -200,11 +143,7 @@ extension ConfigurationManager.DocumentTypeMetadata: CFPropertyListable {
     func toCFPropertyList() -> CFPropertyList {
         [
             "description": description,
-            "contentAnnotator": contentAnnotatorScript.path,
-            /*"annotators": contextAnnotators.map {
-                metadata, _ in
-                metadata.toCFPropertyList()
-            }*/
+            "contentAnnotator": contentAnnotatorScript.path
         ] as CFPropertyList
     }
 }

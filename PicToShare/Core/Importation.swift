@@ -21,12 +21,13 @@ private struct ImportationView: View {
         VStack {
             GroupBox {
                 ScrollView {
+                    Spacer()
                     Picker("", selection: $selected) {
                         ForEach(0..<types.count) { index in
                             Text(types[index]).frame(width: 200)
                         }
                     }.pickerStyle(RadioGroupPickerStyle())
-                }
+                }.frame(width: 230)
             }
             Spacer()
             HStack {
@@ -74,7 +75,8 @@ class ImportationManager {
     ///
     /// - Parameter document: The Document to import.
     func promptDocumentType(_ document: URL) {
-        guard self.document == nil else {
+        guard self.document == nil
+                && configurationManager.types.count > 0 else {
             return
         }
         self.document = document
