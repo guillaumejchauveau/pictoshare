@@ -54,7 +54,7 @@ class ImportationManager {
     private var configurationManager: ConfigurationManager!
 
     private let window: NSWindow
-    private var document: AnyObject?
+    private var document: URL?
 
     init() {
         window = NSWindow(
@@ -73,7 +73,7 @@ class ImportationManager {
     /// Asks the User for a Document Type for importation.
     ///
     /// - Parameter document: The Document to import.
-    func promptDocumentType(_ document: AnyObject) {
+    func promptDocumentType(_ document: URL) {
         guard self.document == nil else {
             return
         }
@@ -107,14 +107,9 @@ class ImportationManager {
     ///   - document: The Document to import.
     ///   - type: The Type to use for importation.
     /// - Throws: `Error.invalidUUID` if the Type UUID is invalid.
-    func importDocument(_ document: AnyObject, withType type: DocumentType) throws {
-        for annotator in type.annotators {
-            try annotator.annotate(document: document)
-        }
-
-        // TODO: Complete exportation process.
-        try type.exporter.export(document: document)
-        // TODO: Complete integration process.
+    func importDocument(_ inputUrl: URL, withType type: DocumentType) throws {
+        // TODO: Call ContentAnnotator Applescript
+        //var contextAnnotations: []
     }
 }
 

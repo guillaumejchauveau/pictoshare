@@ -9,45 +9,34 @@ import AppKit
 import EonilFSEvents
 
 
-class FileSystemDocumentSource: DocumentSource {
-    private var importCallback: ((AnyObject) -> Void)?
+class FileSystemDocumentSource {
+    private var importCallback: ((URL) -> Void)?
     private let openPanel = NSOpenPanel()
-    private var monitoredFolder: String
 
-    private let configuration: Configuration
-
-    required init(with configuration: Configuration) throws {
-        self.configuration = configuration
-
-        guard configuration["path"] != nil else {
-            throw Configuration.Error.unsetKey("path")
-        }
-        guard let path = configuration["path"] as? String else {
-            throw Configuration.Error.invalidValue("path")
-        }
-
+    init(path: String) throws {
         openPanel.canChooseDirectories = false
         openPanel.allowsMultipleSelection = false
 
-        // Next update : get rid of permissions issues
-        try monitoredFolder = FileManager.default
+        let monitoredFolder = try FileManager.default
                 .url(for: .documentDirectory,
                         in: .userDomainMask,
                         appropriateFor: nil,
                         create: true)
                 .appendingPathComponent(path, isDirectory: true).path
 
+        print(monitoredFolder)
+
         try EonilFSEvents.startWatching(
                 paths: [monitoredFolder],
-                for: ObjectIdentifier(self.configuration),
+                for: ObjectIdentifier(self),
                 with: processEvent)
     }
 
     deinit {
-        EonilFSEvents.stopWatching(for: ObjectIdentifier(configuration))
+        EonilFSEvents.stopWatching(for: ObjectIdentifier(self))
     }
 
-    func setImportCallback(_ callback: @escaping (AnyObject) -> Void) {
+    func setImportCallback(_ callback: @escaping (URL) -> Void) {
         importCallback = callback
     }
 
@@ -57,7 +46,7 @@ class FileSystemDocumentSource: DocumentSource {
                           && openPanel.urls.count > 0 else {
                 return
             }
-            processTxt(openPanel.urls[0].path)
+            importCallback?(openPanel.urls[0])
         }
     }
 
@@ -79,25 +68,6 @@ class FileSystemDocumentSource: DocumentSource {
             return
         }
 
-        processTxt(event.path)
-    }
-
-    private func processTxt(_ path: String) {
-        guard let fileData = FileManager.default
-                .contents(atPath: path) else {
-            return
-        }
-
-        // We get rid of everything before the last / and past the last .
-        //to get the filename
-        let firstIndex = path.lastIndex(of: "/")!
-        let lastIndex = path.lastIndex(of: ".")!
-        let fileName = String(path[path.index(after: firstIndex)..<lastIndex])
-
-        let textDocument = TextDocument(
-                content: String(decoding: fileData, as: UTF8.self),
-                documentName: fileName)
-
-        importCallback?(textDocument)
+        importCallback?(URL(fileURLWithPath: event.path))
     }
 }
