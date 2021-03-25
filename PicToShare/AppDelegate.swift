@@ -8,14 +8,12 @@
 import SwiftUI
 
 class AppDelegate: NSObject, NSApplicationDelegate {
-    let importationManager = ImportationManager()
-    var configurationManager: ConfigurationManager
+    let importationManager: ImportationManager
+    let configurationManager = ConfigurationManager()
     var fsSource: FileSystemDocumentSource?
 
     override init() {
-        configurationManager = ConfigurationManager(
-                importationManager)
-        importationManager.setConfigurationManager(configurationManager)
+        importationManager = ImportationManager(configurationManager)
         super.init()
     }
 

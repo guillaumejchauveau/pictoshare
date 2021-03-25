@@ -57,7 +57,9 @@ class ImportationManager {
     private let window: NSWindow
     private var document: URL?
 
-    init() {
+    init(_ configurationManager: ConfigurationManager) {
+        self.configurationManager = configurationManager
+
         window = NSWindow(
                 contentRect: NSRect(x: 0, y: 0, width: 480, height: 300),
                 styleMask: [.titled, .fullSizeContentView],
@@ -65,10 +67,6 @@ class ImportationManager {
         window.center()
         window.title = "PicToShare - Importer un document"
         window.level = NSWindow.Level.modalPanel
-    }
-
-    func setConfigurationManager(_ configurationManager: ConfigurationManager) {
-        self.configurationManager = configurationManager
     }
 
     /// Asks the User for a Document Type for importation.
