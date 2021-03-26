@@ -8,32 +8,18 @@
 import SwiftUI
 
 class AppDelegate: NSObject, NSApplicationDelegate {
-    let libraryManager = LibraryManager()
-    let importationManager = ImportationManager()
-    var configurationManager: ConfigurationManager
+    let importationManager: ImportationManager
+    let configurationManager = ConfigurationManager()
+    var fsSource: FileSystemDocumentSource?
 
     override init() {
-        configurationManager = ConfigurationManager(
-                libraryManager,
-                importationManager)
-        importationManager.setConfigurationManager(configurationManager)
+        importationManager = ImportationManager(configurationManager)
         super.init()
     }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        try! libraryManager.load(library: StandardLibrary())
-        try! configurationManager.add(
-                source: ConfigurationManager.CoreObjectMetadata(
-                        "standard.source.filesystem",
-                        objectLayer: [
-                            "path": "PTSFolder"
-                        ]))
-        try! configurationManager.addType(
-                "standard.format.text",
-                "Fichier texte",
-                ConfigurationManager.CoreObjectMetadata(
-                        "standard.exporter.pdf"))
-
-        //configurationManager.sources[0].source.promptDocument()
+        fsSource = try! FileSystemDocumentSource(path: "PTSFolder")
+        fsSource?.setImportCallback(importationManager.promptDocumentType)
+        try! configurationManager.addType("Fichier texte", URL(fileURLWithPath: "/"))
     }
 }
