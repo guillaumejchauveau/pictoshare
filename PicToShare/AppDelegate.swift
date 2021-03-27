@@ -21,5 +21,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         fsSource = try! FileSystemDocumentSource(path: "PTSFolder")
         fsSource?.setImportCallback(importationManager.promptDocumentType)
         try! configurationManager.addType("Fichier texte", URL(fileURLWithPath: "/"))
+        try! configurationManager.addType("Fichier image", URL(fileURLWithPath: "/"))
+        try! configurationManager.addType("Fichier random", URL(fileURLWithPath: "/"))
+        
+        configurationManager.startConfig()
     }
 }

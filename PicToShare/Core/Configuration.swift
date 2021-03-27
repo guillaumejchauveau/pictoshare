@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 /// Responsible of Document Types configuration and storage.
 class ConfigurationManager {
@@ -25,6 +26,9 @@ class ConfigurationManager {
 
     /// The Document Types configured.
     private(set) var types: [DocumentTypeMetadata] = []
+    
+    /// The Configuration Window
+    private var configWindow = NSWindow()
 
     /// Configures a Document Type.
     ///
@@ -136,6 +140,23 @@ class ConfigurationManager {
 
         CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
     }
+    
+    
+    func startConfig() {
+        configWindow = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 780, height: 600),
+                              styleMask: [.titled, .closable, .fullSizeContentView],
+                              backing: .buffered,
+                              defer: true)
+        configWindow.center()
+        configWindow.title = "PicToShare - Configuration"
+        configWindow.contentView = NSHostingView(rootView: ConfigurationView(config: self))
+        configWindow.makeKeyAndOrderFront(nil)
+    }
+    
+    func refreshWindow() {
+        configWindow.close()
+        startConfig()
+    }
 }
 
 
@@ -145,5 +166,165 @@ extension ConfigurationManager.DocumentTypeMetadata: CFPropertyListable {
             "description": description,
             "contentAnnotator": contentAnnotatorScript.path
         ] as CFPropertyList
+    }
+}
+
+
+/// May be moved later on
+/// For now :
+///     - No automatic refresh when an action is done. The only way atm is to show a new window
+///       but it will crash the app when closing it
+///     - Impossible to detect when a NavigationLink has been selected to do a quick delete action.
+///       I gave up on life on this
+///     - To compensate for the lack of refreshing, maybe add some alert or little popup to notice the
+///       user that his actions have been validated
+private struct ConfigurationView: View {
+    @State var config: ConfigurationManager
+    
+    var body: some View {
+        NavigationView {
+            VStack {
+                // + AND - buttons here
+                HStack {
+                    /// Button to refresh the view, otherwise it won't (still doesn't work)
+                    Button(action: {
+                        print("Coucou le reload")
+                        config.startConfig()
+                        //config.refreshWindow()
+                    }) {
+                        Image(nsImage: NSImage.init(imageLiteralResourceName: NSImage.touchBarRefreshTemplateName) )
+                    }
+                    /// Button to add a type
+                    NavigationLink(destination: AddTypeView(config: $config)) {
+                        Image(nsImage: NSImage.init(imageLiteralResourceName: NSImage.addTemplateName) )
+                    }
+                    /// Button to delete a type
+                    NavigationLink(destination: DeleteTypeView(config: $config)) {
+                        Image(nsImage: NSImage.init(imageLiteralResourceName: NSImage.removeTemplateName) )
+                    }
+                }
+                /// Creating a navigation link for each type present
+                ForEach(0..<config.types.count) { typeIndex in
+                    NavigationLink(config.types[typeIndex].description,
+                                   destination: EditTypeView(config: $config, index: typeIndex))
+                }
+            }
+        }
+    }
+}
+
+private struct AddTypeView: View {
+    @Binding var config: ConfigurationManager
+    
+    // If it isn't initialized like this, Swift will try to
+    // initialize it with an attribute from the implicite init. We don't want that
+    @State private var typeDescription = ""
+    @State private var scriptURLasString = ""
+    @State private var scriptURL : URL?
+    
+    private let modifyURLPanel = NSOpenPanel()
+    
+    var body: some View {
+        VStack {
+            Text("Description of the type")
+            TextField("", text:$typeDescription)
+            Text("URL to the Apple script")
+            HStack {
+                TextField("", text:$scriptURLasString)
+                Button(action: {
+                    /// Getting the URL from the pop-up window
+                    modifyURLPanel.allowsMultipleSelection = false
+                    modifyURLPanel.begin { [self] response in
+                        guard response == NSApplication.ModalResponse.OK
+                                      && modifyURLPanel.urls.count > 0 else {
+                            return
+                        }
+                        /// Updating attributes visible for the user
+                        scriptURL = modifyURLPanel.urls[0]
+                        scriptURLasString = scriptURL!.absoluteString
+                    }
+                }) {
+                    Text("Browse")
+                }
+            }
+            Button(action: {
+                /// Still need to add the URL
+                do {
+                    // Need to handle when no url is given
+                   try config.addType(typeDescription, scriptURL!)
+                } catch {
+                    /// Maybe pop an altert ?
+                    print("Error when adding new type")
+                }
+            }) {
+                Text("Add")
+            }
+        }
+    }
+}
+
+
+private struct DeleteTypeView: View {
+    @Binding var config: ConfigurationManager
+    
+    var body: some View {
+        Text("Check all types you want to delete")
+        List {
+            ForEach(0..<config.types.count) { index in
+                HStack {
+                    Text(config.types[index].description)
+                    Button(action: {
+                        config.remove(type: index)
+                    }) {
+                        Image(nsImage: NSImage.init(imageLiteralResourceName: NSImage.touchBarDeleteTemplateName))
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+private struct EditTypeView: View {
+    @Binding var config : ConfigurationManager
+    
+    @State private var typeDescription = ""
+    @State private var scriptURLasString = ""
+    @State private var scriptURL : URL?
+    
+    var index : Int
+    private let modifyURLPanel = NSOpenPanel()
+    
+    var body: some View {
+        VStack {
+            Text("Description of the type")
+            TextField(config.types[index].description, text:$typeDescription)
+            Text("URL to the Apple script")
+            HStack {
+                TextField(config.types[index].contentAnnotatorScript.absoluteString, text:$scriptURLasString)
+                Button(action: {
+                    /// Getting the URL from the pop-up window
+                    modifyURLPanel.allowsMultipleSelection = false
+                    modifyURLPanel.begin { [self] response in
+                        guard response == NSApplication.ModalResponse.OK
+                                      && modifyURLPanel.urls.count > 0 else {
+                            return
+                        }
+                        /// Updating attributes visible for the user
+                        scriptURL = modifyURLPanel.urls[0]
+                        scriptURLasString = scriptURL!.absoluteString
+                    }
+                }) {
+                    Text("Change")
+                }
+            }
+            Button(action: {
+                /// Still need to add the URL
+                config.update(type: index, description: typeDescription)
+            }) {
+                Text("Modify")
+            }
+        }
     }
 }
