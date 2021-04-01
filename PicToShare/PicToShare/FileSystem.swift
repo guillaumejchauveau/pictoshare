@@ -1,6 +1,6 @@
 //
 //  FileSystem.swift
-//  PicToShare/StandardLibrary
+//  PicToShare
 //
 //  Created by Guillaume Chauveau on 24/02/2021.
 //
@@ -15,21 +15,21 @@ class FileSystemDocumentSource {
 
     init(path: String) throws {
         openPanel.canChooseDirectories = false
-        openPanel.allowsMultipleSelection = false
+        openPanel.allowsMultipleSelection = true
 
         let monitoredFolder = try FileManager.default
-                .url(for: .documentDirectory,
-                        in: .userDomainMask,
-                        appropriateFor: nil,
-                        create: true)
-                .appendingPathComponent(path, isDirectory: true).path
+            .url(for: .documentDirectory,
+                 in: .userDomainMask,
+                 appropriateFor: nil,
+                 create: true)
+            .appendingPathComponent(path, isDirectory: true).path
 
         try EonilFSEvents.startWatching(
-                paths: [monitoredFolder],
-                for: ObjectIdentifier(self),
-                with: processEvent)
+            paths: [monitoredFolder],
+            for: ObjectIdentifier(self),
+            with: processEvent)
     }
-
+    
     deinit {
         EonilFSEvents.stopWatching(for: ObjectIdentifier(self))
     }
@@ -41,7 +41,7 @@ class FileSystemDocumentSource {
     func promptDocument() {
         openPanel.begin { [self] response in
             guard response == NSApplication.ModalResponse.OK
-                          && openPanel.urls.count > 0 else {
+                    && openPanel.urls.count > 0 else {
                 return
             }
             importCallback?(openPanel.urls[0])
@@ -60,9 +60,12 @@ class FileSystemDocumentSource {
         }
         // We ignore events triggered by the .DS_STORE hidden file
         guard !event.path.contains(".DS_STORE")
-                      && flags.contains(.itemIsFile)
-                      && (flags.contains(.itemRenamed)
-                || flags.contains(.itemCreated)) else {
+                && flags.contains(.itemIsFile)
+                && (flags.contains(.itemRenamed)
+                      || flags.contains(.itemCreated)) else {
+            return
+        }
+        guard FileManager.default.fileExists(atPath: event.path) else {
             return
         }
 
