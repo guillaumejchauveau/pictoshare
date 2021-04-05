@@ -37,7 +37,7 @@ class ConfigurationManager: ObservableObject {
                     in: .userDomainMask,
                     appropriateFor: nil,
                     create: true)
-            .appendingPathComponent("PicToShare", isDirectory: true)
+            .appendingPathComponent("PTSFolder", isDirectory: true)
 
     /// The Document Types configured.
     @Published var types: [DocumentTypeMetadata] = []
