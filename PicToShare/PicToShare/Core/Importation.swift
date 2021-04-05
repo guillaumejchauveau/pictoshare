@@ -121,21 +121,48 @@ class ImportationWindowController: NSWindowController {
     override func windowDidLoad() {
         super.windowDidLoad()
         ignoreItem.isEnabled = false
-        importButton.isEnabled = false
+        importButton.isEnabled = true
+        //importButton.identifier = NSUserInterfaceItemIdentifier("NSMenuItemImportFromDeviceIdentifier")
+        becomeFirstResponder()
     }
 }
 
-class ImportationViewController: NSViewController {
+class ImportationViewController: NSHostingController<ImportationView> {
 
-    override func loadView() {
-        view = NSHostingView(rootView: ImportationView(
-                              configurationManager: ConfigurationManager.shared,
-                              importationManager: ImportationManager.shared))
-
+    required init?(coder: NSCoder) {
+        super.init(coder: coder, rootView: ImportationView(
+                    configurationManager: ConfigurationManager.shared,
+                    importationManager: ImportationManager.shared))
     }
+
 
     override func viewDidAppear() {
         super.viewDidAppear()
         view.window?.level = .modalPanel
+        view.window?.makeFirstResponder(self)
+    }
+    override func validRequestor(forSendType sendType: NSPasteboard.PasteboardType?, returnType: NSPasteboard.PasteboardType?) -> Any? {
+        if let pasteboardType = returnType,
+           // Service is image related.
+           NSImage.imageTypes.contains(pasteboardType.rawValue) {
+            return self  // This object can receive image data.
+        } else {
+            // Let objects in the responder chain handle the message.
+            return super.validRequestor(forSendType: sendType, returnType: returnType)
+        }
+    }
+    func readSelection(from pasteboard: NSPasteboard) -> Bool {
+        // Verify that the pasteboard contains image data.
+        guard pasteboard.canReadItem(withDataConformingToTypes: NSImage.imageTypes) else {
+            return false
+        }
+        // Load the image.
+        guard let image = NSImage(pasteboard: pasteboard) else {
+            return false
+        }
+        // Incorporate the image into the app.
+
+        // This method has successfully read the pasteboard data.
+        return true
     }
 }

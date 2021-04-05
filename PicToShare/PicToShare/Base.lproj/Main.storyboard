@@ -6,6 +6,14 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
+        <!--Importation View Controller-->
+        <scene sceneID="Q3R-5P-TBJ">
+            <objects>
+                <hostingController id="YEi-hU-fNB" customClass="ImportationViewController" customModule="PicToShare" customModuleProvider="target" sceneMemberID="viewController"/>
+                <customObject id="6SZ-NU-ExW" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="299" y="385"/>
+        </scene>
         <!--Application-->
         <scene sceneID="JPo-4y-FX3">
             <objects>
@@ -58,7 +66,13 @@
                             </menuItem>
                             <menuItem title="File" id="dMs-cI-mzQ">
                                 <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="File" id="bib-Uj-vzu"/>
+                                <menu key="submenu" title="File" id="bib-Uj-vzu">
+                                    <items>
+                                        <menuItem title="Import From Device" identifier="NSUserInterfaceItemIdentifier" id="xEX-JL-dpE">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                        </menuItem>
+                                    </items>
+                                </menu>
                             </menuItem>
                             <menuItem title="Window" id="aUF-d1-5bR">
                                 <modifierMask key="keyEquivalentModifierMask"/>
@@ -107,7 +121,7 @@
                 <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="75" y="0.0"/>
+            <point key="canvasLocation" x="-94" y="-73"/>
         </scene>
         <!--Window Controller-->
         <scene sceneID="R2V-B0-nI4">
@@ -125,8 +139,8 @@
                                 <toolbarItem implicitItemIdentifier="F8F31D04-00D5-4450-9C4B-D9D752AB3997" label="Ignorer" paletteLabel="Ignorer" sizingBehavior="auto" id="6t7-Gv-rym">
                                     <nil key="toolTip"/>
                                     <button key="view" verticalHuggingPriority="750" id="VXL-3E-lJl">
-                                        <rect key="frame" x="0.0" y="14" width="98" height="26"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <rect key="frame" x="0.0" y="14" width="60" height="23"/>
+                                        <autoresizingMask key="autoresizingMask"/>
                                         <buttonCell key="cell" type="roundTextured" title="Ignorer" bezelStyle="texturedRounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="tcr-1b-2bF">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
@@ -139,8 +153,8 @@ CA
                                 <toolbarItem implicitItemIdentifier="E61BA470-381E-4011-9377-E28CDCBE9D18" label="Importer" paletteLabel="Importer" sizingBehavior="auto" id="DAY-yu-I0Y">
                                     <nil key="toolTip"/>
                                     <button key="view" verticalHuggingPriority="750" id="mz0-eB-MJy">
-                                        <rect key="frame" x="0.0" y="14" width="98" height="25"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <rect key="frame" x="0.0" y="14" width="70" height="23"/>
+                                        <autoresizingMask key="autoresizingMask"/>
                                         <buttonCell key="cell" type="roundTextured" title="Importer" bezelStyle="texturedRounded" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Xqf-wt-D2h">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
@@ -168,24 +182,11 @@ DQ
                         <outlet property="ignoreItem" destination="6t7-Gv-rym" id="iKI-wM-joC"/>
                         <outlet property="importButton" destination="mz0-eB-MJy" id="6FB-wk-vWx"/>
                         <outlet property="toolbar" destination="5Og-5N-8cS" id="imU-ZM-0hC"/>
-                        <segue destination="XfG-lQ-9wD" kind="relationship" relationship="window.shadowedContentViewController" id="cq2-FE-JQM"/>
+                        <segue destination="YEi-hU-fNB" kind="relationship" relationship="window.shadowedContentViewController" id="7Ll-SP-BOh"/>
                     </connections>
                 </windowController>
             </objects>
-            <point key="canvasLocation" x="-201" y="347"/>
-        </scene>
-        <!--Importation View Controller-->
-        <scene sceneID="hIz-AP-VOD">
-            <objects>
-                <customObject id="rPt-NT-nkU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
-                <viewController id="XfG-lQ-9wD" customClass="ImportationViewController" customModule="PicToShare" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" id="m2S-Jp-Qdl">
-                        <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                    </view>
-                </viewController>
-            </objects>
-            <point key="canvasLocation" x="448" y="272"/>
+            <point key="canvasLocation" x="-325" y="528"/>
         </scene>
     </scenes>
     <resources>
