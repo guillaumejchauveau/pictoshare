@@ -29,7 +29,7 @@ class ImportationManager: ObservableObject {
         NSWorkspace.shared.open(importationWindowURL)
     }
 
-    func queue<S>(documents urls: S) where S.Element == URL, S : Sequence {
+    func queue<S>(documents urls: S) where S.Element == URL, S: Sequence {
         documentQueue.append(contentsOf: urls)
         objectWillChange.send()
         NSWorkspace.shared.open(importationWindowURL)
@@ -63,7 +63,9 @@ struct ImportationView: View {
         @ObservedObject var importationManager: ImportationManager
 
         func makeNSView(context: Context) -> QLPreviewView {
-            let view = QLPreviewView(frame: NSRect(x: 0, y: 0, width: 200, height: 250), style: .compact)!
+            let view = QLPreviewView(
+                    frame: NSRect(x: 0, y: 0, width: 200, height: 250),
+                    style: .compact)!
 
             // Hack to set the window level.
             DispatchQueue.main.async {
@@ -88,16 +90,10 @@ struct ImportationView: View {
                 VStack {
                     Preview(importationManager: importationManager)
                     HStack {
-                        ProgressView(
-                            value: Double(processedCount),
-                            total: Double(processedCount)
-                                + Double(importationManager.queueCount))
-                            .progressViewStyle(CircularProgressViewStyle())
-                            .padding(.trailing, 5.0)
                         Text("\(processedCount + 1) sur \(processedCount + importationManager.queueCount)")
                     }
                 }.frame(width: 230)
-                .padding(.trailing)
+                        .padding(.trailing)
                 VStack {
                     GroupBox {
                         ScrollView {
@@ -106,7 +102,7 @@ struct ImportationView: View {
                                 ForEach(configurationManager.types.indices,
                                         id: \.self) { index in
                                     Text(configurationManager.types[index].description)
-                                        .frame(width: 200)
+                                            .frame(width: 200)
                                 }
                             }.pickerStyle(RadioGroupPickerStyle())
                         }
@@ -117,9 +113,7 @@ struct ImportationView: View {
                     Text("Rien à importer").font(.largeTitle)
                 }.frame(width: 460)
             }
-        }.padding()
-        .frame(height: 300)
-        .toolbar {
+        }.padding().frame(height: 300).toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Ignorer") {
                     guard importationManager.queueHead != nil else {
@@ -135,16 +129,16 @@ struct ImportationView: View {
                         return
                     }
                     guard selectedType < configurationManager.types.count &&
-                            selectedType >= 0 else {
+                                  selectedType >= 0 else {
                         return
                     }
                     try! importationManager.importDocument(
-                        importationManager.queueHead!,
-                        withType: configurationManager.types[selectedType])
+                            importationManager.queueHead!,
+                            withType: configurationManager.types[selectedType])
                     importationManager.popQueueHead()
                     processedCount += 1
                 }.foregroundColor(Color.accentColor)
-                .disabled(importationManager.queueHead == nil)
+                        .disabled(importationManager.queueHead == nil)
             }
         }
     }

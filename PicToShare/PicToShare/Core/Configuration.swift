@@ -15,9 +15,9 @@ class ConfigurationManager: ObservableObject {
     /// Compatible with the Core `DocumentType` protocol to use directly with an
     /// Importation Manager.
     class DocumentTypeMetadata:
-        DocumentType,
-        CustomStringConvertible,
-        ObservableObject {
+            DocumentType,
+            CustomStringConvertible,
+            ObservableObject {
         @Published var description: String
         @Published var contentAnnotatorScript: URL? = nil
         @Published var contextAnnotators: [ContextAnnotator] = []
@@ -33,11 +33,11 @@ class ConfigurationManager: ObservableObject {
     }
 
     @Published var documentFolderURL: URL? = try? FileManager.default
-        .url(for: .documentDirectory,
-             in: .userDomainMask,
-             appropriateFor: nil,
-             create: true)
-        .appendingPathComponent("PicToShare", isDirectory: true)
+            .url(for: .documentDirectory,
+                    in: .userDomainMask,
+                    appropriateFor: nil,
+                    create: true)
+            .appendingPathComponent("PicToShare", isDirectory: true)
 
     /// The Document Types configured.
     @Published var types: [DocumentTypeMetadata] = []
@@ -53,8 +53,8 @@ class ConfigurationManager: ObservableObject {
     /// - Returns: The value or nil if not found.
     private func getPreference(_ key: String) -> CFPropertyList? {
         CFPreferencesCopyAppValue(
-            key as CFString,
-            kCFPreferencesCurrentApplication)
+                key as CFString,
+                kCFPreferencesCurrentApplication)
     }
 
     /// Helper function to write data from key-value persistent storage.
@@ -64,9 +64,9 @@ class ConfigurationManager: ObservableObject {
     ///   - value: The value to write.
     private func setPreference(_ key: String, _ value: CFPropertyList) {
         CFPreferencesSetAppValue(
-            key as CFString,
-            value as CFPropertyList,
-            kCFPreferencesCurrentApplication)
+                key as CFString,
+                value as CFPropertyList,
+                kCFPreferencesCurrentApplication)
     }
 
     /// Configures Document Types by reading data from persistent storage.
@@ -75,7 +75,7 @@ class ConfigurationManager: ObservableObject {
 
         types.removeAll()
         let typeDeclarations = getPreference("types")
-            as? Array<CFPropertyList> ?? []
+                as? Array<CFPropertyList> ?? []
         for rawDeclaration in typeDeclarations {
             do {
                 guard let declaration = rawDeclaration
@@ -89,7 +89,7 @@ class ConfigurationManager: ObservableObject {
                 }
                 let contentAnnotatorURL: URL?
                 if let contentAnnotatorPath = declaration["contentAnnotator"]
-                    as? String {
+                        as? String {
                     contentAnnotatorURL = URL(string: contentAnnotatorPath)
                 } else {
                     contentAnnotatorURL = nil
@@ -104,9 +104,9 @@ class ConfigurationManager: ObservableObject {
     /// Saves configured Document Types to persistent storage.
     func save() {
         setPreference("types",
-                      types.map {
-                        $0.toCFPropertyList()
-                      } as CFArray)
+                types.map {
+                    $0.toCFPropertyList()
+                } as CFArray)
 
         CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
     }
@@ -136,20 +136,19 @@ struct ConfigurationView: View {
                     ForEach(configurationManager.types.indices,
                             id: \.self) { index in
                         NavigationLink(
-                            destination: DocumentTypeView(
-                                description: $configurationManager.types[index].description),
-                            tag: index,
-                            selection: $selection) {
+                                destination: DocumentTypeView(
+                                        description: $configurationManager.types[index].description),
+                                tag: index,
+                                selection: $selection) {
                             Text(configurationManager.types[index].description)
                         }
-                            }
+                    }
                 }
             }.sheet(isPresented: $showNewTypeForm, content: {
                 VStack {
                     Form {
                         TextField("Nom du type", text: $newTypeDescription)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
                     }.padding()
                     HStack {
                         Button("Annuler") {
@@ -158,13 +157,13 @@ struct ConfigurationView: View {
                         }
                         Button("Créer") {
                             configurationManager.types.append(
-                                ConfigurationManager.DocumentTypeMetadata(
-                                    newTypeDescription))
+                                    ConfigurationManager.DocumentTypeMetadata(
+                                            newTypeDescription))
                             selection = configurationManager.types.count - 1
                             showNewTypeForm = false
                             newTypeDescription = ""
                         }.buttonStyle(AccentButtonStyle())
-                        .disabled(newTypeDescription.isEmpty)
+                                .disabled(newTypeDescription.isEmpty)
                     }.padding([.leading, .bottom, .trailing])
                 }
             })
@@ -186,14 +185,14 @@ struct ConfigurationView: View {
                     // content of the destination view if we remove right after
                     // unselect.
                     DispatchQueue.main
-                        .asyncAfter(deadline: .now() + .milliseconds(200)) {
-                            configurationManager.types.remove(at: index)
-                        }
+                            .asyncAfter(deadline: .now() + .milliseconds(200)) {
+                        configurationManager.types.remove(at: index)
+                    }
                 }) {
                     Image(systemName: "minus")
                 }.disabled(selection == nil)
             }.buttonStyle(BorderedButtonStyle())
-            .padding([.leading, .bottom, .trailing])
+                    .padding([.leading, .bottom, .trailing])
         }.frame(width: 800, height: 500)
     }
 }
@@ -205,7 +204,7 @@ struct DocumentTypeView: View {
         VStack {
             Form {
                 TextField("Nom du type", text: $description)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
             }.padding()
         }
     }

@@ -41,14 +41,14 @@ struct PTSApp: App {
 
         WindowGroup("Importation") {
             ImportationView()
-                .handlesExternalEvents(preferring: Set(arrayLiteral: "import"), allowing: Set(arrayLiteral: "*"))
-                .environmentObject(configurationManager)
-                .environmentObject(importationManager)
+                    .handlesExternalEvents(preferring: Set(arrayLiteral: "import"), allowing: Set(arrayLiteral: "*"))
+                    .environmentObject(configurationManager)
+                    .environmentObject(importationManager)
         }.handlesExternalEvents(matching: Set(arrayLiteral: "import"))
 
         Settings {
             SettingsView()
-                .environmentObject(configurationManager)
+                    .environmentObject(configurationManager)
         }
     }
 }
@@ -75,15 +75,15 @@ struct SettingsView: View {
     var body: some View {
         TabView {
             GeneralSettingsView()
-                .tabItem {
-                    Label("General", systemImage: "gear")
-                }
-                .tag(Tabs.general)
+                    .tabItem {
+                        Label("General", systemImage: "gear")
+                    }
+                    .tag(Tabs.general)
             ConfigurationView()
-                .tabItem {
-                    Label("Types", systemImage: "doc.on.doc.fill")
-                }
-                .tag(Tabs.types)
+                    .tabItem {
+                        Label("Types", systemImage: "doc.on.doc.fill")
+                    }
+                    .tag(Tabs.types)
         }
     }
 }

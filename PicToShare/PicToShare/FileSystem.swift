@@ -20,12 +20,12 @@ class FileSystemDocumentSource {
 
         if configurationManager.documentFolderURL != nil {
             try EonilFSEvents.startWatching(
-                paths: [configurationManager.documentFolderURL!.path],
-                for: ObjectIdentifier(self),
-                with: processEvent)
+                    paths: [configurationManager.documentFolderURL!.path],
+                    for: ObjectIdentifier(self),
+                    with: processEvent)
         }
     }
-    
+
     deinit {
         EonilFSEvents.stopWatching(for: ObjectIdentifier(self))
     }
@@ -33,7 +33,7 @@ class FileSystemDocumentSource {
     func promptDocument() {
         openPanel.begin { [self] response in
             guard response == NSApplication.ModalResponse.OK
-                    && openPanel.urls.count > 0 else {
+                          && openPanel.urls.count > 0 else {
                 return
             }
             importationManager.queue(documents: openPanel.urls)
@@ -52,9 +52,9 @@ class FileSystemDocumentSource {
         }
         // We ignore events triggered by the .DS_STORE hidden file
         guard !event.path.contains(".DS_STORE")
-                && flags.contains(.itemIsFile)
-                && (flags.contains(.itemRenamed)
-                      || flags.contains(.itemCreated)) else {
+                      && flags.contains(.itemIsFile)
+                      && (flags.contains(.itemRenamed)
+                || flags.contains(.itemCreated)) else {
             return
         }
         guard FileManager.default.fileExists(atPath: event.path) else {
