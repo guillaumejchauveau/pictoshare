@@ -12,23 +12,33 @@ import Quartz
 class ImportationManager: ObservableObject {
     static let shared = ImportationManager()
 
-    @Published var documentQueue: [URL] = []
+    private var documentQueue: [URL] = []
+    let importationWindowURL: URL! = URL(string: "pictoshare2://import")
 
-    /// Callback used by the ImportationView to indicate witch type was
-    /// selected.
-    ///
-    /// - Parameter index: The index of the selected type, or -1 if canceled.
-    /*private func promptDocumentTypeCallback(_ index: Int) {
-     window.orderOut(nil)
-     guard document != nil else {
-     return
-     }
-     if index >= 0 && index < configurationManager.types.count {
-     try! importDocument(document!,
-     withType: configurationManager.types[index])
-     }
-     document = nil
-     }*/
+    var queueHead: URL? {
+        documentQueue.first
+    }
+
+    var queueCount: Int {
+        documentQueue.count
+    }
+
+    func queue(document url: URL) {
+        documentQueue.append(url)
+        objectWillChange.send()
+        NSWorkspace.shared.open(importationWindowURL)
+    }
+
+    func queue<S>(documents urls: S) where S.Element == URL, S : Sequence {
+        documentQueue.append(contentsOf: urls)
+        objectWillChange.send()
+        NSWorkspace.shared.open(importationWindowURL)
+    }
+
+    func popQueueHead() {
+        documentQueue.removeFirst()
+        objectWillChange.send()
+    }
 
     /// Imports a Document given a Document Type.
     ///
@@ -39,42 +49,55 @@ class ImportationManager: ObservableObject {
     func importDocument(_ inputUrl: URL, withType type: DocumentType) throws {
         // TODO: Call ContentAnnotator Applescript
         //var contextAnnotations: []
+        print("import")
     }
 }
 
 struct ImportationView: View {
-    @ObservedObject var configurationManager: ConfigurationManager
-    @ObservedObject var importationManager: ImportationManager
+    @EnvironmentObject var configurationManager: ConfigurationManager
+    @EnvironmentObject var importationManager: ImportationManager
     @State private var selectedType = 0
     @State private var processedCount = 0
-    @State private var progressValue = 0.0
-
 
     struct Preview: NSViewRepresentable {
-        var importationManager: ImportationManager
+        @ObservedObject var importationManager: ImportationManager
 
-        func makeNSView(context: Context) -> NSView {
-            let view = QLPreviewView(frame: NSRect(x: 0, y: 0, width: 300, height: 400), style: .normal)!
-            if !importationManager.documentQueue.isEmpty {
-                view.previewItem = importationManager.documentQueue.first! as QLPreviewItem
+        func makeNSView(context: Context) -> QLPreviewView {
+            let view = QLPreviewView(frame: NSRect(x: 0, y: 0, width: 200, height: 250), style: .compact)!
+
+            // Hack to set the window level.
+            DispatchQueue.main.async {
+                view.window?.level = .modalPanel
             }
+
+            view.previewItem = importationManager.queueHead as QLPreviewItem?
             return view
         }
 
-        func updateNSView(_ nsView: NSView, context: Context) {
+        func updateNSView(_ nsView: QLPreviewView, context: Context) {
+            nsView.previewItem = importationManager.queueHead as QLPreviewItem?
+            if importationManager.queueHead == nil {
+                nsView.window?.close()
+            }
         }
     }
 
     var body: some View {
         HStack {
-            if !importationManager.documentQueue.isEmpty {
+            if importationManager.queueHead != nil {
                 VStack {
                     Preview(importationManager: importationManager)
                     HStack {
-                        ProgressView(value: progressValue)
+                        ProgressView(
+                            value: Double(processedCount),
+                            total: Double(processedCount)
+                                + Double(importationManager.queueCount))
                             .progressViewStyle(CircularProgressViewStyle())
+                            .padding(.trailing, 5.0)
+                        Text("\(processedCount + 1) sur \(processedCount + importationManager.queueCount)")
                     }
                 }.frame(width: 230)
+                .padding(.trailing)
                 VStack {
                     GroupBox {
                         ScrollView {
@@ -96,73 +119,33 @@ struct ImportationView: View {
             }
         }.padding()
         .frame(height: 300)
-        /*.toolbar {
+        .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Ignorer") {
-                }
+                    guard importationManager.queueHead != nil else {
+                        return
+                    }
+                    importationManager.popQueueHead()
+                    processedCount += 1
+                }.disabled(importationManager.queueHead == nil)
             }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Importer") {
+                    guard importationManager.queueHead != nil else {
+                        return
+                    }
+                    guard selectedType < configurationManager.types.count &&
+                            selectedType >= 0 else {
+                        return
+                    }
+                    try! importationManager.importDocument(
+                        importationManager.queueHead!,
+                        withType: configurationManager.types[selectedType])
+                    importationManager.popQueueHead()
+                    processedCount += 1
                 }.foregroundColor(Color.accentColor)
+                .disabled(importationManager.queueHead == nil)
             }
-        }*/
-    }
-}
-
-class ImportationWindowController: NSWindowController {
-    var importEnabled = false
-    
-    @IBOutlet var toolbar: NSToolbar!
-
-    @IBAction func `import`(_ sender: Any) {
-    }
-    @IBOutlet var importButton: NSButton!
-    @IBOutlet var ignoreItem: NSToolbarItem!
-    override func windowDidLoad() {
-        super.windowDidLoad()
-        ignoreItem.isEnabled = false
-        importButton.isEnabled = true
-        //importButton.identifier = NSUserInterfaceItemIdentifier("NSMenuItemImportFromDeviceIdentifier")
-        becomeFirstResponder()
-    }
-}
-
-class ImportationViewController: NSHostingController<ImportationView> {
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder, rootView: ImportationView(
-                    configurationManager: ConfigurationManager.shared,
-                    importationManager: ImportationManager.shared))
-    }
-
-
-    override func viewDidAppear() {
-        super.viewDidAppear()
-        view.window?.level = .modalPanel
-        view.window?.makeFirstResponder(self)
-    }
-    override func validRequestor(forSendType sendType: NSPasteboard.PasteboardType?, returnType: NSPasteboard.PasteboardType?) -> Any? {
-        if let pasteboardType = returnType,
-           // Service is image related.
-           NSImage.imageTypes.contains(pasteboardType.rawValue) {
-            return self  // This object can receive image data.
-        } else {
-            // Let objects in the responder chain handle the message.
-            return super.validRequestor(forSendType: sendType, returnType: returnType)
         }
-    }
-    func readSelection(from pasteboard: NSPasteboard) -> Bool {
-        // Verify that the pasteboard contains image data.
-        guard pasteboard.canReadItem(withDataConformingToTypes: NSImage.imageTypes) else {
-            return false
-        }
-        // Load the image.
-        guard let image = NSImage(pasteboard: pasteboard) else {
-            return false
-        }
-        // Incorporate the image into the app.
-
-        // This method has successfully read the pasteboard data.
-        return true
     }
 }

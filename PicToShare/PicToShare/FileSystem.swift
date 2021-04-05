@@ -10,32 +10,24 @@ import EonilFSEvents
 
 
 class FileSystemDocumentSource {
-    private var importCallback: ((URL) -> Void)?
+    private let importationManager: ImportationManager
     private let openPanel = NSOpenPanel()
 
-    init(path: String) throws {
+    init(_ configurationManager: ConfigurationManager, _ importationManager: ImportationManager) throws {
+        self.importationManager = importationManager
         openPanel.canChooseDirectories = false
         openPanel.allowsMultipleSelection = true
 
-        let monitoredFolder = try FileManager.default
-            .url(for: .documentDirectory,
-                 in: .userDomainMask,
-                 appropriateFor: nil,
-                 create: true)
-            .appendingPathComponent(path, isDirectory: true).path
-
-        try EonilFSEvents.startWatching(
-            paths: [monitoredFolder],
-            for: ObjectIdentifier(self),
-            with: processEvent)
+        if configurationManager.documentFolderURL != nil {
+            try EonilFSEvents.startWatching(
+                paths: [configurationManager.documentFolderURL!.path],
+                for: ObjectIdentifier(self),
+                with: processEvent)
+        }
     }
     
     deinit {
         EonilFSEvents.stopWatching(for: ObjectIdentifier(self))
-    }
-
-    func setImportCallback(_ callback: @escaping (URL) -> Void) {
-        importCallback = callback
     }
 
     func promptDocument() {
@@ -44,7 +36,7 @@ class FileSystemDocumentSource {
                     && openPanel.urls.count > 0 else {
                 return
             }
-            importCallback?(openPanel.urls[0])
+            importationManager.queue(documents: openPanel.urls)
         }
     }
 
@@ -68,7 +60,6 @@ class FileSystemDocumentSource {
         guard FileManager.default.fileExists(atPath: event.path) else {
             return
         }
-
-        importCallback?(URL(fileURLWithPath: event.path))
+        importationManager.queue(document: URL(fileURLWithPath: event.path))
     }
 }

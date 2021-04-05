@@ -10,8 +10,6 @@ import SwiftUI
 
 /// Responsible of Document Types configuration and storage.
 class ConfigurationManager: ObservableObject {
-    static let shared = ConfigurationManager()
-
     /// Internal representation of a configured Document Type.
     ///
     /// Compatible with the Core `DocumentType` protocol to use directly with an
@@ -33,6 +31,13 @@ class ConfigurationManager: ObservableObject {
     enum Error: Swift.Error {
         case preferencesError
     }
+
+    @Published var documentFolderURL: URL? = try? FileManager.default
+        .url(for: .documentDirectory,
+             in: .userDomainMask,
+             appropriateFor: nil,
+             create: true)
+        .appendingPathComponent("PicToShare", isDirectory: true)
 
     /// The Document Types configured.
     @Published var types: [DocumentTypeMetadata] = []
@@ -119,7 +124,7 @@ extension ConfigurationManager.DocumentTypeMetadata: CFPropertyListable {
 
 
 struct ConfigurationView: View {
-    @ObservedObject var configurationManager: ConfigurationManager
+    @EnvironmentObject var configurationManager: ConfigurationManager
     @State private var selection: Int? = nil
     @State private var showNewTypeForm = false
     @State private var newTypeDescription = ""
