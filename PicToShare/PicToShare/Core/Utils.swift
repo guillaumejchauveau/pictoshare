@@ -2,7 +2,7 @@
 // Created by Guillaume Chauveau on 10/03/2021.
 //
 
-import CoreFoundation
+import SwiftUI
 
 class SafePointer<T> {
     var pointee: T

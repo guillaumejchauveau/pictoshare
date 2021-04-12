@@ -19,7 +19,7 @@ protocol ContextAnnotator {
 /// The implementation of the integration of the output file to external applications is not yet planned.
 protocol DocumentType {
     /// The Exporter used to create the file.
-    var contentAnnotatorScript: URL { get }
+    var contentAnnotatorScript: URL? { get }
     /// The Annotators used to process the Document.
     var contextAnnotators: [ContextAnnotator] { get }
 }
