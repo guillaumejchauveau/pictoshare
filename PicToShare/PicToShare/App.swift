@@ -26,17 +26,16 @@ struct PTSApp: App {
         WindowGroup {
             VStack {
                 Text("Welcome").font(.largeTitle)
+                HStack {
+                    Button(action: {}) {
+                        ContinuityCameraButton().frame(width: 150, height: 100, alignment: .center)
+                                .padding(EdgeInsets(top: 2,
+                                        leading: 7,
+                                        bottom: 2,
+                                        trailing: 7))
+                    }
+                }
             }.frame(width: 500, height: 300)
-        }.commands {
-            CommandMenu("Importer") {
-                Button("Importer sur ce Mac") {
-                    fsSource.promptDocument()
-                }
-                Divider()
-                Button("Imports en attente") {
-                    openURL(importationManager.importationWindowURL)
-                }
-            }
         }
 
         WindowGroup("Importation") {
