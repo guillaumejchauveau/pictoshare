@@ -3,7 +3,7 @@
     "pins": [
       {
         "package": "EonilFSEvents",
-        "repositoryURL": "https://github.com/eonil/FSEvents",
+        "repositoryURL": "https://github.com/eonil/FSEvents.git",
         "state": {
           "branch": null,
           "revision": "e6b7cdfa2754454e194a45ee6c2004d0f630fe88",
