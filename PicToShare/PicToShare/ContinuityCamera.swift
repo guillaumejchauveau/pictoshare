@@ -6,6 +6,8 @@ import SwiftUI
 
 struct ContinuityCameraButton: NSViewRepresentable {
     class Responder: NSResponder, NSServicesMenuRequestor {
+        var configurationManager: ConfigurationManager!
+
         override func validRequestor(forSendType sendType: NSPasteboard.PasteboardType?, returnType: NSPasteboard.PasteboardType?) -> Any? {
             if let pasteboardType = returnType,
                // Service is image related.
@@ -34,10 +36,12 @@ struct ContinuityCameraButton: NSViewRepresentable {
         }
     }
 
+    @EnvironmentObject var configurationManager: ConfigurationManager
     @Binding var showMenu: Bool
     private let responder = Responder()
 
     func makeNSView(context: Context) -> NSView {
+        responder.configurationManager = configurationManager
         let view = NSButton(title: "Prendre une photo", target: responder, action: #selector(responder.showMenu))
         view.menu = NSMenu()
         view.menu!.addItem(NSMenuItem(title: "Aucun appareil disponible", action: nil, keyEquivalent: ""))

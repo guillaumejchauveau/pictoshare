@@ -32,6 +32,7 @@ struct PTSApp: App {
                         Text("Prendre une photo")
                     }*/
                     ContinuityCameraButton(showMenu: $showContinuityMenu)
+                            .environmentObject(configurationManager)
                 }
             }.frame(width: 500, height: 300)
         }
