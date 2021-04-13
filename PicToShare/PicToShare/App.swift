@@ -13,6 +13,7 @@ struct PTSApp: App {
     private let importationManager = ImportationManager()
     private let fsSource: FileSystemDocumentSource
     @Environment(\.openURL) var openURL
+    @State var showContinuityMenu = false
 
     init() {
         fsSource = try! FileSystemDocumentSource(configurationManager, importationManager)
@@ -27,13 +28,10 @@ struct PTSApp: App {
             VStack {
                 Text("Welcome").font(.largeTitle)
                 HStack {
-                    Button(action: {}) {
-                        ContinuityCameraButton().frame(width: 150, height: 100, alignment: .center)
-                                .padding(EdgeInsets(top: 2,
-                                        leading: 7,
-                                        bottom: 2,
-                                        trailing: 7))
-                    }
+                    /*Button(action: {showContinuityMenu = true}) {
+                        Text("Prendre une photo")
+                    }*/
+                    ContinuityCameraButton(showMenu: $showContinuityMenu)
                 }
             }.frame(width: 500, height: 300)
         }

@@ -4,59 +4,49 @@
 
 import SwiftUI
 
-class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
-    override func loadView() {
-        let button = NSButton(title: "", target: self, action: #selector(showMenu))
-        button.isTransparent = true
-        button.menu = NSMenu()
-        button.menu!.addItem(NSMenuItem(title: "Aucun appareil disponible", action: nil, keyEquivalent: ""))
-        view = button
-    }
-
-    override func validRequestor(forSendType sendType: NSPasteboard.PasteboardType?, returnType: NSPasteboard.PasteboardType?) -> Any? {
-        if let pasteboardType = returnType,
-           // Service is image related.
-           NSImage.imageTypes.contains(pasteboardType.rawValue) {
-            return self  // This object can receive image data.
-        } else {
-            // Let objects in the responder chain handle the message.
-            return super.validRequestor(forSendType: sendType, returnType: returnType)
+struct ContinuityCameraButton: NSViewRepresentable {
+    class Responder: NSResponder, NSServicesMenuRequestor {
+        override func validRequestor(forSendType sendType: NSPasteboard.PasteboardType?, returnType: NSPasteboard.PasteboardType?) -> Any? {
+            if let pasteboardType = returnType,
+               // Service is image related.
+               NSImage.imageTypes.contains(pasteboardType.rawValue) {
+                return self  // This object can receive image data.
+            } else {
+                // Let objects in the responder chain handle the message.
+                return super.validRequestor(forSendType: sendType, returnType: returnType)
+            }
         }
-    }
 
-    func readSelection(from pasteboard: NSPasteboard) -> Bool {
-        // Verify that the pasteboard contains image data.
-        guard pasteboard.canReadItem(withDataConformingToTypes: NSImage.imageTypes) else {
+        func readSelection(from pasteboard: NSPasteboard) -> Bool {
+            if let imageData = pasteboard.data(forType: .tiff) {
+                //try? imageData.write(to: configurationManager.documentFolderURL!.appendingPathComponent("test.tiff"))
+                return true
+            }
             return false
         }
-        // Load the image.
-        guard let image = NSImage(pasteboard: pasteboard) else {
-            return false
+
+        @objc func showMenu(_ sender: NSView) {
+            guard let event = NSApplication.shared.currentEvent else { return }
+            // AppKit uses the Responder Chain to figure out where to insert the Continuity Camera menu items.
+            // So making ourselves `firstResponder` here is important.
+            sender.window?.makeFirstResponder(self)
+            NSMenu.popUpContextMenu(sender.menu!, with: event, for: sender)
         }
-        // Incorporate the image into the app.
-        print("image")
-        // This method has successfully read the pasteboard data.
-        return true
     }
 
-    @objc func showMenu(_ sender: NSButton) {
-        guard let menu = sender.menu else { return }
-        guard let event = NSApplication.shared.currentEvent else { return }
+    @Binding var showMenu: Bool
+    private let responder = Responder()
 
-        // AppKit uses the Responder Chain to figure out where to insert the Continuity Camera menu items.
-        // So making ourselves `firstResponder` here is important.
-        view.window!.makeFirstResponder(self)
-        NSMenu.popUpContextMenu(menu, with: event, for: sender)
-    }
-}
-
-struct ContinuityCameraButton: NSViewControllerRepresentable {
-    typealias NSViewControllerType = ContinuityCameraController
-
-    func makeNSViewController(context: Context) -> NSViewControllerType {
-        NSViewControllerType()
+    func makeNSView(context: Context) -> NSView {
+        let view = NSButton(title: "Prendre une photo", target: responder, action: #selector(responder.showMenu))
+        view.menu = NSMenu()
+        view.menu!.addItem(NSMenuItem(title: "Aucun appareil disponible", action: nil, keyEquivalent: ""))
+        return view
     }
 
-    func updateNSViewController(_ nsViewController: NSViewControllerType, context: Self.Context) {
+    func updateNSView(_ nsView: NSView, context: Context) {
+        if (showMenu) {
+            showMenu = false
+        }
     }
 }
