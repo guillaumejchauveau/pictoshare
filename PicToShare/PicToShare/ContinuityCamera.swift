@@ -3,11 +3,13 @@
 //
 
 import SwiftUI
+
+
 class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
     var configurationManager: ConfigurationManager!
 
     override func loadView() {
-        let button = NSButton(title: "Prendre une photo", target: self, action: #selector(showMenu))
+        let button = NSButton(title: "Photo", target: self, action: #selector(showMenu))
         button.menu = NSMenu()
         button.menu!.addItem(NSMenuItem(title: "Aucun appareil disponible", action: nil, keyEquivalent: ""))
         view = button
@@ -33,13 +35,13 @@ class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
     }
 
     @objc func showMenu(_ sender: NSButton) {
-        guard let menu = sender.menu else { return }
+        guard let menu = view.menu else { return }
         guard let event = NSApplication.shared.currentEvent else { return }
 
         // AppKit uses the Responder Chain to figure out where to insert the Continuity Camera menu items.
         // So making ourselves `firstResponder` here is important.
         view.window!.makeFirstResponder(self)
-        NSMenu.popUpContextMenu(menu, with: event, for: sender)
+        NSMenu.popUpContextMenu(menu, with: event, for: view)
     }
 }
 

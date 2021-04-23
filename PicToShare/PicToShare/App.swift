@@ -24,30 +24,59 @@ struct PTSApp: App {
     }
 
     var body: some Scene {
-        WindowGroup {
+        /*WindowGroup {
             VStack {
                 Text("Welcome").font(.largeTitle)
                 HStack {
-                    /*Button(action: {showContinuityMenu = true}) {
+                    *Button(action: {showContinuityMenu = true}) {
                         Text("Prendre une photo")
-                    }*/
+                    }*
                     ContinuityCameraButton()
                             .environmentObject(configurationManager)
                 }
             }.frame(width: 500, height: 300)
-        }
+        }*/
 
-        WindowGroup("Importation") {
-            ImportationView()
-                    .handlesExternalEvents(preferring: Set(arrayLiteral: "import"), allowing: Set(arrayLiteral: "*"))
+        WindowGroup {
+            MainView()
+                    .toolbar {
+                        ToolbarItem(placement: .primaryAction) {
+                            ContinuityCameraButton()
+                                    .environmentObject(configurationManager)
+                        }
+                        ToolbarItem(placement: .primaryAction) {
+                            Button("Fichier") {
+                                fsSource.promptDocument()
+                            }
+                        }
+                    }
                     .environmentObject(configurationManager)
                     .environmentObject(importationManager)
+                    .handlesExternalEvents(preferring: Set(arrayLiteral: "import"), allowing: Set(arrayLiteral: "*"))
         }.handlesExternalEvents(matching: Set(arrayLiteral: "import"))
 
         Settings {
             SettingsView()
                     .environmentObject(configurationManager)
         }
+    }
+}
+
+struct MainView: View {
+    @EnvironmentObject var configurationManager: ConfigurationManager
+    @EnvironmentObject var importationManager: ImportationManager
+    var body: some View {
+        HStack {
+            if importationManager.queueHead != nil {
+                ImportationView()
+                        .environmentObject(configurationManager)
+                        .environmentObject(importationManager)
+            } else {
+                VStack {
+                    Text("Rien à importer").font(.largeTitle)
+                }.frame(width: 460)
+            }
+        }.padding().frame(height: 300)
     }
 }
 
