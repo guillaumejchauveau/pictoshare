@@ -24,29 +24,22 @@ struct PTSApp: App {
     }
 
     var body: some Scene {
-        /*WindowGroup {
-            VStack {
-                Text("Welcome").font(.largeTitle)
-                HStack {
-                    *Button(action: {showContinuityMenu = true}) {
-                        Text("Prendre une photo")
-                    }*
-                    ContinuityCameraButton()
-                            .environmentObject(configurationManager)
-                }
-            }.frame(width: 500, height: 300)
-        }*/
-
         WindowGroup {
             MainView()
                     .toolbar {
                         ToolbarItem(placement: .primaryAction) {
-                            ContinuityCameraButton()
-                                    .environmentObject(configurationManager)
+                            Button(action: {}) {
+                                ZStack {
+                                    Image(systemName: "camera")
+                                    // Hacky way of adding a button opening a NSMenu for Continuity Camera.
+                                    ContinuityCameraButton()
+                                            .environmentObject(configurationManager)
+                                }
+                            }
                         }
                         ToolbarItem(placement: .primaryAction) {
-                            Button("Fichier") {
-                                fsSource.promptDocument()
+                            Button(action: fsSource.promptDocument) {
+                                Image(systemName: "internaldrive")
                             }
                         }
                     }
@@ -56,8 +49,7 @@ struct PTSApp: App {
         }.handlesExternalEvents(matching: Set(arrayLiteral: "import"))
 
         Settings {
-            SettingsView()
-                    .environmentObject(configurationManager)
+            SettingsView().environmentObject(configurationManager)
         }
     }
 }
@@ -72,11 +64,21 @@ struct MainView: View {
                         .environmentObject(configurationManager)
                         .environmentObject(importationManager)
             } else {
-                VStack {
-                    Text("Rien à importer").font(.largeTitle)
-                }.frame(width: 460)
+                VStack(alignment: .leading) {
+                    Text("Utilisez la barre d'outil pour importer").font(.system(size: 20))
+                            .padding(.bottom, 10)
+                    HStack {
+                        Image(systemName: "camera").imageScale(.large).font(.system(size: 16))
+                        Text("Prendre une photo avec un appareil connecté").font(.system(size: 16, weight: .light))
+                    }
+                            .padding(.bottom, 5)
+                    HStack {
+                        Image(systemName: "internaldrive").imageScale(.large).font(.system(size: 16))
+                        Text("Choisir un ou plusieurs fichiers sur votre ordinateur").font(.system(size: 16, weight: .light))
+                    }
+                }.frame(width: 480, height: 300)
             }
-        }.padding().frame(height: 300)
+        }.padding()
     }
 }
 

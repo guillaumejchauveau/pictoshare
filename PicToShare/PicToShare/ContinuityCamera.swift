@@ -9,7 +9,8 @@ class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
     var configurationManager: ConfigurationManager!
 
     override func loadView() {
-        let button = NSButton(title: "Photo", target: self, action: #selector(showMenu))
+        let button = NSButton(title: "", target: self, action: #selector(showMenu))
+        button.isTransparent = true
         button.menu = NSMenu()
         button.menu!.addItem(NSMenuItem(title: "Aucun appareil disponible", action: nil, keyEquivalent: ""))
         view = button
@@ -27,16 +28,26 @@ class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
     }
 
     func readSelection(from pasteboard: NSPasteboard) -> Bool {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
         if let imageData = pasteboard.data(forType: .tiff) {
-            try? imageData.write(to: configurationManager.documentFolderURL!.appendingPathComponent("test.tiff"))
+            try? imageData.write(to: configurationManager.documentFolderURL!.appendingPathComponent("\(dateFormatter.string(from: Date())).tiff"))
+            return true
+        }
+        if let pdfData = pasteboard.data(forType: .pdf) {
+            try? pdfData.write(to: configurationManager.documentFolderURL!.appendingPathComponent("\(dateFormatter.string(from: Date())).pdf"))
             return true
         }
         return false
     }
 
     @objc func showMenu(_ sender: NSButton) {
-        guard let menu = view.menu else { return }
-        guard let event = NSApplication.shared.currentEvent else { return }
+        guard let menu = view.menu else {
+            return
+        }
+        guard let event = NSApplication.shared.currentEvent else {
+            return
+        }
 
         // AppKit uses the Responder Chain to figure out where to insert the Continuity Camera menu items.
         // So making ourselves `firstResponder` here is important.
@@ -47,14 +58,13 @@ class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
 
 struct ContinuityCameraButton: NSViewControllerRepresentable {
     @EnvironmentObject var configurationManager: ConfigurationManager
-    typealias NSViewControllerType = ContinuityCameraController
 
-    func makeNSViewController(context: Context) -> NSViewControllerType {
-        let controller = NSViewControllerType()
+    func makeNSViewController(context: Context) -> ContinuityCameraController {
+        let controller = ContinuityCameraController()
         controller.configurationManager = configurationManager
         return controller
     }
 
-    func updateNSViewController(_ nsViewController: NSViewControllerType, context: Self.Context) {
+    func updateNSViewController(_ nsViewController: ContinuityCameraController, context: Context) {
     }
 }

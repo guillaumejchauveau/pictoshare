@@ -62,7 +62,7 @@ struct ImportationView: View {
 
         func makeNSView(context: Context) -> QLPreviewView {
             let view = QLPreviewView(
-                    frame: NSRect(x: 0, y: 0, width: 200, height: 250),
+                    frame: NSRect(x: 0, y: 0, width: 230, height: 250),
                     style: .compact)!
 
             view.previewItem = importationManager.queueHead as QLPreviewItem?
@@ -80,7 +80,7 @@ struct ImportationView: View {
             HStack {
                 Text("\(processedCount + 1) sur \(processedCount + importationManager.queueCount)")
             }
-        }.frame(width: 230).padding(.trailing)
+        }.frame(width: 230, height: 300).padding(.trailing, 20)
         VStack {
             GroupBox {
                 ScrollView {
@@ -117,6 +117,6 @@ struct ImportationView: View {
                     processedCount += 1
                 }.buttonStyle(AccentButtonStyle())
             }
-        }.frame(width: 230)
+        }.frame(width: 230, height: 300)
     }
 }
