@@ -13,6 +13,7 @@ struct PTSApp: App {
     private let importationManager = ImportationManager()
     private let fsSource: FileSystemDocumentSource
     @Environment(\.openURL) var openURL
+    @State var showContinuityMenu = false
 
     init() {
         fsSource = try! FileSystemDocumentSource(configurationManager, importationManager)
@@ -24,32 +25,60 @@ struct PTSApp: App {
 
     var body: some Scene {
         WindowGroup {
-            VStack {
-                Text("Welcome").font(.largeTitle)
-            }.frame(width: 500, height: 300)
-        }.commands {
-            CommandMenu("Importer") {
-                Button("Importer sur ce Mac") {
-                    fsSource.promptDocument()
-                }
-                Divider()
-                Button("Imports en attente") {
-                    openURL(importationManager.importationWindowURL)
-                }
-            }
-        }
-
-        WindowGroup("Importation") {
-            ImportationView()
-                    .handlesExternalEvents(preferring: Set(arrayLiteral: "import"), allowing: Set(arrayLiteral: "*"))
+            MainView()
+                    .toolbar {
+                        ToolbarItem(placement: .primaryAction) {
+                            Button(action: {}) {
+                                ZStack {
+                                    Image(systemName: "camera")
+                                    // Hacky way of adding a button opening a NSMenu for Continuity Camera.
+                                    ContinuityCameraButton()
+                                            .environmentObject(configurationManager)
+                                }
+                            }
+                        }
+                        ToolbarItem(placement: .primaryAction) {
+                            Button(action: fsSource.promptDocument) {
+                                Image(systemName: "internaldrive")
+                            }
+                        }
+                    }
                     .environmentObject(configurationManager)
                     .environmentObject(importationManager)
+                    .handlesExternalEvents(preferring: Set(arrayLiteral: "import"), allowing: Set(arrayLiteral: "*"))
         }.handlesExternalEvents(matching: Set(arrayLiteral: "import"))
 
         Settings {
-            SettingsView()
-                    .environmentObject(configurationManager)
+            SettingsView().environmentObject(configurationManager)
         }
+    }
+}
+
+struct MainView: View {
+    @EnvironmentObject var configurationManager: ConfigurationManager
+    @EnvironmentObject var importationManager: ImportationManager
+    var body: some View {
+        HStack {
+            if importationManager.queueHead != nil {
+                ImportationView()
+                        .environmentObject(configurationManager)
+                        .environmentObject(importationManager)
+            } else {
+                VStack(alignment: .leading) {
+                    Text("Utilisez la barre d'outil pour importer").font(.system(size: 20))
+                            .padding(.bottom, 10)
+                    HStack {
+                        Image(systemName: "camera").imageScale(.large).font(.system(size: 16))
+                        Text("Prendre une photo avec un appareil connecté").font(.system(size: 16, weight: .light))
+                    }
+                            .padding(.bottom, 5)
+                    HStack {
+                        Image(systemName: "internaldrive").imageScale(.large).font(.system(size: 16))
+                        Text("Choisir un ou plusieurs fichiers sur votre ordinateur").font(.system(size: 16, weight: .light))
+                    }
+                }.frame(width: 480, height: 300)
+            }
+        }.padding()
     }
 }
 
