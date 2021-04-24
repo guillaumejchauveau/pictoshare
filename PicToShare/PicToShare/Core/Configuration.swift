@@ -137,7 +137,8 @@ struct ConfigurationView: View {
                             id: \.self) { index in
                         NavigationLink(
                                 destination: DocumentTypeView(
-                                        description: $configurationManager.types[index].description),
+                                        description: $configurationManager.types[index].description,
+                                        scriptPath: $configurationManager.types[index].contentAnnotatorScript),
                                 tag: index,
                                 selection: $selection) {
                             Text(configurationManager.types[index].description)
@@ -199,12 +200,14 @@ struct ConfigurationView: View {
 
 struct DocumentTypeView: View {
     @Binding var description: String
+    @Binding var scriptPath: URL?
 
     var body: some View {
         VStack {
             Form {
                 TextField("Nom du type", text: $description)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
+                TextField("Adresse de l'Applescript assoscié", text: )
             }.padding()
         }
     }
