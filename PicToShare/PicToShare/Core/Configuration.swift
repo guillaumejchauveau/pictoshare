@@ -194,21 +194,61 @@ struct ConfigurationView: View {
                 }.disabled(selection == nil)
             }.buttonStyle(BorderedButtonStyle())
                     .padding([.leading, .bottom, .trailing])
-        }.frame(width: 800, height: 500)
+        }.frame(width: 640, height: 360)
     }
 }
 
+
 struct DocumentTypeView: View {
+    @EnvironmentObject var configurationManager: ConfigurationManager
     @Binding var description: String
     @Binding var scriptPath: URL?
 
     var body: some View {
-        VStack {
-            Form {
-                TextField("Nom du type", text: $description)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                TextField("Adresse de l'Applescript assoscié", text: )
-            }.padding()
-        }
+        HStack {
+            
+            /// Left part
+            VStack(alignment: .trailing, spacing: 10) {
+                Text("Nom du type :")
+                Text("Script associé :")
+            }.frame(width: 100, alignment: .trailing)
+            
+            /// Right part
+            VStack(alignment: .leading) {
+                TextField("Nom du type", text: $description).frame(width: 200)
+                
+                HStack {
+                    Text(scriptPath?.lastPathComponent ?? "Aucun script associé")
+                        .font(.system(size: 12))
+                        .lineLimit(1)
+                        .truncationMode(.head)
+                    
+                    /// Button to load an applescript. We won't check if the file is correct or nor
+                    Button(action: {
+                            let openPanel = NSOpenPanel()
+                            openPanel.begin { [self] response in
+                                guard response == NSApplication.ModalResponse.OK
+                                        && openPanel.urls.count > 0 else {
+                                    return
+                                }
+                                scriptPath = openPanel.urls[0]
+                                /// We may change this later
+                                configurationManager.save()
+                            }
+                    }) {
+                        Image(systemName: "folder")
+                    }
+                    
+                    /// Button to withdraw the current selected type's applescript
+                    Button(action: {
+                        scriptPath = nil
+                        /// We may change this later
+                        configurationManager.save()
+                    }) {
+                        Image(systemName: "trash")
+                    }
+                }
+            }.frame(width: 200, alignment: .leading)
+        }.frame(alignment: .center)
     }
 }
