@@ -14,8 +14,8 @@
 		95BD8ECA2616344100D83532 /* Importation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EC62616344100D83532 /* Importation.swift */; };
 		95BD8ECB2616344100D83532 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EC72616344100D83532 /* Utils.swift */; };
 		95BD8ECC2616344100D83532 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EC82616344100D83532 /* Types.swift */; };
-		95BD8ED22616348400D83532 /* EonilFSEvents in Frameworks */ = {isa = PBXBuildFile; productRef = 95BD8ED12616348400D83532 /* EonilFSEvents */; };
 		95F95102261B9A7C00000A93 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F95101261B9A7C00000A93 /* App.swift */; };
+		F9A7C33E0FC489A18F38CE51 /* ContinuityCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C938489000F68C95D3D7 /* ContinuityCamera.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +30,7 @@
 		95BD8EC72616344100D83532 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		95BD8EC82616344100D83532 /* Types.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
 		95F95101261B9A7C00000A93 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
+		F9A7C938489000F68C95D3D7 /* ContinuityCamera.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContinuityCamera.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,7 +38,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				95BD8ED22616348400D83532 /* EonilFSEvents in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -70,6 +70,7 @@
 				95BD8EBE261633BA00D83532 /* FileSystem.swift */,
 				95BD8EC22616341100D83532 /* ViewUtils.swift */,
 				95F95101261B9A7C00000A93 /* App.swift */,
+				F9A7C938489000F68C95D3D7 /* ContinuityCamera.swift */,
 			);
 			path = PicToShare;
 			sourceTree = "<group>";
@@ -102,7 +103,7 @@
 			);
 			name = PicToShare;
 			packageProductDependencies = (
-				95BD8ED12616348400D83532 /* EonilFSEvents */,
+				95BD8ED12616348400D83532,
 			);
 			productName = PicToShare;
 			productReference = 95BD8EA72616311000D83532 /* PicToShare.app */;
@@ -132,7 +133,7 @@
 			);
 			mainGroup = 95BD8E9E2616311000D83532;
 			packageReferences = (
-				95BD8ED02616348400D83532 /* XCRemoteSwiftPackageReference "FSEvents" */,
+				95BD8ED02616348400D83532,
 			);
 			productRefGroup = 95BD8EA82616311000D83532 /* Products */;
 			projectDirPath = "";
@@ -166,6 +167,7 @@
 				95BD8EBF261633BA00D83532 /* FileSystem.swift in Sources */,
 				95F95102261B9A7C00000A93 /* App.swift in Sources */,
 				95BD8EC32616341100D83532 /* ViewUtils.swift in Sources */,
+				F9A7C33E0FC489A18F38CE51 /* ContinuityCamera.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -355,7 +357,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		95BD8ED02616348400D83532 /* XCRemoteSwiftPackageReference "FSEvents" */ = {
+		95BD8ED02616348400D83532 = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/eonil/FSEvents.git";
 			requirement = {
@@ -366,9 +368,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		95BD8ED12616348400D83532 /* EonilFSEvents */ = {
+		95BD8ED12616348400D83532 = {
 			isa = XCSwiftPackageProductDependency;
-			package = 95BD8ED02616348400D83532 /* XCRemoteSwiftPackageReference "FSEvents" */;
+			package = 95BD8ED02616348400D83532;
 			productName = EonilFSEvents;
 		};
 /* End XCSwiftPackageProductDependency section */
