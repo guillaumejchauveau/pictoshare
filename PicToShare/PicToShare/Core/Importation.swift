@@ -11,7 +11,7 @@ import Quartz
 /// Object responsible of the Importation process.
 class ImportationManager: ObservableObject {
     private var documentQueue: [URL] = []
-    let importationWindowURL: URL! = URL(string: "pictoshare2://import")
+    let mainWindowURL = URL(string: "pictoshare2://main")!
 
     var queueHead: URL? {
         documentQueue.first
@@ -24,13 +24,13 @@ class ImportationManager: ObservableObject {
     func queue(document url: URL) {
         documentQueue.append(url)
         objectWillChange.send()
-        NSWorkspace.shared.open(importationWindowURL)
+        NSWorkspace.shared.open(mainWindowURL)
     }
 
     func queue<S>(documents urls: S) where S.Element == URL, S: Sequence {
         documentQueue.append(contentsOf: urls)
         objectWillChange.send()
-        NSWorkspace.shared.open(importationWindowURL)
+        NSWorkspace.shared.open(mainWindowURL)
     }
 
     func popQueueHead() {

@@ -5,14 +5,33 @@
 import SwiftUI
 
 
-class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
-    var configurationManager: ConfigurationManager!
+class ContinuityCameraDocumentSource {
+    private let configurationManager: ConfigurationManager
+
+    init(_ configurationManager: ConfigurationManager) {
+        self.configurationManager = configurationManager
+    }
+
+    func createTiffDocument(from data: Data) {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
+            try? data.write(to: configurationManager.documentFolderURL!.appendingPathComponent("\(dateFormatter.string(from: Date())).tiff"))
+    }
+
+    func createPDFDocument(from data: Data) {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
+            try? data.write(to: configurationManager.documentFolderURL!.appendingPathComponent("\(dateFormatter.string(from: Date())).pdf"))
+    }
+}
+
+final class ContinuityCameraController: NSViewController, NSServicesMenuRequestor, NSViewControllerRepresentable {
+    var source: ContinuityCameraDocumentSource!
 
     override func loadView() {
         let button = NSButton(title: "", target: self, action: #selector(showMenu))
         button.isTransparent = true
         button.menu = NSMenu()
-        button.menu!.addItem(NSMenuItem(title: "Aucun appareil disponible", action: nil, keyEquivalent: ""))
         view = button
     }
 
@@ -28,14 +47,12 @@ class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
     }
 
     func readSelection(from pasteboard: NSPasteboard) -> Bool {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
         if let imageData = pasteboard.data(forType: .tiff) {
-            try? imageData.write(to: configurationManager.documentFolderURL!.appendingPathComponent("\(dateFormatter.string(from: Date())).tiff"))
+            source.createTiffDocument(from: imageData)
             return true
         }
         if let pdfData = pasteboard.data(forType: .pdf) {
-            try? pdfData.write(to: configurationManager.documentFolderURL!.appendingPathComponent("\(dateFormatter.string(from: Date())).pdf"))
+            source.createPDFDocument(from: pdfData)
             return true
         }
         return false
@@ -54,17 +71,11 @@ class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
         view.window!.makeFirstResponder(self)
         NSMenu.popUpContextMenu(menu, with: event, for: view)
     }
-}
 
-struct ContinuityCameraButton: NSViewControllerRepresentable {
-    @EnvironmentObject var configurationManager: ConfigurationManager
-
-    func makeNSViewController(context: Context) -> ContinuityCameraController {
-        let controller = ContinuityCameraController()
-        controller.configurationManager = configurationManager
-        return controller
+    func makeNSViewController(context: Context) -> NSViewController {
+        self
     }
 
-    func updateNSViewController(_ nsViewController: ContinuityCameraController, context: Context) {
+    func updateNSViewController(_ nsViewController: NSViewController, context: Context) {
     }
 }

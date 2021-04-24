@@ -8,19 +8,45 @@
 import SwiftUI
 
 @main
-struct PTSApp: App {
+class PTSApp: App {
     private let configurationManager = ConfigurationManager()
     private let importationManager = ImportationManager()
     private let fsSource: FileSystemDocumentSource
-    @Environment(\.openURL) var openURL
-    @State var showContinuityMenu = false
+    private let ccSource: ContinuityCameraDocumentSource
+    private let ccController = ContinuityCameraController()
 
-    init() {
+    private let statusBarItem: NSStatusItem
+
+    required init() {
         fsSource = try! FileSystemDocumentSource(configurationManager, importationManager)
+        ccSource = ContinuityCameraDocumentSource(configurationManager)
+        ccController.source = ccSource
 
         configurationManager.types.append(ConfigurationManager.DocumentTypeMetadata("Carte de visite"))
         configurationManager.types.append(ConfigurationManager.DocumentTypeMetadata("Affiche evenement"))
         configurationManager.types.append(ConfigurationManager.DocumentTypeMetadata("Tableau blanc"))
+
+        statusBarItem = NSStatusBar.system.statusItem(
+                withLength: NSStatusItem.squareLength)
+        statusBarItem.button?.title = "􀈄"
+
+        statusBarItem.menu = NSMenu(title: "PicToShare")
+        statusBarItem.menu!.addItem(
+                withTitle: "Ouvrir PicToShare",
+                action: #selector(showWindow),
+                keyEquivalent: "").target = self
+        statusBarItem.menu!.addItem(
+                withTitle: "Choisir un fichier",
+                action: #selector(statusMenuChooseFile),
+                keyEquivalent: "").target = self
+    }
+
+    @objc func showWindow() {
+        NSWorkspace.shared.open(URL(string: "pictoshare2://main")!)
+    }
+
+    @objc func statusMenuChooseFile() {
+        fsSource.promptDocument()
     }
 
     var body: some Scene {
@@ -32,8 +58,7 @@ struct PTSApp: App {
                                 ZStack {
                                     Image(systemName: "camera")
                                     // Hacky way of adding a button opening a NSMenu for Continuity Camera.
-                                    ContinuityCameraButton()
-                                            .environmentObject(configurationManager)
+                                    ccController
                                 }
                             }
                         }
@@ -45,8 +70,8 @@ struct PTSApp: App {
                     }
                     .environmentObject(configurationManager)
                     .environmentObject(importationManager)
-                    .handlesExternalEvents(preferring: Set(arrayLiteral: "import"), allowing: Set(arrayLiteral: "*"))
-        }.handlesExternalEvents(matching: Set(arrayLiteral: "import"))
+                    .handlesExternalEvents(preferring: Set(arrayLiteral: "main"), allowing: Set(arrayLiteral: "*"))
+        }.handlesExternalEvents(matching: Set(arrayLiteral: "main"))
 
         Settings {
             SettingsView().environmentObject(configurationManager)

@@ -17,6 +17,7 @@ class FileSystemDocumentSource {
         self.importationManager = importationManager
         openPanel.canChooseDirectories = false
         openPanel.allowsMultipleSelection = true
+        openPanel.level = .modalPanel
 
         if configurationManager.documentFolderURL != nil {
             try EonilFSEvents.startWatching(
