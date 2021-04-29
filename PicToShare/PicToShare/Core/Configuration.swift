@@ -203,47 +203,40 @@ struct DocumentTypeView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
     @Binding var description: String
     @Binding var scriptPath: URL?
+    @State var chooseScriptFile = false
 
     var body: some View {
         HStack {
-            
             /// Left part
             VStack(alignment: .trailing, spacing: 10) {
                 Text("Nom du type :")
                 Text("Script associé :")
             }.frame(width: 100, alignment: .trailing)
-            
+
             /// Right part
             VStack(alignment: .leading) {
                 TextField("Nom du type", text: $description).frame(width: 200)
-                
+
                 HStack {
                     Text(scriptPath?.lastPathComponent ?? "Aucun script associé")
-                        .font(.system(size: 12))
-                        .lineLimit(1)
-                        .truncationMode(.head)
-                    
-                    /// Button to load an applescript. We won't check if the file is correct or nor
+                            .font(.system(size: 12))
+                            .lineLimit(1)
+                            .truncationMode(.head)
+
+                    /// Button to load an applescript.
                     Button(action: {
-                            let openPanel = NSOpenPanel()
-                            openPanel.begin { [self] response in
-                                guard response == NSApplication.ModalResponse.OK
-                                        && openPanel.urls.count > 0 else {
-                                    return
-                                }
-                                scriptPath = openPanel.urls[0]
-                                /// We may change this later
-                                configurationManager.save()
-                            }
+                        chooseScriptFile = true
                     }) {
                         Image(systemName: "folder")
+                    }.fileImporter(isPresented: $chooseScriptFile, allowedContentTypes: [.osaScript]) { result in
+                        do {
+                            scriptPath = try result.get()
+                        } catch {}
                     }
-                    
+
                     /// Button to withdraw the current selected type's applescript
                     Button(action: {
                         scriptPath = nil
-                        /// We may change this later
-                        configurationManager.save()
                     }) {
                         Image(systemName: "trash")
                     }
