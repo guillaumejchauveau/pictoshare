@@ -137,7 +137,8 @@ struct ConfigurationView: View {
                             id: \.self) { index in
                         NavigationLink(
                                 destination: DocumentTypeView(
-                                        description: $configurationManager.types[index].description),
+                                        description: $configurationManager.types[index].description,
+                                        scriptPath: $configurationManager.types[index].contentAnnotatorScript),
                                 tag: index,
                                 selection: $selection) {
                             Text(configurationManager.types[index].description)
@@ -193,19 +194,54 @@ struct ConfigurationView: View {
                 }.disabled(selection == nil)
             }.buttonStyle(BorderedButtonStyle())
                     .padding([.leading, .bottom, .trailing])
-        }.frame(width: 800, height: 500)
+        }.frame(width: 640, height: 360)
     }
 }
 
+
 struct DocumentTypeView: View {
+    @EnvironmentObject var configurationManager: ConfigurationManager
     @Binding var description: String
+    @Binding var scriptPath: URL?
+    @State var chooseScriptFile = false
 
     var body: some View {
-        VStack {
-            Form {
-                TextField("Nom du type", text: $description)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-            }.padding()
-        }
+        HStack {
+            /// Left part
+            VStack(alignment: .trailing, spacing: 10) {
+                Text("Nom du type :")
+                Text("Script associé :")
+            }.frame(width: 100, alignment: .trailing)
+
+            /// Right part
+            VStack(alignment: .leading) {
+                TextField("Nom du type", text: $description).frame(width: 200)
+
+                HStack {
+                    Text(scriptPath?.lastPathComponent ?? "Aucun script associé")
+                            .font(.system(size: 12))
+                            .lineLimit(1)
+                            .truncationMode(.head)
+
+                    /// Button to load an applescript.
+                    Button(action: {
+                        chooseScriptFile = true
+                    }) {
+                        Image(systemName: "folder")
+                    }.fileImporter(isPresented: $chooseScriptFile, allowedContentTypes: [.osaScript]) { result in
+                        do {
+                            scriptPath = try result.get()
+                        } catch {}
+                    }
+
+                    /// Button to withdraw the current selected type's applescript
+                    Button(action: {
+                        scriptPath = nil
+                    }) {
+                        Image(systemName: "trash")
+                    }
+                }
+            }.frame(width: 200, alignment: .leading)
+        }.frame(alignment: .center)
     }
 }
