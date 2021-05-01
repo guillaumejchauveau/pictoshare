@@ -31,11 +31,11 @@ class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
         if let imageData = pasteboard.data(forType: .tiff) {
-            try? imageData.write(to: configurationManager.documentFolderURL!.appendingPathComponent("\(dateFormatter.string(from: Date())).tiff"))
+            try? imageData.write(to: configurationManager.documentFolderURL.appendingPathComponent("\(dateFormatter.string(from: Date())).tiff"))
             return true
         }
         if let pdfData = pasteboard.data(forType: .pdf) {
-            try? pdfData.write(to: configurationManager.documentFolderURL!.appendingPathComponent("\(dateFormatter.string(from: Date())).pdf"))
+            try? pdfData.write(to: configurationManager.documentFolderURL.appendingPathComponent("\(dateFormatter.string(from: Date())).pdf"))
             return true
         }
         return false
