@@ -18,12 +18,14 @@ class ConfigurationManager: ObservableObject {
             DocumentType,
             CustomStringConvertible,
             ObservableObject {
+        var oldDescription: String
         @Published var description: String
         @Published var contentAnnotatorScript: URL? = nil
         @Published var contextAnnotators: [ContextAnnotator] = []
 
         init(_ description: String, _ contentAnnotatorScript: URL? = nil) {
             self.description = description
+            oldDescription = description
             self.contentAnnotatorScript = contentAnnotatorScript
         }
     }
@@ -32,7 +34,7 @@ class ConfigurationManager: ObservableObject {
         case preferencesError
     }
 
-    @Published var documentFolderURL: URL? = try? FileManager.default
+    @Published var documentFolderURL: URL = try! FileManager.default
             .url(for: .documentDirectory,
                     in: .userDomainMask,
                     appropriateFor: nil,
@@ -65,7 +67,7 @@ class ConfigurationManager: ObservableObject {
     private func setPreference(_ key: String, _ value: CFPropertyList) {
         CFPreferencesSetAppValue(
                 key as CFString,
-                value as CFPropertyList,
+                value,
                 kCFPreferencesCurrentApplication)
     }
 
@@ -101,8 +103,29 @@ class ConfigurationManager: ObservableObject {
         }
     }
 
-    /// Saves configured Document Types to persistent storage.
+    /// Saves configured Document Types to persistent storage and manages corresponding folders.
+    /// Currently as multiple failing situations:
+    /// - a file exists with the name of the document type;
+    /// - the name of the document type contains forbidden characters for paths;
+    /// - two document types have the same name.
     func save() {
+        for type in types {
+            let newUrl = documentFolderURL.appendingPathComponent(type.description)
+            let oldUrl = documentFolderURL.appendingPathComponent(type.oldDescription)
+            if !FileManager.default.fileExists(atPath: oldUrl.path) {
+                try! FileManager.default.createDirectory(at: newUrl, withIntermediateDirectories: true)
+                continue
+            }
+            if type.oldDescription != type.description {
+                do {
+                    try FileManager.default.moveItem(at: oldUrl, to: newUrl)
+                    type.oldDescription = type.description
+                } catch {
+                    type.description = type.oldDescription
+                }
+            }
+        }
+
         setPreference("types",
                 types.map {
                     $0.toCFPropertyList()
@@ -117,7 +140,7 @@ extension ConfigurationManager.DocumentTypeMetadata: CFPropertyListable {
     func toCFPropertyList() -> CFPropertyList {
         [
             "description": description,
-            "contentAnnotator": contentAnnotatorScript?.path
+            "contentAnnotator": contentAnnotatorScript?.path ?? ""
         ] as CFPropertyList
     }
 }
@@ -160,6 +183,7 @@ struct ConfigurationView: View {
                             configurationManager.types.append(
                                     ConfigurationManager.DocumentTypeMetadata(
                                             newTypeDescription))
+                            configurationManager.save()
                             selection = configurationManager.types.count - 1
                             showNewTypeForm = false
                             newTypeDescription = ""
@@ -188,6 +212,7 @@ struct ConfigurationView: View {
                     DispatchQueue.main
                             .asyncAfter(deadline: .now() + .milliseconds(200)) {
                         configurationManager.types.remove(at: index)
+                        configurationManager.save()
                     }
                 }) {
                     Image(systemName: "minus")
@@ -215,7 +240,9 @@ struct DocumentTypeView: View {
 
             /// Right part
             VStack(alignment: .leading) {
-                TextField("Nom du type", text: $description).frame(width: 200)
+                TextField("Nom du type", text: $description, onCommit: {
+                    configurationManager.save()
+                }).frame(width: 200)
 
                 HStack {
                     Text(scriptPath?.lastPathComponent ?? "Aucun script associé")
@@ -229,9 +256,7 @@ struct DocumentTypeView: View {
                     }) {
                         Image(systemName: "folder")
                     }.fileImporter(isPresented: $chooseScriptFile, allowedContentTypes: [.osaScript]) { result in
-                        do {
-                            scriptPath = try result.get()
-                        } catch {}
+                        scriptPath = try? result.get()
                     }
 
                     /// Button to withdraw the current selected type's applescript

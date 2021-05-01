@@ -10,20 +10,20 @@ import EonilFSEvents
 
 
 class FileSystemDocumentSource {
+    private let configurationManager: ConfigurationManager
     private let importationManager: ImportationManager
     private let openPanel = NSOpenPanel()
 
     init(_ configurationManager: ConfigurationManager, _ importationManager: ImportationManager) throws {
+        self.configurationManager = configurationManager
         self.importationManager = importationManager
         openPanel.canChooseDirectories = false
         openPanel.allowsMultipleSelection = true
 
-        if configurationManager.documentFolderURL != nil {
-            try EonilFSEvents.startWatching(
-                    paths: [configurationManager.documentFolderURL!.path],
-                    for: ObjectIdentifier(self),
-                    with: processEvent)
-        }
+        try EonilFSEvents.startWatching(
+                paths: [configurationManager.documentFolderURL.path],
+                for: ObjectIdentifier(self),
+                with: processEvent)
     }
 
     deinit {
@@ -57,9 +57,12 @@ class FileSystemDocumentSource {
                 || flags.contains(.itemCreated)) else {
             return
         }
-        guard FileManager.default.fileExists(atPath: event.path) else {
+
+        let url = URL(fileURLWithPath: event.path)
+        guard FileManager.default.fileExists(atPath: event.path)
+                && url.deletingLastPathComponent() == configurationManager.documentFolderURL else {
             return
         }
-        importationManager.queue(document: URL(fileURLWithPath: event.path))
+        importationManager.queue(document: url)
     }
 }
