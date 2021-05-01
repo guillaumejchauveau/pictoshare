@@ -12,15 +12,22 @@ struct PTSApp: App {
     private let configurationManager = ConfigurationManager()
     private let importationManager = ImportationManager()
     private let fsSource: FileSystemDocumentSource
-    @Environment(\.openURL) var openURL
-    @State var showContinuityMenu = false
+    @Environment(\.openURL) private var openURL
+    @State private var showContinuityMenu = false
 
     init() {
-        fsSource = try! FileSystemDocumentSource(configurationManager, importationManager)
+        configurationManager.load()
+        configurationManager.save()
 
-        configurationManager.types.append(ConfigurationManager.DocumentTypeMetadata("Carte de visite"))
-        configurationManager.types.append(ConfigurationManager.DocumentTypeMetadata("Affiche evenement"))
-        configurationManager.types.append(ConfigurationManager.DocumentTypeMetadata("Tableau blanc"))
+        // Creates default document types.
+        if !FileManager.default.fileExists(atPath: configurationManager.documentFolderURL.path) {
+            configurationManager.types.append(ConfigurationManager.DocumentTypeMetadata("Carte de visite"))
+            configurationManager.types.append(ConfigurationManager.DocumentTypeMetadata("Affiche evenement"))
+            configurationManager.types.append(ConfigurationManager.DocumentTypeMetadata("Tableau blanc"))
+            configurationManager.save()
+        }
+
+        fsSource = try! FileSystemDocumentSource(configurationManager, importationManager)
     }
 
     var body: some Scene {
@@ -53,6 +60,7 @@ struct PTSApp: App {
         }
     }
 }
+
 
 struct MainView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
