@@ -22,4 +22,6 @@ protocol DocumentType {
     var contentAnnotatorScript: URL? { get }
     /// The Annotators used to process the Document.
     var contextAnnotators: [ContextAnnotator] { get }
+    /// The URL of the folder containg links to all Documents of this Type.
+    var folder: URL { get }
 }

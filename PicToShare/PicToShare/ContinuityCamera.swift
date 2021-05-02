@@ -7,6 +7,7 @@ import SwiftUI
 
 class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
     var configurationManager: ConfigurationManager!
+    var importationManager: ImportationManager!
 
     override func loadView() {
         let button = NSButton(title: "", target: self, action: #selector(showMenu))
@@ -30,15 +31,25 @@ class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
     func readSelection(from pasteboard: NSPasteboard) -> Bool {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
-        if let imageData = pasteboard.data(forType: .tiff) {
-            try? imageData.write(to: configurationManager.documentFolderURL.appendingPathComponent("\(dateFormatter.string(from: Date())).tiff"))
-            return true
+        var data: Data?
+        var fileName = dateFormatter.string(from: Date())
+
+        if data == nil {
+            data = pasteboard.data(forType: .tiff)
+            fileName = "\(fileName).tif"
         }
-        if let pdfData = pasteboard.data(forType: .pdf) {
-            try? pdfData.write(to: configurationManager.documentFolderURL.appendingPathComponent("\(dateFormatter.string(from: Date())).pdf"))
-            return true
+        if data == nil {
+            data = pasteboard.data(forType: .pdf)
+            fileName = "\(fileName).pdf"
         }
-        return false
+
+        if data == nil {
+            return false
+        }
+        let fileUrl = configurationManager.documentFolderURL.appendingPathComponent(fileName)
+        try! data!.write(to: fileUrl)
+        importationManager.queue(document: fileUrl)
+        return true
     }
 
     @objc func showMenu(_ sender: NSButton) {
@@ -58,10 +69,12 @@ class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
 
 struct ContinuityCameraButton: NSViewControllerRepresentable {
     @EnvironmentObject var configurationManager: ConfigurationManager
+    @EnvironmentObject var importationManager: ImportationManager
 
     func makeNSViewController(context: Context) -> ContinuityCameraController {
         let controller = ContinuityCameraController()
         controller.configurationManager = configurationManager
+        controller.importationManager = importationManager
         return controller
     }
 

@@ -18,14 +18,21 @@ class ConfigurationManager: ObservableObject {
             DocumentType,
             CustomStringConvertible,
             ObservableObject {
-        var oldDescription: String
+        let configurationManager: ConfigurationManager
+        var savedDescription: String
         @Published var description: String
         @Published var contentAnnotatorScript: URL? = nil
         @Published var contextAnnotators: [ContextAnnotator] = []
+        var folder: URL {
+            configurationManager.documentFolderURL.appendingPathComponent(savedDescription)
+        }
 
-        init(_ description: String, _ contentAnnotatorScript: URL? = nil) {
+        init(_ description: String,
+             _ configurationManager: ConfigurationManager,
+             _ contentAnnotatorScript: URL? = nil) {
+            self.configurationManager = configurationManager
             self.description = description
-            oldDescription = description
+            savedDescription = description
             self.contentAnnotatorScript = contentAnnotatorScript
         }
     }
@@ -43,6 +50,10 @@ class ConfigurationManager: ObservableObject {
 
     /// The Document Types configured.
     @Published var types: [DocumentTypeMetadata] = []
+
+    func addType(with description: String) {
+        types.append(DocumentTypeMetadata(description, self))
+    }
 
     //**************************************************************************
     // The following methods are responsible of the persistence of the
@@ -96,7 +107,9 @@ class ConfigurationManager: ObservableObject {
                 } else {
                     contentAnnotatorURL = nil
                 }
-                types.append(DocumentTypeMetadata(description, contentAnnotatorURL))
+                types.append(DocumentTypeMetadata(description,
+                                                  self,
+                                                  contentAnnotatorURL))
             } catch {
                 continue
             }
@@ -111,17 +124,17 @@ class ConfigurationManager: ObservableObject {
     func save() {
         for type in types {
             let newUrl = documentFolderURL.appendingPathComponent(type.description)
-            let oldUrl = documentFolderURL.appendingPathComponent(type.oldDescription)
+            let oldUrl = documentFolderURL.appendingPathComponent(type.savedDescription)
             if !FileManager.default.fileExists(atPath: oldUrl.path) {
                 try! FileManager.default.createDirectory(at: newUrl, withIntermediateDirectories: true)
                 continue
             }
-            if type.oldDescription != type.description {
+            if type.savedDescription != type.description {
                 do {
                     try FileManager.default.moveItem(at: oldUrl, to: newUrl)
-                    type.oldDescription = type.description
+                    type.savedDescription = type.description
                 } catch {
-                    type.description = type.oldDescription
+                    type.description = type.savedDescription
                 }
             }
         }
@@ -180,9 +193,7 @@ struct ConfigurationView: View {
                             newTypeDescription = ""
                         }
                         Button("Créer") {
-                            configurationManager.types.append(
-                                    ConfigurationManager.DocumentTypeMetadata(
-                                            newTypeDescription))
+                            configurationManager.addType(with: newTypeDescription)
                             configurationManager.save()
                             selection = configurationManager.types.count - 1
                             showNewTypeForm = false
@@ -257,11 +268,13 @@ struct DocumentTypeView: View {
                         Image(systemName: "folder")
                     }.fileImporter(isPresented: $chooseScriptFile, allowedContentTypes: [.osaScript]) { result in
                         scriptPath = try? result.get()
+                        configurationManager.save()
                     }
 
                     /// Button to withdraw the current selected type's applescript
                     Button(action: {
                         scriptPath = nil
+                        configurationManager.save()
                     }) {
                         Image(systemName: "trash")
                     }

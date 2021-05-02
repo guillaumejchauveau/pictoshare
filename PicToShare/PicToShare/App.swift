@@ -10,24 +10,22 @@ import SwiftUI
 @main
 struct PTSApp: App {
     private let configurationManager = ConfigurationManager()
-    private let importationManager = ImportationManager()
-    private let fsSource: FileSystemDocumentSource
+    private let importationManager: ImportationManager
     @Environment(\.openURL) private var openURL
-    @State private var showContinuityMenu = false
+    @State private var showFilePrompt = false
 
     init() {
         configurationManager.load()
         configurationManager.save()
+        importationManager = ImportationManager(configurationManager)
 
         // Creates default document types.
         if !FileManager.default.fileExists(atPath: configurationManager.documentFolderURL.path) {
-            configurationManager.types.append(ConfigurationManager.DocumentTypeMetadata("Carte de visite"))
-            configurationManager.types.append(ConfigurationManager.DocumentTypeMetadata("Affiche evenement"))
-            configurationManager.types.append(ConfigurationManager.DocumentTypeMetadata("Tableau blanc"))
+            configurationManager.addType(with: "Carte de visite")
+            configurationManager.addType(with: "Affiche evenement")
+            configurationManager.addType(with: "Tableau blanc")
             configurationManager.save()
         }
-
-        fsSource = try! FileSystemDocumentSource(configurationManager, importationManager)
     }
 
     var body: some Scene {
@@ -45,15 +43,19 @@ struct PTSApp: App {
                             }
                         }
                         ToolbarItem(placement: .primaryAction) {
-                            Button(action: fsSource.promptDocument) {
+                            Button(action: {showFilePrompt = true}) {
                                 Image(systemName: "internaldrive")
+                            }.fileImporter(isPresented: $showFilePrompt,
+                                           allowedContentTypes: [.content],
+                                           allowsMultipleSelection: true) { result in
+                                importationManager.queue(documents: (try? result.get()) ?? [])
                             }
                         }
                     }
                     .environmentObject(configurationManager)
                     .environmentObject(importationManager)
-                    .handlesExternalEvents(preferring: Set(arrayLiteral: "import"), allowing: Set(arrayLiteral: "*"))
-        }.handlesExternalEvents(matching: Set(arrayLiteral: "import"))
+                    .handlesExternalEvents(preferring: Set(arrayLiteral: "*"), allowing: Set(arrayLiteral: "*"))
+        }.handlesExternalEvents(matching: Set(arrayLiteral: "*"))
 
         Settings {
             SettingsView().environmentObject(configurationManager)
