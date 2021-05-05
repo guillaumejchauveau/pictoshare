@@ -17,7 +17,6 @@ enum ImportationError: Error {
 class ImportationManager: ObservableObject {
     private var documentQueue: [URL] = []
     private let configurationManager: ConfigurationManager
-    let importationWindowURL: URL! = URL(string: "pictoshare://import")
 
     init(_ configurationManager: ConfigurationManager) {
         self.configurationManager = configurationManager
@@ -34,13 +33,11 @@ class ImportationManager: ObservableObject {
     func queue(document url: URL) {
         documentQueue.append(url)
         objectWillChange.send()
-        NSWorkspace.shared.open(importationWindowURL)
     }
 
     func queue<S>(documents urls: S) where S.Element == URL, S: Sequence {
         documentQueue.append(contentsOf: urls)
         objectWillChange.send()
-        NSWorkspace.shared.open(importationWindowURL)
     }
 
     func popQueueHead() {
@@ -63,8 +60,8 @@ class ImportationManager: ObservableObject {
             let targetFolderUrl = inputUrl.deletingLastPathComponent()
             if targetFolderUrl != configurationManager.documentFolderURL {
                 targetUrl = targetFolderUrl
-                    .appendingPathComponent(inputUrl.deletingPathExtension().lastPathComponent + "_copy") // TODO
-                    .appendingPathExtension(inputUrl.pathExtension)
+                        .appendingPathComponent(inputUrl.deletingPathExtension().lastPathComponent + "_copy")
+                        .appendingPathExtension(inputUrl.pathExtension)
                 try! FileManager.default.copyItem(at: inputUrl, to: targetUrl)
             }
 
@@ -82,24 +79,40 @@ class ImportationManager: ObservableObject {
                 // Finds the output(s) of the script.
                 let outputFilesPrefix = targetUrl.deletingPathExtension().lastPathComponent
                 var outputUrls = try! FileManager.default.contentsOfDirectory(at: targetFolderUrl, includingPropertiesForKeys: nil)
-                    .filter({ url in url.deletingPathExtension().lastPathComponent == outputFilesPrefix })
+                        .filter {
+                            $0.deletingPathExtension().lastPathComponent == outputFilesPrefix
+                        }
                 if outputUrls.count > 1 {
-                    outputUrls.removeAll(where: {url in url == targetUrl})
+                    outputUrls.removeAll {
+                        $0 == targetUrl
+                    }
                     try! FileManager.default.removeItem(at: targetUrl)
                 }
-                self.bookmark(urls: outputUrls, in: type.folder)
+                self.postProcessDocuments(urls: outputUrls, with: type)
             }
             // Runs the script asynchronously.
             try! scriptProcess.run()
         } else {
-            bookmark(urls: [inputUrl], in: type.folder)
+            postProcessDocuments(urls: [inputUrl], with: type)
         }
     }
 
-    private func bookmark(urls: [URL], in folder: URL) {
+    private func postProcessDocuments(urls: [URL], with type: DocumentType) {
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
+        var annotations = type.contextAnnotators.flatMap {
+            $0.keywords
+        }
+        annotations.append(type.description)
+        let itemKeywords = try! encoder.encode(annotations)
+
         for url in urls {
+            try! url.setExtendedAttribute(
+                    data: itemKeywords,
+                    forName: "com.apple.metadata:kMDItemKeywords")
+
             let bookmarkData = try! url.bookmarkData(options: [.suitableForBookmarkFile])
-            try! URL.writeBookmarkData(bookmarkData, to: folder.appendingPathComponent(url.lastPathComponent))
+            try! URL.writeBookmarkData(bookmarkData, to: type.folder.appendingPathComponent(url.lastPathComponent))
         }
     }
 }

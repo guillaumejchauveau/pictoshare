@@ -7,8 +7,10 @@
 
 import Foundation
 
-/// Placeholder for Context Annotators. They will use Spotlight metadata.
-protocol ContextAnnotator {
+/// Object providing a list of keywords to add to imported Documents.
+/// The keywords are usually based on information in the current context.
+protocol ContextAnnotator: CustomStringConvertible {
+    var keywords: [String] { get }
 }
 
 
@@ -17,11 +19,11 @@ protocol ContextAnnotator {
 /// The first component is the URL of an AppleScript, that will process the input file into the output file at the
 /// proper destination. The Context Annotators will then add Spotlight metadata to the output file.
 /// The implementation of the integration of the output file to external applications is not yet planned.
-protocol DocumentType {
+protocol DocumentType: CustomStringConvertible {
     /// The Exporter used to create the file.
     var contentAnnotatorScript: URL? { get }
     /// The Annotators used to process the Document.
     var contextAnnotators: [ContextAnnotator] { get }
-    /// The URL of the folder containg links to all Documents of this Type.
+    /// The URL of the folder containing links to all Documents of this Type.
     var folder: URL { get }
 }

@@ -16,30 +16,41 @@ class ConfigurationManager: ObservableObject {
     /// Importation Manager.
     class DocumentTypeMetadata:
             DocumentType,
-            CustomStringConvertible,
             ObservableObject {
         let configurationManager: ConfigurationManager
         var savedDescription: String
         @Published var description: String
-        @Published var contentAnnotatorScript: URL? = nil
-        @Published var contextAnnotators: [ContextAnnotator] = []
+        @Published var contentAnnotatorScript: URL?
+        @Published var contextAnnotators: [ContextAnnotator]
         var folder: URL {
             configurationManager.documentFolderURL.appendingPathComponent(savedDescription)
         }
 
         init(_ description: String,
              _ configurationManager: ConfigurationManager,
-             _ contentAnnotatorScript: URL? = nil) {
+             _ contentAnnotatorScript: URL? = nil,
+             _ contextAnnotators: [ContextAnnotator] = []) {
             self.configurationManager = configurationManager
             self.description = description
             savedDescription = description
             self.contentAnnotatorScript = contentAnnotatorScript
+            self.contextAnnotators = contextAnnotators
         }
     }
 
     enum Error: Swift.Error {
         case preferencesError
     }
+
+    init(_ contextAnnotators: [ContextAnnotator] = []) {
+        var annotators: [String: ContextAnnotator] = [:]
+        for contextAnnotator in contextAnnotators {
+            annotators[contextAnnotator.description] = contextAnnotator
+        }
+        self.contextAnnotators = annotators
+    }
+
+    let contextAnnotators: [String: ContextAnnotator]
 
     @Published var documentFolderURL: URL = try! FileManager.default
             .url(for: .documentDirectory,
@@ -107,9 +118,23 @@ class ConfigurationManager: ObservableObject {
                 } else {
                     contentAnnotatorURL = nil
                 }
+
+                var contextAnnotators: [ContextAnnotator] = []
+                let contextAnnotatorsDeclarations = declaration["contextAnnotators"]
+                        as? Array<CFPropertyList> ?? []
+                for rawContextAnnotatorDeclaration in contextAnnotatorsDeclarations {
+                    if let contextAnnotatorDescription = rawContextAnnotatorDeclaration
+                            as? String {
+                        if let annotator = self.contextAnnotators[contextAnnotatorDescription] {
+                            contextAnnotators.append(annotator)
+                        }
+                    }
+                }
+
                 types.append(DocumentTypeMetadata(description,
-                                                  self,
-                                                  contentAnnotatorURL))
+                        self,
+                        contentAnnotatorURL,
+                        contextAnnotators))
             } catch {
                 continue
             }
@@ -153,7 +178,8 @@ extension ConfigurationManager.DocumentTypeMetadata: CFPropertyListable {
     func toCFPropertyList() -> CFPropertyList {
         [
             "description": description,
-            "contentAnnotator": contentAnnotatorScript?.path ?? ""
+            "contentAnnotator": contentAnnotatorScript?.path ?? "",
+            "contextAnnotators": contextAnnotators.map({ $0.description }) as CFArray
         ] as CFPropertyList
     }
 }
@@ -174,7 +200,8 @@ struct ConfigurationView: View {
                         NavigationLink(
                                 destination: DocumentTypeView(
                                         description: $configurationManager.types[index].description,
-                                        scriptPath: $configurationManager.types[index].contentAnnotatorScript),
+                                        scriptPath: $configurationManager.types[index].contentAnnotatorScript,
+                                        contextAnnotators: $configurationManager.types[index].contextAnnotators),
                                 tag: index,
                                 selection: $selection) {
                             Text(configurationManager.types[index].description)
@@ -217,7 +244,7 @@ struct ConfigurationView: View {
                     } else if index != 0 {
                         selection! -= 1
                     }
-                    // Workaround a bug where the NavigationView won't clear the
+                    // Workaround for a bug where the NavigationView won't clear the
                     // content of the destination view if we remove right after
                     // unselect.
                     DispatchQueue.main
@@ -235,31 +262,111 @@ struct ConfigurationView: View {
 }
 
 
+struct DocumentTypeContextAnnotatorsView: NSViewRepresentable {
+    @EnvironmentObject var configurationManager: ConfigurationManager
+    @Binding var contextAnnotators: [ContextAnnotator]
+
+    func makeNSView(context: Context) -> NSTokenField {
+        let view = NSTokenField()
+        view.delegate = context.coordinator
+        view.placeholderString = "Commencez à taper"
+        view.stringValue = contextAnnotators.reduce("") { result, annotator in
+            result + annotator.description + ","
+        }
+        view.tokenStyle = .rounded
+        view.isBezeled = false
+        view.drawsBackground = false
+
+        return view
+    }
+
+    func updateNSView(_ nsView: NSTokenField, context: Context) {
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    class Coordinator: NSObject, NSTokenFieldDelegate {
+        var parent: DocumentTypeContextAnnotatorsView
+
+        init(_ parent: DocumentTypeContextAnnotatorsView) {
+            self.parent = parent
+        }
+
+        func tokenField(_ tokenField: NSTokenField,
+                        completionsForSubstring substring: String,
+                        indexOfToken tokenIndex: Int,
+                        indexOfSelectedItem selectedIndex: UnsafeMutablePointer<Int>?) -> [Any]? {
+            parent.configurationManager.contextAnnotators.keys.filter {
+                $0.hasPrefix(substring)
+            }
+        }
+
+        func tokenField(_ tokenField: NSTokenField, shouldAdd tokens: [Any], at index: Int) -> [Any] {
+            guard let descriptions = tokens as? [String] else {
+                return []
+            }
+            return parent.configurationManager.contextAnnotators.values.filter {
+                descriptions.contains($0.description)
+            }
+        }
+
+        func tokenField(_ tokenField: NSTokenField,
+                        displayStringForRepresentedObject representedObject: Any) -> String? {
+            guard let contextAnnotator = representedObject as? ContextAnnotator else {
+                return nil
+            }
+            return contextAnnotator.description
+        }
+
+        func controlTextDidEndEditing(_ obj: Notification) {
+            guard let tokenField = obj.object as? NSTokenField else {
+                return
+            }
+            let descriptions = tokenField.stringValue.split(separator: ",")
+            parent.contextAnnotators = parent.configurationManager.contextAnnotators.values.filter {
+                descriptions.contains(Substring($0.description))
+            }
+            parent.configurationManager.save()
+        }
+    }
+}
+
+/// Removes the focus ring on TextField.
+extension NSTextField {
+    open override var focusRingType: NSFocusRingType {
+        get {
+            .none
+        }
+        set {
+        }
+    }
+}
+
 struct DocumentTypeView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
     @Binding var description: String
     @Binding var scriptPath: URL?
+    @Binding var contextAnnotators: [ContextAnnotator]
     @State var chooseScriptFile = false
 
     var body: some View {
-        HStack {
-            /// Left part
-            VStack(alignment: .trailing, spacing: 10) {
-                Text("Nom du type :")
-                Text("Script associé :")
-            }.frame(width: 100, alignment: .trailing)
+        Form {
+            GroupBox {
+                TextField("Nom du type", text: $description, onCommit: configurationManager.save)
+                        .textFieldStyle(PlainTextFieldStyle())
+                        .padding(2)
+            }
 
-            /// Right part
-            VStack(alignment: .leading) {
-                TextField("Nom du type", text: $description, onCommit: {
-                    configurationManager.save()
-                }).frame(width: 200)
-
+            GroupBox(label: Text("Script")) {
                 HStack {
                     Text(scriptPath?.lastPathComponent ?? "Aucun script associé")
                             .font(.system(size: 12))
                             .lineLimit(1)
                             .truncationMode(.head)
+
+                    Spacer()
 
                     /// Button to load an applescript.
                     Button(action: {
@@ -278,8 +385,13 @@ struct DocumentTypeView: View {
                     }) {
                         Image(systemName: "trash")
                     }
-                }
-            }.frame(width: 200, alignment: .leading)
-        }.frame(alignment: .center)
+                }.padding(EdgeInsets(top: 0, leading: 2, bottom: 0, trailing: 2))
+            }
+
+            GroupBox(label: Text("Annotations")) {
+                DocumentTypeContextAnnotatorsView(contextAnnotators: $contextAnnotators)
+                        .padding(.vertical, 2)
+            }
+        }.padding(10)
     }
 }

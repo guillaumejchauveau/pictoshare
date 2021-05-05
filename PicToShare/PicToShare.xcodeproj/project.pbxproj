@@ -13,6 +13,7 @@
 		95BD8ECA2616344100D83532 /* Importation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EC62616344100D83532 /* Importation.swift */; };
 		95BD8ECB2616344100D83532 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EC72616344100D83532 /* Utils.swift */; };
 		95BD8ECC2616344100D83532 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EC82616344100D83532 /* Types.swift */; };
+		95E67AD32643062400C17938 /* ContextAnnotators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E67AD22643062400C17938 /* ContextAnnotators.swift */; };
 		95F95102261B9A7C00000A93 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F95101261B9A7C00000A93 /* App.swift */; };
 		F9A7C33E0FC489A18F38CE51 /* ContinuityCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C938489000F68C95D3D7 /* ContinuityCamera.swift */; };
 /* End PBXBuildFile section */
@@ -27,6 +28,7 @@
 		95BD8EC62616344100D83532 /* Importation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Importation.swift; sourceTree = "<group>"; };
 		95BD8EC72616344100D83532 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		95BD8EC82616344100D83532 /* Types.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
+		95E67AD22643062400C17938 /* ContextAnnotators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextAnnotators.swift; sourceTree = "<group>"; };
 		95F95101261B9A7C00000A93 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		F9A7C938489000F68C95D3D7 /* ContinuityCamera.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContinuityCamera.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -68,6 +70,7 @@
 				95BD8EC22616341100D83532 /* ViewUtils.swift */,
 				95F95101261B9A7C00000A93 /* App.swift */,
 				F9A7C938489000F68C95D3D7 /* ContinuityCamera.swift */,
+				95E67AD22643062400C17938 /* ContextAnnotators.swift */,
 			);
 			path = PicToShare;
 			sourceTree = "<group>";
@@ -155,6 +158,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				95E67AD32643062400C17938 /* ContextAnnotators.swift in Sources */,
 				95BD8EC92616344100D83532 /* Configuration.swift in Sources */,
 				95BD8ECA2616344100D83532 /* Importation.swift in Sources */,
 				95BD8ECC2616344100D83532 /* Types.swift in Sources */,

@@ -9,9 +9,10 @@ import SwiftUI
 
 @main
 struct PTSApp: App {
-    private let configurationManager = ConfigurationManager()
+    private let configurationManager = ConfigurationManager([
+        TestContextAnnotator()
+    ])
     private let importationManager: ImportationManager
-    @Environment(\.openURL) private var openURL
     @State private var showFilePrompt = false
 
     init() {
@@ -43,19 +44,18 @@ struct PTSApp: App {
                             }
                         }
                         ToolbarItem(placement: .primaryAction) {
-                            Button(action: {showFilePrompt = true}) {
+                            Button(action: { showFilePrompt = true }) {
                                 Image(systemName: "internaldrive")
                             }.fileImporter(isPresented: $showFilePrompt,
-                                           allowedContentTypes: [.content],
-                                           allowsMultipleSelection: true) { result in
-                                importationManager.queue(documents: (try? result.get()) ?? [])
+                                    allowedContentTypes: [.content],
+                                    allowsMultipleSelection: true) {
+                                importationManager.queue(documents: (try? $0.get()) ?? [])
                             }
                         }
                     }
                     .environmentObject(configurationManager)
                     .environmentObject(importationManager)
-                    .handlesExternalEvents(preferring: Set(arrayLiteral: "*"), allowing: Set(arrayLiteral: "*"))
-        }.handlesExternalEvents(matching: Set(arrayLiteral: "*"))
+        }
 
         Settings {
             SettingsView().environmentObject(configurationManager)
