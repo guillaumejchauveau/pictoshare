@@ -8,10 +8,20 @@
 import SwiftUI
 import Quartz
 
+enum ImportationError: Error {
+    case InputUrlError
+    case ScriptExecutionError(status: Int32)
+}
+
 /// Object responsible of the Importation process.
 class ImportationManager: ObservableObject {
     private var documentQueue: [URL] = []
-    let importationWindowURL: URL! = URL(string: "pictoshare2://import")
+    private let configurationManager: ConfigurationManager
+    let importationWindowURL: URL! = URL(string: "pictoshare://import")
+
+    init(_ configurationManager: ConfigurationManager) {
+        self.configurationManager = configurationManager
+    }
 
     var queueHead: URL? {
         documentQueue.first
@@ -41,13 +51,56 @@ class ImportationManager: ObservableObject {
     /// Imports a Document given a Document Type.
     ///
     /// - Parameters:
-    ///   - document: The Document to import.
+    ///   - inputUrl: The Document to import.
     ///   - type: The Type to use for importation.
-    /// - Throws: `Error.invalidUUID` if the Type UUID is invalid.
-    func importDocument(_ inputUrl: URL, withType type: DocumentType) throws {
-        // TODO: Call ContentAnnotator Applescript
-        //var contextAnnotations: []
-        print("import")
+    func importDocument(_ inputUrl: URL, with type: DocumentType) {
+        guard inputUrl.isFileURL else {
+            return
+        }
+        if let osaScriptUrl = type.contentAnnotatorScript {
+            // Copies the input file for safety if it is not in the Documents folder.
+            var targetUrl = inputUrl
+            let targetFolderUrl = inputUrl.deletingLastPathComponent()
+            if targetFolderUrl != configurationManager.documentFolderURL {
+                targetUrl = targetFolderUrl
+                    .appendingPathComponent(inputUrl.deletingPathExtension().lastPathComponent + "_copy") // TODO
+                    .appendingPathExtension(inputUrl.pathExtension)
+                try! FileManager.default.copyItem(at: inputUrl, to: targetUrl)
+            }
+
+            // Executes the script.
+            let scriptProcess = Process()
+            scriptProcess.currentDirectoryURL = targetFolderUrl
+            scriptProcess.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+            scriptProcess.arguments = [osaScriptUrl.path, targetUrl.path, targetUrl.deletingPathExtension().path]
+            // Script callback.
+            scriptProcess.terminationHandler = { _ in
+                guard scriptProcess.terminationStatus == 0 else {
+                    return
+                }
+
+                // Finds the output(s) of the script.
+                let outputFilesPrefix = targetUrl.deletingPathExtension().lastPathComponent
+                var outputUrls = try! FileManager.default.contentsOfDirectory(at: targetFolderUrl, includingPropertiesForKeys: nil)
+                    .filter({ url in url.deletingPathExtension().lastPathComponent == outputFilesPrefix })
+                if outputUrls.count > 1 {
+                    outputUrls.removeAll(where: {url in url == targetUrl})
+                    try! FileManager.default.removeItem(at: targetUrl)
+                }
+                self.bookmark(urls: outputUrls, in: type.folder)
+            }
+            // Runs the script asynchronously.
+            try! scriptProcess.run()
+        } else {
+            bookmark(urls: [inputUrl], in: type.folder)
+        }
+    }
+
+    private func bookmark(urls: [URL], in folder: URL) {
+        for url in urls {
+            let bookmarkData = try! url.bookmarkData(options: [.suitableForBookmarkFile])
+            try! URL.writeBookmarkData(bookmarkData, to: folder.appendingPathComponent(url.lastPathComponent))
+        }
     }
 }
 
@@ -110,9 +163,9 @@ struct ImportationView: View {
                                   selectedType >= 0 else {
                         return
                     }
-                    try! importationManager.importDocument(
+                    importationManager.importDocument(
                             importationManager.queueHead!,
-                            withType: configurationManager.types[selectedType])
+                            with: configurationManager.types[selectedType])
                     importationManager.popQueueHead()
                     processedCount += 1
                 }.buttonStyle(AccentButtonStyle())
