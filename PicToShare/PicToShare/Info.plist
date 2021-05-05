@@ -24,10 +24,10 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>pictoshare2</string>
+			<string>pictoshare</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>pictoshare2</string>
+				<string>pictoshare</string>
 			</array>
 		</dict>
 	</array>

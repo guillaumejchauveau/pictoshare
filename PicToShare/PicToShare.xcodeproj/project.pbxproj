@@ -3,12 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		95BD8EAF2616311100D83532 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95BD8EAE2616311100D83532 /* Assets.xcassets */; };
-		95BD8EBF261633BA00D83532 /* FileSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EBE261633BA00D83532 /* FileSystem.swift */; };
 		95BD8EC32616341100D83532 /* ViewUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EC22616341100D83532 /* ViewUtils.swift */; };
 		95BD8EC92616344100D83532 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EC52616344100D83532 /* Configuration.swift */; };
 		95BD8ECA2616344100D83532 /* Importation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EC62616344100D83532 /* Importation.swift */; };
@@ -23,7 +22,6 @@
 		95BD8EAE2616311100D83532 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		95BD8EB32616311100D83532 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		95BD8EB42616311100D83532 /* PicToShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PicToShare.entitlements; sourceTree = "<group>"; };
-		95BD8EBE261633BA00D83532 /* FileSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSystem.swift; sourceTree = "<group>"; };
 		95BD8EC22616341100D83532 /* ViewUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewUtils.swift; sourceTree = "<group>"; };
 		95BD8EC52616344100D83532 /* Configuration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		95BD8EC62616344100D83532 /* Importation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Importation.swift; sourceTree = "<group>"; };
@@ -67,7 +65,6 @@
 				95BD8EAE2616311100D83532 /* Assets.xcassets */,
 				95BD8EB32616311100D83532 /* Info.plist */,
 				95BD8EB42616311100D83532 /* PicToShare.entitlements */,
-				95BD8EBE261633BA00D83532 /* FileSystem.swift */,
 				95BD8EC22616341100D83532 /* ViewUtils.swift */,
 				95F95101261B9A7C00000A93 /* App.swift */,
 				F9A7C938489000F68C95D3D7 /* ContinuityCamera.swift */,
@@ -103,7 +100,6 @@
 			);
 			name = PicToShare;
 			packageProductDependencies = (
-				95BD8ED12616348400D83532,
 			);
 			productName = PicToShare;
 			productReference = 95BD8EA72616311000D83532 /* PicToShare.app */;
@@ -133,7 +129,6 @@
 			);
 			mainGroup = 95BD8E9E2616311000D83532;
 			packageReferences = (
-				95BD8ED02616348400D83532,
 			);
 			productRefGroup = 95BD8EA82616311000D83532 /* Products */;
 			projectDirPath = "";
@@ -164,7 +159,6 @@
 				95BD8ECA2616344100D83532 /* Importation.swift in Sources */,
 				95BD8ECC2616344100D83532 /* Types.swift in Sources */,
 				95BD8ECB2616344100D83532 /* Utils.swift in Sources */,
-				95BD8EBF261633BA00D83532 /* FileSystem.swift in Sources */,
 				95F95102261B9A7C00000A93 /* App.swift in Sources */,
 				95BD8EC32616341100D83532 /* ViewUtils.swift in Sources */,
 				F9A7C33E0FC489A18F38CE51 /* ContinuityCamera.swift in Sources */,
@@ -355,25 +349,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		95BD8ED02616348400D83532 = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/eonil/FSEvents.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.7;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		95BD8ED12616348400D83532 = {
-			isa = XCSwiftPackageProductDependency;
-			package = 95BD8ED02616348400D83532;
-			productName = EonilFSEvents;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 95BD8E9F2616311000D83532 /* Project object */;
 }
