@@ -38,3 +38,14 @@ struct AccentButtonStyle: ButtonStyle {
         }
     }
 }
+
+/// Removes the focus ring on TextField.
+extension NSTextField {
+    open override var focusRingType: NSFocusRingType {
+        get {
+            .none
+        }
+        set {
+        }
+    }
+}

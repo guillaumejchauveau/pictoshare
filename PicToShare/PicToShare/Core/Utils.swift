@@ -9,6 +9,13 @@ protocol CFPropertyListable {
     func toCFPropertyList() -> CFPropertyList
 }
 
+
+extension String {
+    func simplified() -> String {
+        lowercased().folding(options: .diacriticInsensitive, locale: .current)
+    }
+}
+
 /// https://stackoverflow.com/questions/38343186/write-extend-file-attributes-swift-example
 extension URL {
     /// Get extended attribute.

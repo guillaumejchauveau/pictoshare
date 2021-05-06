@@ -44,6 +44,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		950CC76E264425D8007E91AD /* Views */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		95BD8E9E2616311000D83532 = {
 			isa = PBXGroup;
 			children = (
@@ -63,6 +70,7 @@
 		95BD8EA92616311000D83532 /* PicToShare */ = {
 			isa = PBXGroup;
 			children = (
+				950CC76E264425D8007E91AD /* Views */,
 				95BD8EBD2616338700D83532 /* Core */,
 				95BD8EAE2616311100D83532 /* Assets.xcassets */,
 				95BD8EB32616311100D83532 /* Info.plist */,

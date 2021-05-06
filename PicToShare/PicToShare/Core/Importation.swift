@@ -58,7 +58,8 @@ class ImportationManager: ObservableObject {
             // Copies the input file for safety if it is not in the Documents folder.
             var targetUrl = inputUrl
             let targetFolderUrl = inputUrl.deletingLastPathComponent()
-            if targetFolderUrl != configurationManager.documentFolderURL {
+            if targetFolderUrl != configurationManager.documentFolderURL
+                       && type.copyBeforeScript {
                 targetUrl = targetFolderUrl
                         .appendingPathComponent(inputUrl.deletingPathExtension().lastPathComponent + "_copy")
                         .appendingPathExtension(inputUrl.pathExtension)

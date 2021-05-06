@@ -10,14 +10,15 @@ import SwiftUI
 @main
 struct PTSApp: App {
     private let configurationManager = ConfigurationManager([
-        TestContextAnnotator()
+        CurrentCalendarEventsContextAnnotator(),
+        GeoLocalizationContextAnnotator()
     ])
     private let importationManager: ImportationManager
     @State private var showFilePrompt = false
 
     init() {
         configurationManager.load()
-        configurationManager.save()
+        configurationManager.saveAll()
         importationManager = ImportationManager(configurationManager)
 
         // Creates default document types.
@@ -25,7 +26,7 @@ struct PTSApp: App {
             configurationManager.addType(with: "Carte de visite")
             configurationManager.addType(with: "Affiche evenement")
             configurationManager.addType(with: "Tableau blanc")
-            configurationManager.save()
+            configurationManager.saveAll()
         }
     }
 

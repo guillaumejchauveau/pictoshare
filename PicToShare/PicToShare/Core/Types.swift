@@ -20,9 +20,11 @@ protocol ContextAnnotator: CustomStringConvertible {
 /// proper destination. The Context Annotators will then add Spotlight metadata to the output file.
 /// The implementation of the integration of the output file to external applications is not yet planned.
 protocol DocumentType: CustomStringConvertible {
-    /// The Exporter used to create the file.
+    /// The script used to process the file.
     var contentAnnotatorScript: URL? { get }
-    /// The Annotators used to process the Document.
+    /// Indicates if a copy of the file should be made before running the script.
+    var copyBeforeScript: Bool { get }
+    /// The ContextAnnotators used to annotate the Document.
     var contextAnnotators: [ContextAnnotator] { get }
     /// The URL of the folder containing links to all Documents of this Type.
     var folder: URL { get }
