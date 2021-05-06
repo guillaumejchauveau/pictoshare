@@ -9,14 +9,18 @@ import SwiftUI
 
 @main
 struct PTSApp: App {
-    private let configurationManager = ConfigurationManager()
+    private let configurationManager = ConfigurationManager(
+            "PTSFolder",
+            [
+                CurrentCalendarEventsContextAnnotator(),
+                GeoLocalizationContextAnnotator()
+            ])
     private let importationManager: ImportationManager
-    @Environment(\.openURL) private var openURL
     @State private var showFilePrompt = false
 
     init() {
         configurationManager.load()
-        configurationManager.save()
+        configurationManager.saveAll()
         importationManager = ImportationManager(configurationManager)
 
         // Creates default document types.
@@ -24,7 +28,7 @@ struct PTSApp: App {
             configurationManager.addType(with: "Carte de visite")
             configurationManager.addType(with: "Affiche evenement")
             configurationManager.addType(with: "Tableau blanc")
-            configurationManager.save()
+            configurationManager.saveAll()
         }
     }
 
@@ -43,19 +47,18 @@ struct PTSApp: App {
                             }
                         }
                         ToolbarItem(placement: .primaryAction) {
-                            Button(action: {showFilePrompt = true}) {
+                            Button(action: { showFilePrompt = true }) {
                                 Image(systemName: "internaldrive")
                             }.fileImporter(isPresented: $showFilePrompt,
-                                           allowedContentTypes: [.content],
-                                           allowsMultipleSelection: true) { result in
-                                importationManager.queue(documents: (try? result.get()) ?? [])
+                                    allowedContentTypes: [.content],
+                                    allowsMultipleSelection: true) {
+                                importationManager.queue(documents: (try? $0.get()) ?? [])
                             }
                         }
                     }
                     .environmentObject(configurationManager)
                     .environmentObject(importationManager)
-                    .handlesExternalEvents(preferring: Set(arrayLiteral: "*"), allowing: Set(arrayLiteral: "*"))
-        }.handlesExternalEvents(matching: Set(arrayLiteral: "*"))
+        }
 
         Settings {
             SettingsView().environmentObject(configurationManager)
@@ -92,33 +95,15 @@ struct MainView: View {
     }
 }
 
-struct GeneralSettingsView: View {
-    @AppStorage("showPreview") private var showPreview = true
-    @AppStorage("fontSize") private var fontSize = 12.0
-
-    var body: some View {
-        Form {
-            Toggle("Show Previews", isOn: $showPreview)
-            Slider(value: $fontSize, in: 9...96) {
-                Text("Font Size (\(fontSize, specifier: "%.0f") pts)")
-            }
-        }.padding(20)
-    }
-}
 
 struct SettingsView: View {
     private enum Tabs: Hashable {
-        case general, types
+        case types
     }
 
     var body: some View {
         TabView {
-            GeneralSettingsView()
-                    .tabItem {
-                        Label("General", systemImage: "gear")
-                    }
-                    .tag(Tabs.general)
-            ConfigurationView()
+            DocumentTypesView()
                     .tabItem {
                         Label("Types", systemImage: "doc.on.doc.fill")
                     }

@@ -6,51 +6,80 @@
 //
 
 import Foundation
-import SwiftUI
+import Combine
 
-/// Responsible of Document Types configuration and storage.
-class ConfigurationManager: ObservableObject {
-    /// Internal representation of a configured Document Type.
-    ///
-    /// Compatible with the Core `DocumentType` protocol to use directly with an
-    /// Importation Manager.
-    class DocumentTypeMetadata:
-            DocumentType,
-            CustomStringConvertible,
-            ObservableObject {
-        let configurationManager: ConfigurationManager
-        var savedDescription: String
-        @Published var description: String
-        @Published var contentAnnotatorScript: URL? = nil
-        @Published var contextAnnotators: [ContextAnnotator] = []
-        var folder: URL {
-            configurationManager.documentFolderURL.appendingPathComponent(savedDescription)
-        }
 
-        init(_ description: String,
-             _ configurationManager: ConfigurationManager,
-             _ contentAnnotatorScript: URL? = nil) {
-            self.configurationManager = configurationManager
-            self.description = description
-            savedDescription = description
-            self.contentAnnotatorScript = contentAnnotatorScript
+/// Internal representation of a configured Document Type.
+///
+/// Conforms to the Core `DocumentType` protocol to use directly with an
+/// Importation Manager.
+class DocumentTypeMetadata: DocumentType, ObservableObject {
+    let configurationManager: ConfigurationManager
+    var savedDescription: String
+    @Published var description: String
+    @Published var contentAnnotatorScript: URL?
+    @Published var copyBeforeScript: Bool
+    @Published var contextAnnotatorNames: Set<String>
+    private var subscriber: AnyCancellable!
+
+    var contextAnnotators: [ContextAnnotator] {
+        contextAnnotatorNames.map {
+            configurationManager.contextAnnotators[$0]!
         }
     }
 
+    var folder: URL {
+        configurationManager.documentFolderURL.appendingPathComponent(savedDescription)
+    }
+
+    init(_ description: String,
+         _ configurationManager: ConfigurationManager,
+         _ contentAnnotatorScript: URL? = nil,
+         _ copyBeforeScript: Bool = true,
+         _ contextAnnotatorNames: Set<String> = []) {
+        self.configurationManager = configurationManager
+        self.description = description
+        savedDescription = description
+        self.contentAnnotatorScript = contentAnnotatorScript
+        self.copyBeforeScript = copyBeforeScript
+        self.contextAnnotatorNames = contextAnnotatorNames
+        subscriber = self.objectWillChange.sink {
+            DispatchQueue.main
+                    .asyncAfter(deadline: .now() + .milliseconds(200)) {
+                configurationManager.save(type: self)
+            }
+        }
+    }
+}
+
+/// Responsible of Document Types configuration and storage.
+class ConfigurationManager: ObservableObject {
     enum Error: Swift.Error {
         case preferencesError
     }
 
-    @Published var documentFolderURL: URL = try! FileManager.default
-            .url(for: .documentDirectory,
-                    in: .userDomainMask,
-                    appropriateFor: nil,
-                    create: true)
-            .appendingPathComponent("PTSFolder", isDirectory: true)
+    let contextAnnotators: [String: ContextAnnotator]
+
+    let documentFolderURL: URL
 
     /// The Document Types configured.
     @Published var types: [DocumentTypeMetadata] = []
 
+    init(_ ptsFolderName: String, _ contextAnnotators: [ContextAnnotator] = []) {
+        var annotators: [String: ContextAnnotator] = [:]
+        for contextAnnotator in contextAnnotators {
+            annotators[contextAnnotator.description] = contextAnnotator
+        }
+        self.contextAnnotators = annotators
+        documentFolderURL = try! FileManager.default
+                .url(for: .documentDirectory,
+                        in: .userDomainMask,
+                        appropriateFor: nil,
+                        create: true)
+                .appendingPathComponent(ptsFolderName, isDirectory: true)
+    }
+
+    /// Configures a new Document Type.
     func addType(with description: String) {
         types.append(DocumentTypeMetadata(description, self))
     }
@@ -107,28 +136,44 @@ class ConfigurationManager: ObservableObject {
                 } else {
                     contentAnnotatorURL = nil
                 }
+
+                let copyBeforeScript = declaration["copyBeforeScript"]
+                        as? Bool ?? true
+
+                var contextAnnotators: Set<String> = []
+                let contextAnnotatorsDeclarations = declaration["contextAnnotators"]
+                        as? Array<CFPropertyList> ?? []
+                for rawContextAnnotatorDeclaration in contextAnnotatorsDeclarations {
+                    if let contextAnnotatorDescription = rawContextAnnotatorDeclaration
+                            as? String {
+                        if self.contextAnnotators.keys.contains(contextAnnotatorDescription) {
+                            contextAnnotators.insert(contextAnnotatorDescription)
+                        }
+                    }
+                }
+
                 types.append(DocumentTypeMetadata(description,
-                                                  self,
-                                                  contentAnnotatorURL))
+                        self,
+                        contentAnnotatorURL,
+                        copyBeforeScript,
+                        contextAnnotators))
             } catch {
                 continue
             }
         }
     }
 
-    /// Saves configured Document Types to persistent storage and manages corresponding folders.
+    /// Updates the folder corresponding to the given Document Type.
     /// Currently as multiple failing situations:
     /// - a file exists with the name of the document type;
     /// - the name of the document type contains forbidden characters for paths;
     /// - two document types have the same name.
-    func save() {
-        for type in types {
-            let newUrl = documentFolderURL.appendingPathComponent(type.description)
-            let oldUrl = documentFolderURL.appendingPathComponent(type.savedDescription)
-            if !FileManager.default.fileExists(atPath: oldUrl.path) {
-                try! FileManager.default.createDirectory(at: newUrl, withIntermediateDirectories: true)
-                continue
-            }
+    private func updateTypeFolder(_ type: DocumentTypeMetadata) {
+        let newUrl = documentFolderURL.appendingPathComponent(type.description)
+        let oldUrl = documentFolderURL.appendingPathComponent(type.savedDescription)
+        if !FileManager.default.fileExists(atPath: oldUrl.path) {
+            try! FileManager.default.createDirectory(at: newUrl, withIntermediateDirectories: true)
+        } else {
             if type.savedDescription != type.description {
                 do {
                     try FileManager.default.moveItem(at: oldUrl, to: newUrl)
@@ -138,7 +183,25 @@ class ConfigurationManager: ObservableObject {
                 }
             }
         }
+    }
 
+    /// Saves the given Document Type to persistent storage
+    func save(type: DocumentTypeMetadata) {
+        updateTypeFolder(type)
+
+        setPreference("types",
+                types.map {
+                    $0.toCFPropertyList()
+                } as CFArray)
+
+        CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
+    }
+
+    /// Saves all the configured Document Types.
+    func saveAll() {
+        for type in types {
+            updateTypeFolder(type)
+        }
         setPreference("types",
                 types.map {
                     $0.toCFPropertyList()
@@ -149,137 +212,13 @@ class ConfigurationManager: ObservableObject {
 }
 
 
-extension ConfigurationManager.DocumentTypeMetadata: CFPropertyListable {
+extension DocumentTypeMetadata: CFPropertyListable {
     func toCFPropertyList() -> CFPropertyList {
         [
             "description": description,
-            "contentAnnotator": contentAnnotatorScript?.path ?? ""
+            "contentAnnotator": contentAnnotatorScript?.path ?? "",
+            "copyBeforeScript": copyBeforeScript,
+            "contextAnnotators": contextAnnotators.map({ $0.description }) as CFArray
         ] as CFPropertyList
-    }
-}
-
-
-struct ConfigurationView: View {
-    @EnvironmentObject var configurationManager: ConfigurationManager
-    @State private var selection: Int? = nil
-    @State private var showNewTypeForm = false
-    @State private var newTypeDescription = ""
-
-    var body: some View {
-        VStack(alignment: .leading) {
-            NavigationView {
-                List {
-                    ForEach(configurationManager.types.indices,
-                            id: \.self) { index in
-                        NavigationLink(
-                                destination: DocumentTypeView(
-                                        description: $configurationManager.types[index].description,
-                                        scriptPath: $configurationManager.types[index].contentAnnotatorScript),
-                                tag: index,
-                                selection: $selection) {
-                            Text(configurationManager.types[index].description)
-                        }
-                    }
-                }
-            }.sheet(isPresented: $showNewTypeForm, content: {
-                VStack {
-                    Form {
-                        TextField("Nom du type", text: $newTypeDescription)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                    }.padding()
-                    HStack {
-                        Button("Annuler") {
-                            showNewTypeForm = false
-                            newTypeDescription = ""
-                        }
-                        Button("Créer") {
-                            configurationManager.addType(with: newTypeDescription)
-                            configurationManager.save()
-                            selection = configurationManager.types.count - 1
-                            showNewTypeForm = false
-                            newTypeDescription = ""
-                        }.buttonStyle(AccentButtonStyle())
-                                .disabled(newTypeDescription.isEmpty)
-                    }.padding([.leading, .bottom, .trailing])
-                }
-            })
-            HStack {
-                Button(action: { showNewTypeForm = true }) {
-                    Image(systemName: "plus")
-                }
-                Button(action: {
-                    guard let index: Int = selection else {
-                        return
-                    }
-
-                    if configurationManager.types.count == 1 {
-                        selection = nil
-                    } else if index != 0 {
-                        selection! -= 1
-                    }
-                    // Workaround a bug where the NavigationView won't clear the
-                    // content of the destination view if we remove right after
-                    // unselect.
-                    DispatchQueue.main
-                            .asyncAfter(deadline: .now() + .milliseconds(200)) {
-                        configurationManager.types.remove(at: index)
-                        configurationManager.save()
-                    }
-                }) {
-                    Image(systemName: "minus")
-                }.disabled(selection == nil)
-            }.buttonStyle(BorderedButtonStyle())
-                    .padding([.leading, .bottom, .trailing])
-        }.frame(width: 640, height: 360)
-    }
-}
-
-
-struct DocumentTypeView: View {
-    @EnvironmentObject var configurationManager: ConfigurationManager
-    @Binding var description: String
-    @Binding var scriptPath: URL?
-    @State var chooseScriptFile = false
-
-    var body: some View {
-        HStack {
-            /// Left part
-            VStack(alignment: .trailing, spacing: 10) {
-                Text("Nom du type :")
-                Text("Script associé :")
-            }.frame(width: 100, alignment: .trailing)
-
-            /// Right part
-            VStack(alignment: .leading) {
-                TextField("Nom du type", text: $description, onCommit: {
-                    configurationManager.save()
-                }).frame(width: 200)
-
-                HStack {
-                    Text(scriptPath?.lastPathComponent ?? "Aucun script associé")
-                            .font(.system(size: 12))
-                            .lineLimit(1)
-                            .truncationMode(.head)
-
-                    /// Button to load an applescript.
-                    Button(action: {
-                        chooseScriptFile = true
-                    }) {
-                        Image(systemName: "folder")
-                    }.fileImporter(isPresented: $chooseScriptFile, allowedContentTypes: [.osaScript]) { result in
-                        scriptPath = try? result.get()
-                        configurationManager.save()
-                    }
-
-                    /// Button to withdraw the current selected type's applescript
-                    Button(action: {
-                        scriptPath = nil
-                        configurationManager.save()
-                    }) {
-                        Image(systemName: "trash")
-                    }
-                }
-            }.frame(width: 200, alignment: .leading)
-        }.frame(alignment: .center)
     }
 }
