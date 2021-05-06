@@ -9,10 +9,12 @@ import SwiftUI
 
 @main
 struct PTSApp: App {
-    private let configurationManager = ConfigurationManager([
-        CurrentCalendarEventsContextAnnotator(),
-        GeoLocalizationContextAnnotator()
-    ])
+    private let configurationManager = ConfigurationManager(
+            "PTSFolder",
+            [
+                CurrentCalendarEventsContextAnnotator(),
+                GeoLocalizationContextAnnotator()
+            ])
     private let importationManager: ImportationManager
     @State private var showFilePrompt = false
 
@@ -93,33 +95,15 @@ struct MainView: View {
     }
 }
 
-struct GeneralSettingsView: View {
-    @AppStorage("showPreview") private var showPreview = true
-    @AppStorage("fontSize") private var fontSize = 12.0
-
-    var body: some View {
-        Form {
-            Toggle("Show Previews", isOn: $showPreview)
-            Slider(value: $fontSize, in: 9...96) {
-                Text("Font Size (\(fontSize, specifier: "%.0f") pts)")
-            }
-        }.padding(20)
-    }
-}
 
 struct SettingsView: View {
     private enum Tabs: Hashable {
-        case general, types
+        case types
     }
 
     var body: some View {
         TabView {
-            GeneralSettingsView()
-                    .tabItem {
-                        Label("General", systemImage: "gear")
-                    }
-                    .tag(Tabs.general)
-            ConfigurationView()
+            DocumentTypesView()
                     .tabItem {
                         Label("Types", systemImage: "doc.on.doc.fill")
                     }

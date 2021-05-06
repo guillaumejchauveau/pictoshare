@@ -2,18 +2,11 @@
 // Created by Guillaume Chauveau on 10/03/2021.
 //
 
-import SwiftUI
+import Foundation
 
 
 protocol CFPropertyListable {
     func toCFPropertyList() -> CFPropertyList
-}
-
-
-extension String {
-    func simplified() -> String {
-        lowercased().folding(options: .diacriticInsensitive, locale: .current)
-    }
 }
 
 /// https://stackoverflow.com/questions/38343186/write-extend-file-attributes-swift-example
