@@ -17,15 +17,16 @@ class DocumentTypeMetadata: DocumentType, ObservableObject {
     let configurationManager: ConfigurationManager
     var savedDescription: String
     @Published var description: String
-    @Published var contentAnnotatorScript: URL?
-    @Published var copyBeforeScript: Bool
-    @Published var contextAnnotatorNames: Set<String>
+    @Published var documentProcessorScript: URL?
+    @Published var copyBeforeProcessing: Bool
+    @Published var removeOriginalOnProcessingByproduct: Bool
+    @Published var documentAnnotatorNames: Set<String>
     @Published var documentIntegratorNames: Set<String>
     private var subscriber: AnyCancellable!
 
-    var contextAnnotators: [ContextAnnotator] {
-        contextAnnotatorNames.map {
-            configurationManager.contextAnnotators[$0]!
+    var documentAnnotators: [DocumentAnnotator] {
+        documentAnnotatorNames.map {
+            configurationManager.documentAnnotators[$0]!
         }
     }
 
@@ -42,15 +43,17 @@ class DocumentTypeMetadata: DocumentType, ObservableObject {
     init(_ description: String,
          _ configurationManager: ConfigurationManager,
          _ contentAnnotatorScript: URL? = nil,
-         _ copyBeforeScript: Bool = true,
-         _ contextAnnotatorNames: Set<String> = [],
+         _ copyBeforeProcessing: Bool = true,
+         _ removeOriginalOnProcessingByproduct: Bool = false,
+         _ documentAnnotatorNames: Set<String> = [],
          _ documentIntegratorNames: Set<String> = []) {
         self.configurationManager = configurationManager
         self.description = description
         savedDescription = description
-        self.contentAnnotatorScript = contentAnnotatorScript
-        self.copyBeforeScript = copyBeforeScript
-        self.contextAnnotatorNames = contextAnnotatorNames
+        self.documentProcessorScript = contentAnnotatorScript
+        self.copyBeforeProcessing = copyBeforeProcessing
+        self.removeOriginalOnProcessingByproduct = removeOriginalOnProcessingByproduct
+        self.documentAnnotatorNames = documentAnnotatorNames
         self.documentIntegratorNames = documentIntegratorNames
         subscriber = self.objectWillChange.sink {
             DispatchQueue.main
@@ -61,7 +64,7 @@ class DocumentTypeMetadata: DocumentType, ObservableObject {
     }
 }
 
-class ImportationContextMetadata: ImportationContext, ObservableObject, Equatable, Identifiable {
+class ImportationContextMetadata: UserContext, ObservableObject, Equatable, Identifiable {
     static func == (lhs: ImportationContextMetadata, rhs: ImportationContextMetadata) -> Bool {
         lhs.description == rhs.description
     }
@@ -69,13 +72,13 @@ class ImportationContextMetadata: ImportationContext, ObservableObject, Equatabl
     let configurationManager: ConfigurationManager
     var savedDescription: String
     @Published var description: String
-    @Published var contextAnnotatorNames: Set<String>
+    @Published var documentAnnotatorNames: Set<String>
     @Published var documentIntegratorNames: Set<String>
     private var subscriber: AnyCancellable!
 
-    var contextAnnotators: [ContextAnnotator] {
-        contextAnnotatorNames.map {
-            configurationManager.contextAnnotators[$0]!
+    var documentAnnotators: [DocumentAnnotator] {
+        documentAnnotatorNames.map {
+            configurationManager.documentAnnotators[$0]!
         }
     }
 
@@ -87,12 +90,12 @@ class ImportationContextMetadata: ImportationContext, ObservableObject, Equatabl
 
     init(_ description: String,
          _ configurationManager: ConfigurationManager,
-         _ contextAnnotatorNames: Set<String> = [],
+         _ documentAnnotatorNames: Set<String> = [],
          _ documentIntegratorNames: Set<String> = []) {
         self.configurationManager = configurationManager
         self.description = description
         savedDescription = description
-        self.contextAnnotatorNames = contextAnnotatorNames
+        self.documentAnnotatorNames = documentAnnotatorNames
         self.documentIntegratorNames = documentIntegratorNames
         subscriber = self.objectWillChange.sink {
             DispatchQueue.main
@@ -109,7 +112,7 @@ class ConfigurationManager: ObservableObject {
         case preferencesError
     }
 
-    var contextAnnotators: [String: ContextAnnotator]
+    var documentAnnotators: [String: DocumentAnnotator]
     var documentIntegrators: [String: DocumentIntegrator]
 
     let documentFolderURL: URL
@@ -121,25 +124,25 @@ class ConfigurationManager: ObservableObject {
     @Published var contexts: [ImportationContextMetadata] = []
 
     private var currentContext_: ImportationContextMetadata? = nil
-    var currentContext: ImportationContextMetadata? {
+    var currentUserContext: ImportationContextMetadata? {
         get {
             currentContext_
         }
         set {
             currentContext_ = newValue
-            setPreference("currentContext", (newValue?.description ?? "") as CFString)
+            setPreference("currentUserContext", (newValue?.description ?? "") as CFString)
             objectWillChange.send()
         }
     }
 
     init(_ ptsFolderName: String,
-         _ contextAnnotators: [ContextAnnotator] = [],
+         _ contextAnnotators: [DocumentAnnotator] = [],
          _ documentIntegrators: [DocumentIntegrator] = []) {
-        var annotators: [String: ContextAnnotator] = [:]
+        var annotators: [String: DocumentAnnotator] = [:]
         for contextAnnotator in contextAnnotators {
             annotators[contextAnnotator.description] = contextAnnotator
         }
-        self.contextAnnotators = annotators
+        self.documentAnnotators = annotators
         var integrators: [String: DocumentIntegrator] = [:]
         for documentIntegrator in documentIntegrators {
             integrators[documentIntegrator.description] = documentIntegrator
@@ -172,8 +175,8 @@ class ConfigurationManager: ObservableObject {
 
     func removeContext(at index: Int) {
         let context = contexts.remove(at: index)
-        if currentContext == context {
-            currentContext = nil
+        if currentUserContext == context {
+            currentUserContext = nil
         }
         saveContexts()
     }
@@ -224,25 +227,28 @@ class ConfigurationManager: ObservableObject {
                     throw ConfigurationManager.Error.preferencesError
                 }
 
-                let contentAnnotatorURL: URL?
-                if let contentAnnotatorPath = declaration["contentAnnotator"]
+                let documentProcessorScript: URL?
+                if let scriptPath = declaration["documentProcessorScript"]
                         as? String {
-                    contentAnnotatorURL = URL(string: contentAnnotatorPath)
+                    documentProcessorScript = URL(string: scriptPath)
                 } else {
-                    contentAnnotatorURL = nil
+                    documentProcessorScript = nil
                 }
 
-                let copyBeforeScript = declaration["copyBeforeScript"]
+                let copyBeforeProcessing = declaration["copyBeforeProcessing"]
                         as? Bool ?? true
 
-                var contextAnnotators: Set<String> = []
-                let contextAnnotatorDeclarations = declaration["contextAnnotators"]
+                let removeOriginalOnProcessingByproduct = declaration["removeOriginalOnProcessingByproduct"]
+                    as? Bool ?? false
+
+                var documentAnnotators: Set<String> = []
+                let documentAnnotatorDeclarations = declaration["documentAnnotators"]
                         as? Array<CFPropertyList> ?? []
-                for rawContextAnnotatorDeclaration in contextAnnotatorDeclarations {
-                    if let contextAnnotatorDescription = rawContextAnnotatorDeclaration
+                for rawDocumentAnnotatorDeclaration in documentAnnotatorDeclarations {
+                    if let annotatorDescription = rawDocumentAnnotatorDeclaration
                             as? String {
-                        if self.contextAnnotators.keys.contains(contextAnnotatorDescription) {
-                            contextAnnotators.insert(contextAnnotatorDescription)
+                        if self.documentAnnotators.keys.contains(annotatorDescription) {
+                            documentAnnotators.insert(annotatorDescription)
                         }
                     }
                 }
@@ -261,9 +267,10 @@ class ConfigurationManager: ObservableObject {
 
                 types.append(DocumentTypeMetadata(description,
                         self,
-                        contentAnnotatorURL,
-                        copyBeforeScript,
-                        contextAnnotators,
+                        documentProcessorScript,
+                        copyBeforeProcessing,
+                        removeOriginalOnProcessingByproduct,
+                        documentAnnotators,
                         documentIntegrators))
             } catch {
                 continue
@@ -290,14 +297,14 @@ class ConfigurationManager: ObservableObject {
                     throw ConfigurationManager.Error.preferencesError
                 }
 
-                var contextAnnotators: Set<String> = []
-                let contextAnnotatorDeclarations = declaration["contextAnnotators"]
+                var documentAnnotators: Set<String> = []
+                let annotatorDeclarations = declaration["documentAnnotators"]
                     as? Array<CFPropertyList> ?? []
-                for rawContextAnnotatorDeclaration in contextAnnotatorDeclarations {
-                    if let contextAnnotatorDescription = rawContextAnnotatorDeclaration
+                for rawAnnotatorDeclaration in annotatorDeclarations {
+                    if let annotatorDescription = rawAnnotatorDeclaration
                         as? String {
-                        if self.contextAnnotators.keys.contains(contextAnnotatorDescription) {
-                            contextAnnotators.insert(contextAnnotatorDescription)
+                        if self.documentAnnotators.keys.contains(annotatorDescription) {
+                            documentAnnotators.insert(annotatorDescription)
                         }
                     }
                 }
@@ -316,15 +323,15 @@ class ConfigurationManager: ObservableObject {
 
                 contexts.append(ImportationContextMetadata(description,
                                                   self,
-                                                  contextAnnotators,
+                                                  documentAnnotators,
                                                   documentIntegrators))
             } catch {
                 continue
             }
         }
 
-        if let savedCurrentDescription = getPreference("currentContext") as? String {
-            currentContext = contexts.first {
+        if let savedCurrentDescription = getPreference("currentUserContext") as? String {
+            currentUserContext = contexts.first {
                 $0.description == savedCurrentDescription
             }
         }
@@ -392,9 +399,10 @@ extension DocumentTypeMetadata: CFPropertyListable {
     func toCFPropertyList() -> CFPropertyList {
         [
             "description": description,
-            "contentAnnotator": contentAnnotatorScript?.path ?? "",
-            "copyBeforeScript": copyBeforeScript,
-            "contextAnnotators": contextAnnotators.map({ $0.description }) as CFArray,
+            "documentProcessorScript": documentProcessorScript?.path ?? "",
+            "copyBeforeProcessing": copyBeforeProcessing,
+            "removeOriginalOnProcessingByproduct": removeOriginalOnProcessingByproduct,
+            "documentAnnotators": documentAnnotators.map({ $0.description }) as CFArray,
             "documentIntegrators": documentIntegrators.map({ $0.description }) as CFArray
         ] as CFPropertyList
     }
@@ -404,7 +412,7 @@ extension ImportationContextMetadata: CFPropertyListable {
     func toCFPropertyList() -> CFPropertyList {
         [
             "description": description,
-            "contextAnnotators": contextAnnotators.map({ $0.description }) as CFArray,
+            "documentAnnotators": documentAnnotators.map({ $0.description }) as CFArray,
             "documentIntegrators": documentIntegrators.map({ $0.description }) as CFArray
         ] as CFPropertyList
     }

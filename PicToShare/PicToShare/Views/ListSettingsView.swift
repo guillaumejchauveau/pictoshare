@@ -29,7 +29,7 @@ struct ListSettingsView<Item, Content>: View where Item: CustomStringConvertible
                         Text(items[index].description)
                     }
                 }
-            }.sheet(isPresented: $showNewItemForm, content: {
+            }.sheet(isPresented: $showNewItemForm) {
                 Form {
                     TextField("Nom", text: $newItemDescription)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -50,7 +50,7 @@ struct ListSettingsView<Item, Content>: View where Item: CustomStringConvertible
                         .disabled(newItemDescription.isEmpty)
                     }
                 }.padding()
-            })
+            }
             HStack {
                 Button(action: { showNewItemForm = true }) {
                     Image(systemName: "plus")

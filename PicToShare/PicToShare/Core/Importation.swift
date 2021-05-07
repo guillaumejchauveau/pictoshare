@@ -54,40 +54,45 @@ class ImportationManager: ObservableObject {
         guard inputUrl.isFileURL else {
             return
         }
-        if let osaScriptUrl = type.contentAnnotatorScript {
-            // Copies the input file for safety if it is not in the Documents folder.
-            var targetUrl = inputUrl
-            let targetFolderUrl = inputUrl.deletingLastPathComponent()
-            if targetFolderUrl != configurationManager.documentFolderURL
-                       && type.copyBeforeScript {
-                targetUrl = targetFolderUrl
-                        .appendingPathComponent(inputUrl.deletingPathExtension().lastPathComponent + "_copy")
+        if let osaScriptUrl = type.documentProcessorScript {
+            // Copies the input file for safety if it is not in the PTS folder.
+            let inputUrlFolder = inputUrl.deletingLastPathComponent()
+            if inputUrlFolder != configurationManager.documentFolderURL
+                       && type.copyBeforeProcessing {
+                let copyUrl = inputUrlFolder
+                        .appendingPathComponent(inputUrl.deletingPathExtension().lastPathComponent + ".copy")
                         .appendingPathExtension(inputUrl.pathExtension)
-                try! FileManager.default.copyItem(at: inputUrl, to: targetUrl)
+                try! FileManager.default.copyItem(at: inputUrl, to: copyUrl)
             }
 
             // Executes the script.
             let scriptProcess = Process()
-            scriptProcess.currentDirectoryURL = targetFolderUrl
+            scriptProcess.currentDirectoryURL = inputUrlFolder
             scriptProcess.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-            scriptProcess.arguments = [osaScriptUrl.path, targetUrl.path, targetUrl.deletingPathExtension().path]
+            scriptProcess.arguments = [
+                osaScriptUrl.path,
+                inputUrl.path,
+                inputUrl.deletingPathExtension().path
+            ]
             // Script callback.
             scriptProcess.terminationHandler = { _ in
                 guard scriptProcess.terminationStatus == 0 else {
+                    // TODO
                     return
                 }
 
                 // Finds the output(s) of the script.
-                let outputFilesPrefix = targetUrl.deletingPathExtension().lastPathComponent
-                var outputUrls = try! FileManager.default.contentsOfDirectory(at: targetFolderUrl, includingPropertiesForKeys: nil)
+                let outputFilesPrefix = inputUrl.deletingPathExtension().lastPathComponent
+                var outputUrls = try! FileManager.default.contentsOfDirectory(at: inputUrlFolder,
+                                                                              includingPropertiesForKeys: nil)
                         .filter {
                             $0.deletingPathExtension().lastPathComponent == outputFilesPrefix
                         }
-                if outputUrls.count > 1 {
+                if outputUrls.count > 1 && type.removeOriginalOnProcessingByproduct {
                     outputUrls.removeAll {
-                        $0 == targetUrl
+                        $0 == inputUrl
                     }
-                    try! FileManager.default.removeItem(at: targetUrl)
+                    try? FileManager.default.removeItem(at: inputUrl)
                 }
                 self.postProcessDocuments(urls: outputUrls, with: type)
             }
@@ -99,19 +104,22 @@ class ImportationManager: ObservableObject {
     }
 
     
-    class AnnotationResults {
+    private class AnnotationResults {
         private var keywords: [String] = []
         private var remainingCount: Int
         private let urls: [URL]
         
-        init(_ annotatorCount: Int, _ urls: [URL], _ description: String) {
+        init(_ annotatorCount: Int, _ urls: [URL], _ defaults: [String?]) {
             remainingCount = annotatorCount
             self.urls = urls
-            keywords.append(description)
+            keywords.append(contentsOf: defaults.compactMap({$0}))
+            if annotatorCount == 0 {
+                write()
+            }
         }
         
         
-        func complete(_ result: Result<[String], ContextAnnotatorError>) {
+        func complete(_ result: Result<[String], DocumentAnnotatorError>) {
             remainingCount -= 1
             switch result {
                 case .success(let keywords):
@@ -121,37 +129,49 @@ class ImportationManager: ObservableObject {
             }
             
             if remainingCount <= 0 {
-                
-                let encoder = PropertyListEncoder()
-                encoder.outputFormat = .binary
-                
-                let itemKeywords = try! encoder.encode(keywords)
+                write()
+            }
+        }
 
-                for url in urls {
-                    try! url.setExtendedAttribute(
-                            data: itemKeywords,
-                            forName: "com.apple.metadata:kMDItemKeywords")
-                }
+        private func write() {
+            let encoder = PropertyListEncoder()
+            encoder.outputFormat = .binary
+
+            let itemKeywords = try! encoder.encode(keywords)
+
+            for url in urls {
+                try! url.setExtendedAttribute(
+                    data: itemKeywords,
+                    forName: "com.apple.metadata:kMDItemKeywords")
             }
         }
     }
     
     private func postProcessDocuments(urls: [URL], with type: DocumentType) {
-        let annotationResults = AnnotationResults(type.contextAnnotators.count,
+        var contextAnnotators = type.documentAnnotators
+        contextAnnotators.append(contentsOf: configurationManager.currentUserContext?.documentAnnotators ?? [])
+        var documentIntegrators = type.documentIntegrators
+        documentIntegrators.append(contentsOf: configurationManager.currentUserContext?.documentIntegrators ?? [])
+
+        let annotationResults = AnnotationResults(contextAnnotators.count,
                                                   urls,
-                                                  type.description)
+                                                  [
+                                                    type.description,
+                                                    configurationManager.currentUserContext?.description
+                                                  ])
         
-        for annotator in type.contextAnnotators {
+        for annotator in contextAnnotators {
             annotator.makeAnnotations(annotationResults.complete)
         }
         
         for url in urls {
             let bookmarkData = try! url.bookmarkData(options: [.suitableForBookmarkFile])
-            try! URL.writeBookmarkData(bookmarkData, to: type.folder.appendingPathComponent(url.lastPathComponent))
+            try! URL.writeBookmarkData(bookmarkData,
+                                       to: type.folder.appendingPathComponent(url.lastPathComponent))
         }
 
-        for integrator in type.documentIntegrators {
-            try! integrator.integrate(documents: urls)
+        for integrator in documentIntegrators {
+            integrator.integrate(documents: urls)
         }
     }
 }

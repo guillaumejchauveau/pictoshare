@@ -8,7 +8,7 @@
 import SwiftUI
 
 
-struct ContextsView: View {
+struct UserContextsView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
 
     var body: some View {
@@ -16,9 +16,9 @@ struct ContextsView: View {
             ListSettingsView(items: $configurationManager.contexts,
                              add: configurationManager.addContext,
                              remove: configurationManager.removeContext) { index in
-                ContextView(
+                UserContextView(
                     description: $configurationManager.contexts[index].description,
-                    contextAnnotatorNames: $configurationManager.contexts[index].contextAnnotatorNames,
+                    documentAnnotatorNames: $configurationManager.contexts[index].documentAnnotatorNames,
                     documentIntegratorNames: $configurationManager.contexts[index].documentIntegratorNames,
                     editingDescription: configurationManager.contexts[index].description)
             }
@@ -27,14 +27,20 @@ struct ContextsView: View {
 }
 
 
-struct ContextView: View {
+struct UserContextView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
+
     @Binding var description: String
-    @Binding var contextAnnotatorNames: Set<String>
+    @Binding var documentAnnotatorNames: Set<String>
     @Binding var documentIntegratorNames: Set<String>
+
     @State var editingDescription: String
 
     private func validateDescription() {
+        if editingDescription.isEmpty {
+            NSSound.beep()
+            return
+        }
         description = editingDescription
     }
 
@@ -53,8 +59,8 @@ struct ContextView: View {
             }
 
             NamesSetGroupView(label: Text("Annotations"),
-                              availableNames: $configurationManager.contextAnnotators,
-                              selectedNames: $contextAnnotatorNames)
+                              availableNames: $configurationManager.documentAnnotators,
+                              selectedNames: $documentAnnotatorNames)
 
             NamesSetGroupView(label: Text("Intégrations"),
                               availableNames: $configurationManager.documentIntegrators,

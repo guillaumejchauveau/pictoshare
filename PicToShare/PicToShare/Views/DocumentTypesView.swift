@@ -14,9 +14,10 @@ struct DocumentTypesView: View {
                              remove: configurationManager.removeType) { index in
                 DocumentTypeView(
                     description: $configurationManager.types[index].description,
-                    contentAnnotatorScript: $configurationManager.types[index].contentAnnotatorScript,
-                    copyBeforeScript: $configurationManager.types[index].copyBeforeScript,
-                    contextAnnotatorNames: $configurationManager.types[index].contextAnnotatorNames,
+                    documentProcessingScript: $configurationManager.types[index].documentProcessorScript,
+                    copyBeforeProcessing: $configurationManager.types[index].copyBeforeProcessing,
+                    removeOriginalOnProcessingByproduct: $configurationManager.types[index].removeOriginalOnProcessingByproduct,
+                    documentAnnotatorNames: $configurationManager.types[index].documentAnnotatorNames,
                     documentIntegratorNames: $configurationManager.types[index].documentIntegratorNames,
                     editingDescription: configurationManager.types[index].description)
             }
@@ -26,15 +27,22 @@ struct DocumentTypesView: View {
 
 struct DocumentTypeView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
+
     @Binding var description: String
-    @Binding var contentAnnotatorScript: URL?
-    @Binding var copyBeforeScript: Bool
-    @Binding var contextAnnotatorNames: Set<String>
+    @Binding var documentProcessingScript: URL?
+    @Binding var copyBeforeProcessing: Bool
+    @Binding var removeOriginalOnProcessingByproduct: Bool
+    @Binding var documentAnnotatorNames: Set<String>
     @Binding var documentIntegratorNames: Set<String>
+
     @State private var chooseScriptFile = false
     @State var editingDescription: String
 
     private func validateDescription() {
+        if editingDescription.isEmpty {
+            NSSound.beep()
+            return
+        }
         description = editingDescription
     }
 
@@ -52,10 +60,10 @@ struct DocumentTypeView: View {
                 }
             }
 
-            GroupBox(label: Text("Script")) {
+            GroupBox(label: Text("Script de traitement")) {
                 VStack(alignment: .leading) {
                     HStack {
-                        if let scriptName = contentAnnotatorScript?.lastPathComponent {
+                        if let scriptName = documentProcessingScript?.lastPathComponent {
                             Text(scriptName)
                                     .font(.system(size: 12))
                                     .lineLimit(1)
@@ -68,30 +76,36 @@ struct DocumentTypeView: View {
 
                         Spacer()
 
-                        /// Button to load an applescript.
                         Button(action: {
                             chooseScriptFile = true
                         }) {
                             Image(systemName: "folder")
-                        }.fileImporter(isPresented: $chooseScriptFile, allowedContentTypes: [.osaScript]) { result in
-                            contentAnnotatorScript = try? result.get()
+                        }.fileImporter(isPresented: $chooseScriptFile,
+                                       allowedContentTypes: [.osaScript]) { result in
+                            documentProcessingScript = try? result.get()
                         }
 
-                        /// Button to withdraw the current selected type's applescript
                         Button(action: {
-                            contentAnnotatorScript = nil
-                            copyBeforeScript = true
+                            documentProcessingScript = nil
+                            copyBeforeProcessing = true
+                            removeOriginalOnProcessingByproduct = false
                         }) {
                             Image(systemName: "trash")
-                        }.disabled(contentAnnotatorScript == nil)
+                        }.disabled(documentProcessingScript == nil)
                     }.padding(EdgeInsets(top: 0, leading: 2, bottom: 0, trailing: 2))
-                    Toggle("Préserver l'original", isOn: $copyBeforeScript).disabled(contentAnnotatorScript == nil)
+
+                    Toggle("Préserver une copie de l'original",
+                           isOn: $copyBeforeProcessing)
+                        .disabled(documentProcessingScript == nil)
+                    Toggle("Si le script crée de nouveaux fichiers, supprimer l'original",
+                        isOn: $removeOriginalOnProcessingByproduct)
+                        .disabled(documentProcessingScript == nil)
                 }
             }
 
             NamesSetGroupView(label: Text("Annotations"),
-                              availableNames: $configurationManager.contextAnnotators,
-                              selectedNames: $contextAnnotatorNames)
+                              availableNames: $configurationManager.documentAnnotators,
+                              selectedNames: $documentAnnotatorNames)
 
             NamesSetGroupView(label: Text("Intégrations"),
                               availableNames: $configurationManager.documentIntegrators,

@@ -12,8 +12,8 @@ struct PTSApp: App {
     private let configurationManager = ConfigurationManager(
             "PTSFolder",
             [
-                CurrentCalendarEventsContextAnnotator(),
-                GeoLocalizationContextAnnotator()
+                CurrentCalendarEventsDocumentAnnotator(),
+                GeoLocalizationDocumentAnnotator()
             ],
             [
                 CurrentEventsDocumentIntegrator()
@@ -26,7 +26,7 @@ struct PTSApp: App {
         configurationManager.saveTypes()
         importationManager = ImportationManager(configurationManager)
 
-        // Creates default document types.
+        // Creates default Document Types.
         if !FileManager.default.fileExists(atPath: configurationManager.documentFolderURL.path) {
             configurationManager.addType(with: "Carte de visite")
             configurationManager.addType(with: "Affiche evenement")
@@ -54,7 +54,8 @@ struct MainView: View {
     @EnvironmentObject var importationManager: ImportationManager
 
     @State private var showFilePrompt = false
-    @State private var newContextField = ""
+    @State private var showNewContextForm = false
+    @State private var newContextDescription = ""
 
     var body: some View {
         HStack {
@@ -78,27 +79,50 @@ struct MainView: View {
                 }.frame(width: 480, height: 300)
             }
         }.padding()
+        .sheet(isPresented: $showNewContextForm) {
+            Form {
+                TextField("Nom", text: $newContextDescription)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                HStack {
+                    Spacer(minLength: 50)
+                    Button("Annuler") {
+                        showNewContextForm = false
+                        newContextDescription = ""
+                    }
+                    Button("Créer") {
+                        configurationManager.addContext(with: newContextDescription)
+                        showNewContextForm = false
+                        newContextDescription = ""
+                        configurationManager.currentUserContext = configurationManager.contexts.last
+                    }
+                    .keyboardShortcut(.return)
+                    .buttonStyle(AccentButtonStyle())
+                    .disabled(newContextDescription.isEmpty)
+                }
+            }.padding()
+        }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Menu {
-                    if configurationManager.currentContext != nil {
+                    if configurationManager.currentUserContext != nil {
                         Button("Contexte général") {
-                            configurationManager.currentContext = nil
+                            configurationManager.currentUserContext = nil
                         }
                     }
                     ForEach(configurationManager.contexts.filter {
-                              $0.description != configurationManager.currentContext?.description
+                              $0.description != configurationManager.currentUserContext?.description
                         }) { context in
                         Button(context.description) {
-                            configurationManager.currentContext = context
+                            configurationManager.currentUserContext = context
                         }
                     }
                     Divider()
                     Button("Créer") {
-
+                        showNewContextForm = true
                     }
                 } label: {
-                    Text(configurationManager.currentContext?.description ?? "Contexte général").foregroundColor(.gray)
+                    Text(configurationManager.currentUserContext?.description ?? "Contexte général")
+                        .foregroundColor(.gray)
                 }.frame(width: 150)
 
                 Button(action: {}) {
@@ -136,7 +160,7 @@ struct SettingsView: View {
                         Label("Types", systemImage: "doc.on.doc.fill")
                     }
                     .tag(Tabs.types)
-            ContextsView()
+            UserContextsView()
                     .tabItem {
                         Label("Contextes", systemImage: "at")
                     }
