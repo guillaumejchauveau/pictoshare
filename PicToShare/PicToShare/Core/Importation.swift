@@ -98,20 +98,54 @@ class ImportationManager: ObservableObject {
         }
     }
 
-    private func postProcessDocuments(urls: [URL], with type: DocumentType) {
-        let encoder = PropertyListEncoder()
-        encoder.outputFormat = .binary
-        var annotations = type.contextAnnotators.flatMap {
-            $0.keywords
+    
+    class AnnotationResults {
+        private var keywords: [String] = []
+        private var remainingCount: Int
+        private let urls: [URL]
+        
+        init(_ annotatorCount: Int, _ urls: [URL], _ description: String) {
+            remainingCount = annotatorCount
+            self.urls = urls
+            keywords.append(description)
         }
-        annotations.append(type.description)
-        let itemKeywords = try! encoder.encode(annotations)
+        
+        
+        func complete(_ result: Result<[String], ContextAnnotatorError>) {
+            remainingCount -= 1
+            switch result {
+                case .success(let keywords):
+                    self.keywords.append(contentsOf: keywords)
+                default:
+                    break
+            }
+            
+            if remainingCount <= 0 {
+                
+                let encoder = PropertyListEncoder()
+                encoder.outputFormat = .binary
+                
+                let itemKeywords = try! encoder.encode(keywords)
 
+                for url in urls {
+                    try! url.setExtendedAttribute(
+                            data: itemKeywords,
+                            forName: "com.apple.metadata:kMDItemKeywords")
+                }
+            }
+        }
+    }
+    
+    private func postProcessDocuments(urls: [URL], with type: DocumentType) {
+        let annotationResults = AnnotationResults(type.contextAnnotators.count,
+                                                  urls,
+                                                  type.description)
+        
+        for annotator in type.contextAnnotators {
+            annotator.makeAnnotations(annotationResults.complete)
+        }
+        
         for url in urls {
-            try! url.setExtendedAttribute(
-                    data: itemKeywords,
-                    forName: "com.apple.metadata:kMDItemKeywords")
-
             let bookmarkData = try! url.bookmarkData(options: [.suitableForBookmarkFile])
             try! URL.writeBookmarkData(bookmarkData, to: type.folder.appendingPathComponent(url.lastPathComponent))
         }
