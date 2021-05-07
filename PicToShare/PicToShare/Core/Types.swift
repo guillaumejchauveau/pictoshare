@@ -41,3 +41,10 @@ protocol DocumentType: CustomStringConvertible {
     /// The URL of the folder containing links to all Documents of this Type.
     var folder: URL { get }
 }
+
+protocol ImportationContext: CustomStringConvertible {
+    /// Additionnal ContextAnnotators.
+    var contextAnnotators: [ContextAnnotator] { get }
+    /// Additionnal DocumentIntegrators.
+    var documentIntegrators: [DocumentIntegrator] { get }
+}

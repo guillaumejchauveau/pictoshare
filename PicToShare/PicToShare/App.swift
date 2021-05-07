@@ -19,11 +19,11 @@ struct PTSApp: App {
                 CurrentEventsDocumentIntegrator()
             ])
     private let importationManager: ImportationManager
-    @State private var showFilePrompt = false
 
     init() {
-        configurationManager.load()
-        configurationManager.saveAll()
+        configurationManager.loadTypes()
+        configurationManager.loadContexts()
+        configurationManager.saveTypes()
         importationManager = ImportationManager(configurationManager)
 
         // Creates default document types.
@@ -31,34 +31,13 @@ struct PTSApp: App {
             configurationManager.addType(with: "Carte de visite")
             configurationManager.addType(with: "Affiche evenement")
             configurationManager.addType(with: "Tableau blanc")
-            configurationManager.saveAll()
+            configurationManager.saveTypes()
         }
     }
 
     var body: some Scene {
         WindowGroup {
             MainView()
-                    .toolbar {
-                        ToolbarItem(placement: .primaryAction) {
-                            Button(action: {}) {
-                                ZStack {
-                                    Image(systemName: "camera")
-                                    // Hacky way of adding a button opening a NSMenu for Continuity Camera.
-                                    ContinuityCameraButton()
-                                            .environmentObject(configurationManager)
-                                }
-                            }
-                        }
-                        ToolbarItem(placement: .primaryAction) {
-                            Button(action: { showFilePrompt = true }) {
-                                Image(systemName: "internaldrive")
-                            }.fileImporter(isPresented: $showFilePrompt,
-                                    allowedContentTypes: [.content],
-                                    allowsMultipleSelection: true) {
-                                importationManager.queue(documents: (try? $0.get()) ?? [])
-                            }
-                        }
-                    }
                     .environmentObject(configurationManager)
                     .environmentObject(importationManager)
         }
@@ -73,6 +52,10 @@ struct PTSApp: App {
 struct MainView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
     @EnvironmentObject var importationManager: ImportationManager
+
+    @State private var showFilePrompt = false
+    @State private var newContextField = ""
+
     var body: some View {
         HStack {
             if importationManager.queueHead != nil {
@@ -95,6 +78,47 @@ struct MainView: View {
                 }.frame(width: 480, height: 300)
             }
         }.padding()
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Menu {
+                    if configurationManager.currentContext != nil {
+                        Button("Contexte général") {
+                            configurationManager.currentContext = nil
+                        }
+                    }
+                    ForEach(configurationManager.contexts.filter {
+                              $0.description != configurationManager.currentContext?.description
+                        }) { context in
+                        Button(context.description) {
+                            configurationManager.currentContext = context
+                        }
+                    }
+                    Divider()
+                    Button("Créer") {
+
+                    }
+                } label: {
+                    Text(configurationManager.currentContext?.description ?? "Contexte général").foregroundColor(.gray)
+                }.frame(width: 150)
+
+                Button(action: {}) {
+                    ZStack {
+                        Image(systemName: "camera")
+                        // Hacky way of adding a button opening a NSMenu for Continuity Camera.
+                        ContinuityCameraButton()
+                            .environmentObject(configurationManager)
+                    }
+                }
+
+                Button(action: { showFilePrompt = true }) {
+                    Image(systemName: "internaldrive")
+                }.fileImporter(isPresented: $showFilePrompt,
+                               allowedContentTypes: [.content],
+                               allowsMultipleSelection: true) {
+                    importationManager.queue(documents: (try? $0.get()) ?? [])
+                }
+            }
+        }
     }
 }
 
@@ -102,6 +126,7 @@ struct MainView: View {
 struct SettingsView: View {
     private enum Tabs: Hashable {
         case types
+        case contexts
     }
 
     var body: some View {
@@ -111,6 +136,11 @@ struct SettingsView: View {
                         Label("Types", systemImage: "doc.on.doc.fill")
                     }
                     .tag(Tabs.types)
+            ContextsView()
+                    .tabItem {
+                        Label("Contextes", systemImage: "at")
+                    }
+                    .tag(Tabs.contexts)
         }
     }
 }

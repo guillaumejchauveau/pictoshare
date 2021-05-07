@@ -39,7 +39,7 @@ struct GeoLocalizationContextAnnotator: ContextAnnotator {
     private let delegate = Delegate()
     
     init() {
-        locationManager.requestWhenInUseAuthorization()
+        //locationManager.requestWhenInUseAuthorization()
         locationManager.startMonitoringVisits()
         locationManager.delegate = delegate
     }

@@ -58,7 +58,48 @@ class DocumentTypeMetadata: DocumentType, ObservableObject {
                 configurationManager.save(type: self)
             }
         }
-        configurationManager.save(type: self)
+    }
+}
+
+class ImportationContextMetadata: ImportationContext, ObservableObject, Equatable, Identifiable {
+    static func == (lhs: ImportationContextMetadata, rhs: ImportationContextMetadata) -> Bool {
+        lhs.description == rhs.description
+    }
+
+    let configurationManager: ConfigurationManager
+    var savedDescription: String
+    @Published var description: String
+    @Published var contextAnnotatorNames: Set<String>
+    @Published var documentIntegratorNames: Set<String>
+    private var subscriber: AnyCancellable!
+
+    var contextAnnotators: [ContextAnnotator] {
+        contextAnnotatorNames.map {
+            configurationManager.contextAnnotators[$0]!
+        }
+    }
+
+    var documentIntegrators: [DocumentIntegrator] {
+        documentIntegratorNames.map {
+            configurationManager.documentIntegrators[$0]!
+        }
+    }
+
+    init(_ description: String,
+         _ configurationManager: ConfigurationManager,
+         _ contextAnnotatorNames: Set<String> = [],
+         _ documentIntegratorNames: Set<String> = []) {
+        self.configurationManager = configurationManager
+        self.description = description
+        savedDescription = description
+        self.contextAnnotatorNames = contextAnnotatorNames
+        self.documentIntegratorNames = documentIntegratorNames
+        subscriber = self.objectWillChange.sink {
+            DispatchQueue.main
+                .asyncAfter(deadline: .now() + .milliseconds(200)) {
+                    configurationManager.saveContexts()
+                }
+        }
     }
 }
 
@@ -73,8 +114,23 @@ class ConfigurationManager: ObservableObject {
 
     let documentFolderURL: URL
 
-    /// The Document Types configured.
+    /// The configured Document Types.
     @Published var types: [DocumentTypeMetadata] = []
+
+    /// The configured Importation Contexts.
+    @Published var contexts: [ImportationContextMetadata] = []
+
+    private var currentContext_: ImportationContextMetadata? = nil
+    var currentContext: ImportationContextMetadata? {
+        get {
+            currentContext_
+        }
+        set {
+            currentContext_ = newValue
+            setPreference("currentContext", (newValue?.description ?? "") as CFString)
+            objectWillChange.send()
+        }
+    }
 
     init(_ ptsFolderName: String,
          _ contextAnnotators: [ContextAnnotator] = [],
@@ -100,6 +156,26 @@ class ConfigurationManager: ObservableObject {
     /// Configures a new Document Type.
     func addType(with description: String) {
         types.append(DocumentTypeMetadata(description, self))
+        saveTypes()
+    }
+
+    func removeType(at index: Int) {
+        types.remove(at: index)
+        saveTypes()
+    }
+
+    /// Configures a new Importation Context.
+    func addContext(with description: String) {
+        contexts.append(ImportationContextMetadata(description, self))
+        saveContexts()
+    }
+
+    func removeContext(at index: Int) {
+        let context = contexts.remove(at: index)
+        if currentContext == context {
+            currentContext = nil
+        }
+        saveContexts()
     }
 
     //**************************************************************************
@@ -130,7 +206,7 @@ class ConfigurationManager: ObservableObject {
     }
 
     /// Configures Document Types by reading data from persistent storage.
-    func load() {
+    func loadTypes() {
         CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
 
         types.removeAll()
@@ -195,6 +271,64 @@ class ConfigurationManager: ObservableObject {
         }
     }
 
+    /// Configures Importation Contexts by reading data from persistent storage.
+    func loadContexts() {
+        CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
+
+        contexts.removeAll()
+        let contextDeclarations = getPreference("contexts")
+            as? Array<CFPropertyList> ?? []
+        for rawDeclaration in contextDeclarations {
+            do {
+                guard let declaration = rawDeclaration
+                        as? Dictionary<String, Any> else {
+                    throw ConfigurationManager.Error.preferencesError
+                }
+
+                guard let description = declaration["description"]
+                        as? String else {
+                    throw ConfigurationManager.Error.preferencesError
+                }
+
+                var contextAnnotators: Set<String> = []
+                let contextAnnotatorDeclarations = declaration["contextAnnotators"]
+                    as? Array<CFPropertyList> ?? []
+                for rawContextAnnotatorDeclaration in contextAnnotatorDeclarations {
+                    if let contextAnnotatorDescription = rawContextAnnotatorDeclaration
+                        as? String {
+                        if self.contextAnnotators.keys.contains(contextAnnotatorDescription) {
+                            contextAnnotators.insert(contextAnnotatorDescription)
+                        }
+                    }
+                }
+
+                var documentIntegrators: Set<String> = []
+                let documentIntegratorDeclarations = declaration["documentIntegrators"]
+                    as? Array<CFPropertyList> ?? []
+                for rawDocumentIntegratorDeclaration in documentIntegratorDeclarations {
+                    if let documentIntegratorDescription = rawDocumentIntegratorDeclaration
+                        as? String {
+                        if self.documentIntegrators.keys.contains(documentIntegratorDescription) {
+                            documentIntegrators.insert(documentIntegratorDescription)
+                        }
+                    }
+                }
+
+                contexts.append(ImportationContextMetadata(description,
+                                                  self,
+                                                  contextAnnotators,
+                                                  documentIntegrators))
+            } catch {
+                continue
+            }
+        }
+
+        if let savedCurrentDescription = getPreference("currentContext") as? String {
+            currentContext = contexts.first {
+                $0.description == savedCurrentDescription
+            }
+        }
+    }
     /// Updates the folder corresponding to the given Document Type.
     /// Currently as multiple failing situations:
     /// - a file exists with the name of the document type;
@@ -230,7 +364,7 @@ class ConfigurationManager: ObservableObject {
     }
 
     /// Saves all the configured Document Types.
-    func saveAll() {
+    func saveTypes() {
         for type in types {
             updateTypeFolder(type)
         }
@@ -238,6 +372,16 @@ class ConfigurationManager: ObservableObject {
                 types.map {
                     $0.toCFPropertyList()
                 } as CFArray)
+
+        CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
+    }
+
+    /// Saves all the configured Contexts.
+    func saveContexts() {
+        setPreference("contexts",
+                      contexts.map {
+                        $0.toCFPropertyList()
+                      } as CFArray)
 
         CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
     }
@@ -250,6 +394,16 @@ extension DocumentTypeMetadata: CFPropertyListable {
             "description": description,
             "contentAnnotator": contentAnnotatorScript?.path ?? "",
             "copyBeforeScript": copyBeforeScript,
+            "contextAnnotators": contextAnnotators.map({ $0.description }) as CFArray,
+            "documentIntegrators": documentIntegrators.map({ $0.description }) as CFArray
+        ] as CFPropertyList
+    }
+}
+
+extension ImportationContextMetadata: CFPropertyListable {
+    func toCFPropertyList() -> CFPropertyList {
+        [
+            "description": description,
             "contextAnnotators": contextAnnotators.map({ $0.description }) as CFArray,
             "documentIntegrators": documentIntegrators.map({ $0.description }) as CFArray
         ] as CFPropertyList
