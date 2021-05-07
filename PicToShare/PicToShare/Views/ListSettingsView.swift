@@ -80,6 +80,6 @@ struct ListSettingsView<Item, Content>: View where Item: CustomStringConvertible
             }
             .buttonStyle(BorderedButtonStyle())
             .padding([.leading, .bottom, .trailing])
-        }.frame(width: 640, height: 360)
+        }
     }
 }

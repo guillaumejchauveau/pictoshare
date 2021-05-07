@@ -22,7 +22,7 @@ struct UserContextsView: View {
                     documentIntegratorNames: $configurationManager.contexts[index].documentIntegratorNames,
                     editingDescription: configurationManager.contexts[index].description)
             }
-        }.frame(width: 640, height: 360)
+        }
     }
 }
 

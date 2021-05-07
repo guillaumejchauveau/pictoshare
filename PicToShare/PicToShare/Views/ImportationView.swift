@@ -36,7 +36,7 @@ struct ImportationView: View {
             HStack {
                 Text("\(processedCount + 1) sur \(processedCount + importationManager.queueCount)")
             }
-        }.frame(width: 230, height: 300).padding(.trailing, 20)
+        }
         VStack {
             GroupBox {
                 ScrollView {
@@ -73,6 +73,6 @@ struct ImportationView: View {
                     processedCount += 1
                 }.buttonStyle(AccentButtonStyle())
             }
-        }.frame(width: 230, height: 300)
+        }
     }
 }

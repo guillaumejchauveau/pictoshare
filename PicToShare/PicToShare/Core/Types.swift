@@ -7,6 +7,8 @@
 
 import Foundation
 
+// TODO Hashable
+
 /// Object providing a list of keywords to add to imported Documents.
 /// The keywords are usually based on information in the current context.
 protocol DocumentAnnotator: CustomStringConvertible {

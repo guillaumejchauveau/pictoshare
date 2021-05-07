@@ -76,9 +76,9 @@ struct MainView: View {
                         Image(systemName: "internaldrive").imageScale(.large).font(.system(size: 16))
                         Text("Choisir un ou plusieurs fichiers sur votre ordinateur").font(.system(size: 16, weight: .light))
                     }
-                }.frame(width: 480, height: 300)
+                }
             }
-        }.padding()
+        }.frame(width: 480, height: 300).padding()
         .sheet(isPresented: $showNewContextForm) {
             Form {
                 TextField("Nom", text: $newContextDescription)

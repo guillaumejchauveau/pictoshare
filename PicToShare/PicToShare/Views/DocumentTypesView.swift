@@ -21,7 +21,7 @@ struct DocumentTypesView: View {
                     documentIntegratorNames: $configurationManager.types[index].documentIntegratorNames,
                     editingDescription: configurationManager.types[index].description)
             }
-        }.frame(width: 640, height: 360)
+        }
     }
 }
 

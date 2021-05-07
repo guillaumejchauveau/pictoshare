@@ -35,7 +35,20 @@ struct CurrentCalendarEventsDocumentAnnotator: DocumentAnnotator {
 }
 
 struct GeoLocalizationDocumentAnnotator: DocumentAnnotator {
-    private class Delegate : NSObject, CLLocationManagerDelegate {}
+    private class Delegate : NSObject, CLLocationManagerDelegate {
+        var locationRequests: [() -> Void] = []
+
+        func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+            while let request = locationRequests.popLast() {
+                request()
+            }
+        }
+
+        func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+            print(String(describing: error))
+        }
+
+    }
 
     let description: String = "Géolocalisation"
 
@@ -43,19 +56,30 @@ struct GeoLocalizationDocumentAnnotator: DocumentAnnotator {
     private let delegate = Delegate()
     
     init() {
-        if CLLocationManager.locationServicesEnabled() {
-            locationManager.requestWhenInUseAuthorization()
-            locationManager.startMonitoringVisits()
-        }
         locationManager.delegate = delegate
     }
 
     func makeAnnotations(_ completion: @escaping CompletionHandler) {
+        guard CLLocationManager.locationServicesEnabled() else {
+            completion(.failure(.permissionError))
+            return
+        }
+        if locationManager.authorizationStatus == .authorized {
+            processLocation(completion)
+        } else {
+            delegate.locationRequests.append {
+                processLocation(completion)
+            }
+            locationManager.requestWhenInUseAuthorization()
+        }
+    }
+
+    private func processLocation(_ completion: @escaping CompletionHandler) {
         guard let coordinate = locationManager.location?.coordinate else {
             completion(.failure(.permissionError))
             return
         }
-        
+
         let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
         CLGeocoder().reverseGeocodeLocation(location) { placemarks, error in
             let locationAnnotations: [String?] = [
