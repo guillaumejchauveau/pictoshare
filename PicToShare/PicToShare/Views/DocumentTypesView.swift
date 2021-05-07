@@ -118,7 +118,7 @@ struct DocumentTypeView: View {
                                     .truncationMode(.head)
                         } else {
                             Text("Aucun script associé")
-                                    .font(.italic(.system(size: 12))())
+                                    .font(.system(size: 12))
                                     .foregroundColor(.gray)
                         }
 
