@@ -71,3 +71,25 @@ struct NamesSetToggleView: View {
         ))
     }
 }
+
+struct NamesSetGroupView<Label, ValueType>: View where Label: View {
+    var label: Label
+    @Binding var availableNames: Dictionary<String, ValueType>
+    @Binding var selectedNames: Set<String>
+
+    var body: some View {
+        GroupBox(label: label) {
+            HStack {
+                VStack(alignment: .leading) {
+                    ForEach(availableNames.keys.sorted(by: >), id: \.self) { description in
+                        NamesSetToggleView(names: $selectedNames,
+                                           description: description,
+                                           state: selectedNames.contains(description))
+                    }
+                }
+                Spacer()
+            }
+        }
+    }
+}
+

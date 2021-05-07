@@ -58,6 +58,7 @@ class DocumentTypeMetadata: DocumentType, ObservableObject {
                 configurationManager.save(type: self)
             }
         }
+        configurationManager.save(type: self)
     }
 }
 
@@ -67,8 +68,8 @@ class ConfigurationManager: ObservableObject {
         case preferencesError
     }
 
-    let contextAnnotators: [String: ContextAnnotator]
-    let documentIntegrators: [String: DocumentIntegrator]
+    var contextAnnotators: [String: ContextAnnotator]
+    var documentIntegrators: [String: DocumentIntegrator]
 
     let documentFolderURL: URL
 

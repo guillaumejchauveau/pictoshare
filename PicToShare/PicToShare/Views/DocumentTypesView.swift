@@ -70,6 +70,7 @@ struct DocumentTypesView: View {
                             .asyncAfter(deadline: .now() + .milliseconds(200)) {
                         if index < configurationManager.types.count {
                             configurationManager.types.remove(at: index)
+                            configurationManager.saveAll()
                         }
                     }
                 }) {
@@ -147,33 +148,13 @@ struct DocumentTypeView: View {
                 }
             }
 
-            GroupBox(label: Text("Annotations")) {
-                HStack {
-                    VStack(alignment: .leading) {
-                        ForEach(configurationManager.contextAnnotators.keys
-                                .sorted(by: >), id: \.self) { description in
-                            NamesSetToggleView(names: $contextAnnotatorNames,
-                                    description: description,
-                                    state: contextAnnotatorNames.contains(description))
-                        }
-                    }
-                    Spacer()
-                }
-            }
+            NamesSetGroupView(label: Text("Annotations"),
+                              availableNames: $configurationManager.contextAnnotators,
+                              selectedNames: $contextAnnotatorNames)
 
-            GroupBox(label: Text("Intégrations")) {
-                HStack {
-                    VStack(alignment: .leading) {
-                        ForEach(configurationManager.documentIntegrators.keys
-                                .sorted(by: >), id: \.self) { description in
-                            NamesSetToggleView(names: $documentIntegratorNames,
-                                    description: description,
-                                    state: documentIntegratorNames.contains(description))
-                        }
-                    }
-                    Spacer()
-                }
-            }
+            NamesSetGroupView(label: Text("Intégrations"),
+                              availableNames: $configurationManager.documentIntegrators,
+                              selectedNames: $documentIntegratorNames)
         }.padding()
     }
 }
