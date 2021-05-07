@@ -149,5 +149,9 @@ class ImportationManager: ObservableObject {
             let bookmarkData = try! url.bookmarkData(options: [.suitableForBookmarkFile])
             try! URL.writeBookmarkData(bookmarkData, to: type.folder.appendingPathComponent(url.lastPathComponent))
         }
+
+        for integrator in type.documentIntegrators {
+            try! integrator.integrate(documents: urls)
+        }
     }
 }

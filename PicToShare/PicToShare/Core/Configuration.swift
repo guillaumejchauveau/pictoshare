@@ -20,11 +20,18 @@ class DocumentTypeMetadata: DocumentType, ObservableObject {
     @Published var contentAnnotatorScript: URL?
     @Published var copyBeforeScript: Bool
     @Published var contextAnnotatorNames: Set<String>
+    @Published var documentIntegratorNames: Set<String>
     private var subscriber: AnyCancellable!
 
     var contextAnnotators: [ContextAnnotator] {
         contextAnnotatorNames.map {
             configurationManager.contextAnnotators[$0]!
+        }
+    }
+
+    var documentIntegrators: [DocumentIntegrator] {
+        documentIntegratorNames.map {
+            configurationManager.documentIntegrators[$0]!
         }
     }
 
@@ -36,19 +43,22 @@ class DocumentTypeMetadata: DocumentType, ObservableObject {
          _ configurationManager: ConfigurationManager,
          _ contentAnnotatorScript: URL? = nil,
          _ copyBeforeScript: Bool = true,
-         _ contextAnnotatorNames: Set<String> = []) {
+         _ contextAnnotatorNames: Set<String> = [],
+         _ documentIntegratorNames: Set<String> = []) {
         self.configurationManager = configurationManager
         self.description = description
         savedDescription = description
         self.contentAnnotatorScript = contentAnnotatorScript
         self.copyBeforeScript = copyBeforeScript
         self.contextAnnotatorNames = contextAnnotatorNames
+        self.documentIntegratorNames = documentIntegratorNames
         subscriber = self.objectWillChange.sink {
             DispatchQueue.main
                     .asyncAfter(deadline: .now() + .milliseconds(200)) {
                 configurationManager.save(type: self)
             }
         }
+        configurationManager.save(type: self)
     }
 }
 
@@ -58,19 +68,27 @@ class ConfigurationManager: ObservableObject {
         case preferencesError
     }
 
-    let contextAnnotators: [String: ContextAnnotator]
+    var contextAnnotators: [String: ContextAnnotator]
+    var documentIntegrators: [String: DocumentIntegrator]
 
     let documentFolderURL: URL
 
     /// The Document Types configured.
     @Published var types: [DocumentTypeMetadata] = []
 
-    init(_ ptsFolderName: String, _ contextAnnotators: [ContextAnnotator] = []) {
+    init(_ ptsFolderName: String,
+         _ contextAnnotators: [ContextAnnotator] = [],
+         _ documentIntegrators: [DocumentIntegrator] = []) {
         var annotators: [String: ContextAnnotator] = [:]
         for contextAnnotator in contextAnnotators {
             annotators[contextAnnotator.description] = contextAnnotator
         }
         self.contextAnnotators = annotators
+        var integrators: [String: DocumentIntegrator] = [:]
+        for documentIntegrator in documentIntegrators {
+            integrators[documentIntegrator.description] = documentIntegrator
+        }
+        self.documentIntegrators = integrators
         documentFolderURL = try! FileManager.default
                 .url(for: .documentDirectory,
                         in: .userDomainMask,
@@ -129,6 +147,7 @@ class ConfigurationManager: ObservableObject {
                         as? String else {
                     throw ConfigurationManager.Error.preferencesError
                 }
+
                 let contentAnnotatorURL: URL?
                 if let contentAnnotatorPath = declaration["contentAnnotator"]
                         as? String {
@@ -141,9 +160,9 @@ class ConfigurationManager: ObservableObject {
                         as? Bool ?? true
 
                 var contextAnnotators: Set<String> = []
-                let contextAnnotatorsDeclarations = declaration["contextAnnotators"]
+                let contextAnnotatorDeclarations = declaration["contextAnnotators"]
                         as? Array<CFPropertyList> ?? []
-                for rawContextAnnotatorDeclaration in contextAnnotatorsDeclarations {
+                for rawContextAnnotatorDeclaration in contextAnnotatorDeclarations {
                     if let contextAnnotatorDescription = rawContextAnnotatorDeclaration
                             as? String {
                         if self.contextAnnotators.keys.contains(contextAnnotatorDescription) {
@@ -152,11 +171,24 @@ class ConfigurationManager: ObservableObject {
                     }
                 }
 
+                var documentIntegrators: Set<String> = []
+                let documentIntegratorDeclarations = declaration["documentIntegrators"]
+                        as? Array<CFPropertyList> ?? []
+                for rawDocumentIntegratorDeclaration in documentIntegratorDeclarations {
+                    if let documentIntegratorDescription = rawDocumentIntegratorDeclaration
+                            as? String {
+                        if self.documentIntegrators.keys.contains(documentIntegratorDescription) {
+                            documentIntegrators.insert(documentIntegratorDescription)
+                        }
+                    }
+                }
+
                 types.append(DocumentTypeMetadata(description,
                         self,
                         contentAnnotatorURL,
                         copyBeforeScript,
-                        contextAnnotators))
+                        contextAnnotators,
+                        documentIntegrators))
             } catch {
                 continue
             }
@@ -218,7 +250,8 @@ extension DocumentTypeMetadata: CFPropertyListable {
             "description": description,
             "contentAnnotator": contentAnnotatorScript?.path ?? "",
             "copyBeforeScript": copyBeforeScript,
-            "contextAnnotators": contextAnnotators.map({ $0.description }) as CFArray
+            "contextAnnotators": contextAnnotators.map({ $0.description }) as CFArray,
+            "documentIntegrators": documentIntegrators.map({ $0.description }) as CFArray
         ] as CFPropertyList
     }
 }

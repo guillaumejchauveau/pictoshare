@@ -18,6 +18,12 @@ enum ContextAnnotatorError: Error {
     case locationNotFoundError
 }
 
+/// Object attaching the Document file to an external application or content.
+protocol DocumentIntegrator: CustomStringConvertible {
+    func integrate(documents: [URL]) throws
+}
+
+
 /// Object defining how to process a Document with two components: the Content Annotator, and Context
 /// Annotators.
 /// The first component is the URL of an AppleScript, that will process the input file into the output file at the
@@ -30,6 +36,8 @@ protocol DocumentType: CustomStringConvertible {
     var copyBeforeScript: Bool { get }
     /// The ContextAnnotators used to annotate the Document.
     var contextAnnotators: [ContextAnnotator] { get }
+    /// The DocumentIntegrators that will use the Document.
+    var documentIntegrators: [DocumentIntegrator] { get }
     /// The URL of the folder containing links to all Documents of this Type.
     var folder: URL { get }
 }
