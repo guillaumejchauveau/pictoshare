@@ -10,7 +10,7 @@ import Foundation
 /// Object providing a list of keywords to add to imported Documents.
 /// The keywords are usually based on information in the current context.
 protocol ContextAnnotator: CustomStringConvertible {
-    func getKeywords(_ completion: @escaping (Result<[String], ContextAnnotatorError>) -> Void)
+    func makeAnnotations(_ completion: @escaping (Result<[String], ContextAnnotatorError>) -> Void)
 }
 
 enum ContextAnnotatorError: Error {

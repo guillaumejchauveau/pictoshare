@@ -142,7 +142,7 @@ class ImportationManager: ObservableObject {
                                                   type.description)
         
         for annotator in type.contextAnnotators {
-            annotator.getKeywords(annotationResults.complete)
+            annotator.makeAnnotations(annotationResults.complete)
         }
         
         for url in urls {
