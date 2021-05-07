@@ -25,6 +25,7 @@ struct CurrentCalendarEventsContextAnnotator: ContextAnnotator {
             let keywords = store.events(matching: predicate).compactMap {
                 $0.title
             }
+            
             completion(.success(keywords))
         }
     }

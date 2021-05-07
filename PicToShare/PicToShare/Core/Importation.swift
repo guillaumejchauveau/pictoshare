@@ -112,15 +112,16 @@ class ImportationManager: ObservableObject {
         
         
         func complete(_ result: Result<[String], ContextAnnotatorError>) {
-            remainingCount = remainingCount - 1
+            remainingCount -= 1
             switch result {
-                case .success(keywords):
+                case .success(let keywords):
                     self.keywords.append(contentsOf: keywords)
                 default:
                     break
             }
             
             if remainingCount <= 0 {
+                
                 let encoder = PropertyListEncoder()
                 encoder.outputFormat = .binary
                 
