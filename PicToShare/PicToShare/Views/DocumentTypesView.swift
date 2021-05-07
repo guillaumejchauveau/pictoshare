@@ -20,6 +20,7 @@ struct DocumentTypesView: View {
                                     contentAnnotatorScript: $configurationManager.types[index].contentAnnotatorScript,
                                     copyBeforeScript: $configurationManager.types[index].copyBeforeScript,
                                     contextAnnotatorNames: $configurationManager.types[index].contextAnnotatorNames,
+                                    documentIntegratorNames: $configurationManager.types[index].documentIntegratorNames,
                                     editingDescription: configurationManager.types[index].description),
                             tag: index,
                             selection: $selection) {
@@ -69,6 +70,7 @@ struct DocumentTypesView: View {
                             .asyncAfter(deadline: .now() + .milliseconds(200)) {
                         if index < configurationManager.types.count {
                             configurationManager.types.remove(at: index)
+                            configurationManager.saveAll()
                         }
                     }
                 }) {
@@ -87,6 +89,7 @@ struct DocumentTypeView: View {
     @Binding var contentAnnotatorScript: URL?
     @Binding var copyBeforeScript: Bool
     @Binding var contextAnnotatorNames: Set<String>
+    @Binding var documentIntegratorNames: Set<String>
     @State private var chooseScriptFile = false
     @State var editingDescription: String
 
@@ -145,19 +148,13 @@ struct DocumentTypeView: View {
                 }
             }
 
-            GroupBox(label: Text("Annotations")) {
-                HStack {
-                    VStack(alignment: .leading) {
-                        ForEach(configurationManager.contextAnnotators.values
-                                .sorted(by: { $0.description > $1.description }), id: \.description) { annotator in
-                            NamesSetToggleView(names: $contextAnnotatorNames,
-                                    description: annotator.description,
-                                    state: contextAnnotatorNames.contains(annotator.description))
-                        }
-                    }
-                    Spacer()
-                }
-            }
+            NamesSetGroupView(label: Text("Annotations"),
+                              availableNames: $configurationManager.contextAnnotators,
+                              selectedNames: $contextAnnotatorNames)
+
+            NamesSetGroupView(label: Text("Intégrations"),
+                              availableNames: $configurationManager.documentIntegrators,
+                              selectedNames: $documentIntegratorNames)
         }.padding()
     }
 }
