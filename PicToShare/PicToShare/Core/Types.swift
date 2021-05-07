@@ -15,6 +15,7 @@ protocol ContextAnnotator: CustomStringConvertible {
 
 enum ContextAnnotatorError: Error {
     case permissionError
+    case locationNotFoundError
 }
 
 /// Object defining how to process a Document with two components: the Content Annotator, and Context

@@ -13,7 +13,7 @@ struct PTSApp: App {
             "PTSFolder",
             [
                 CurrentCalendarEventsContextAnnotator(),
-                //GeoLocalizationContextAnnotator()
+                GeoLocalizationContextAnnotator()
             ])
     private let importationManager: ImportationManager
     @State private var showFilePrompt = false
