@@ -14,6 +14,7 @@
 		95BD8ECC2616344100D83532 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EC82616344100D83532 /* Types.swift */; };
 		95E67AD32643062400C17938 /* ContextAnnotators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E67AD22643062400C17938 /* ContextAnnotators.swift */; };
 		95F95102261B9A7C00000A93 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F95101261B9A7C00000A93 /* App.swift */; };
+		F9A7C08D79F175A83BD76A0E /* DocumentIntegrators.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C28A555F204F09D31E55 /* DocumentIntegrators.swift */; };
 		F9A7C33E0FC489A18F38CE51 /* ContinuityCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C938489000F68C95D3D7 /* ContinuityCamera.swift */; };
 		F9A7C6884F6D835DFBD3F4FB /* DocumentTypesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7CB5497C834E0B122F3A0 /* DocumentTypesView.swift */; };
 		F9A7C856ABCC5868A2849686 /* ImportationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C6833306D3114D356C2E /* ImportationView.swift */; };
@@ -32,6 +33,7 @@
 		95E67AD22643062400C17938 /* ContextAnnotators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextAnnotators.swift; sourceTree = "<group>"; };
 		95F95101261B9A7C00000A93 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		F9A7C24A138F6321D385CD24 /* ViewUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewUtils.swift; sourceTree = "<group>"; };
+		F9A7C28A555F204F09D31E55 /* DocumentIntegrators.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DocumentIntegrators.swift; sourceTree = "<group>"; };
 		F9A7C6833306D3114D356C2E /* ImportationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImportationView.swift; sourceTree = "<group>"; };
 		F9A7C938489000F68C95D3D7 /* ContinuityCamera.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContinuityCamera.swift; sourceTree = "<group>"; };
 		F9A7CB5497C834E0B122F3A0 /* DocumentTypesView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DocumentTypesView.swift; sourceTree = "<group>"; };
@@ -85,6 +87,7 @@
 				95F95101261B9A7C00000A93 /* App.swift */,
 				F9A7C938489000F68C95D3D7 /* ContinuityCamera.swift */,
 				95E67AD22643062400C17938 /* ContextAnnotators.swift */,
+				F9A7C28A555F204F09D31E55 /* DocumentIntegrators.swift */,
 			);
 			path = PicToShare;
 			sourceTree = "<group>";
@@ -182,6 +185,7 @@
 				F9A7C6884F6D835DFBD3F4FB /* DocumentTypesView.swift in Sources */,
 				F9A7C856ABCC5868A2849686 /* ImportationView.swift in Sources */,
 				F9A7C89AF6396B2FCF324263 /* ViewUtils.swift in Sources */,
+				F9A7C08D79F175A83BD76A0E /* DocumentIntegrators.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -14,6 +14,9 @@ struct PTSApp: App {
             [
                 CurrentCalendarEventsContextAnnotator(),
                 GeoLocalizationContextAnnotator()
+            ],
+            [
+                CurrentEventsDocumentIntegrator()
             ])
     private let importationManager: ImportationManager
     @State private var showFilePrompt = false
