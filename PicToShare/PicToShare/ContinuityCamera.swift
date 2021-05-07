@@ -47,7 +47,13 @@ class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
             return false
         }
         let fileUrl = configurationManager.documentFolderURL.appendingPathComponent(fileName)
-        try! data!.write(to: fileUrl)
+        do {
+            try data!.write(to: fileUrl)
+        } catch {
+            let title = "PTS Erreur Continuity"
+            let body = "PicToShare n'a pas pu enregistrer le fichier provenant de Continuity"
+            NotificationManager.notifyUser(title, body, "PTS-Continuity")
+        }
         importationManager.queue(document: fileUrl)
         return true
     }

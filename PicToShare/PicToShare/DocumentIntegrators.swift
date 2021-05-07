@@ -9,12 +9,14 @@ import EventKit
 struct CurrentEventsDocumentIntegrator: DocumentIntegrator {
     private let store = EKEventStore()
 
+    /// ATM, it can fail after asking for rights to use the Calendar. Reasons are unknown
+    /// It fails and the store.save line
     func integrate(documents: [URL]) throws {
         // You must ask for the user's permission to get Calendar data by adding the
         // "Privacy - Calendar Usage Description" key in info.plist
         store.requestAccess(to: .event) { granted, error in
             guard granted && error == nil else {
-                print(String(describing: error))
+                print("Calendear Error : \(String(describing: error))")
                 return
             }
 
@@ -37,7 +39,14 @@ struct CurrentEventsDocumentIntegrator: DocumentIntegrator {
 
                 event.notes = notes
 
-                try! store.save(event, span: .thisEvent)
+                do {
+                    try store.save(event, span: .thisEvent)
+                }
+                catch {
+                    let title = "PTS Echec de synchronisation avec Calendrier"
+                    let body = "PicToShare n'a pas pu éditer le calendrier pour y intégrer un lien vers le fichier"
+                    NotificationManager.notifyUser(title, body, "PTS-Calendar")
+                }
             }
         }
     }

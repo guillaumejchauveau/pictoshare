@@ -54,47 +54,60 @@ class ImportationManager: ObservableObject {
         guard inputUrl.isFileURL else {
             return
         }
-        if let osaScriptUrl = type.contentAnnotatorScript {
-            // Copies the input file for safety if it is not in the Documents folder.
-            var targetUrl = inputUrl
-            let targetFolderUrl = inputUrl.deletingLastPathComponent()
-            if targetFolderUrl != configurationManager.documentFolderURL
-                       && type.copyBeforeScript {
-                targetUrl = targetFolderUrl
-                        .appendingPathComponent(inputUrl.deletingPathExtension().lastPathComponent + "_copy")
-                        .appendingPathExtension(inputUrl.pathExtension)
-                try! FileManager.default.copyItem(at: inputUrl, to: targetUrl)
-            }
-
-            // Executes the script.
-            let scriptProcess = Process()
-            scriptProcess.currentDirectoryURL = targetFolderUrl
-            scriptProcess.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-            scriptProcess.arguments = [osaScriptUrl.path, targetUrl.path, targetUrl.deletingPathExtension().path]
-            // Script callback.
-            scriptProcess.terminationHandler = { _ in
-                guard scriptProcess.terminationStatus == 0 else {
-                    return
+        
+        do {
+            if let osaScriptUrl = type.contentAnnotatorScript {
+                // Copies the input file for safety if it is not in the Documents folder.
+                var targetUrl = inputUrl
+                let targetFolderUrl = inputUrl.deletingLastPathComponent()
+                if targetFolderUrl != configurationManager.documentFolderURL
+                           && type.copyBeforeScript {
+                    targetUrl = targetFolderUrl
+                            .appendingPathComponent(inputUrl.deletingPathExtension().lastPathComponent + "_copy")
+                            .appendingPathExtension(inputUrl.pathExtension)
+                    try FileManager.default.copyItem(at: inputUrl, to: targetUrl)
                 }
 
-                // Finds the output(s) of the script.
-                let outputFilesPrefix = targetUrl.deletingPathExtension().lastPathComponent
-                var outputUrls = try! FileManager.default.contentsOfDirectory(at: targetFolderUrl, includingPropertiesForKeys: nil)
-                        .filter {
-                            $0.deletingPathExtension().lastPathComponent == outputFilesPrefix
-                        }
-                if outputUrls.count > 1 {
-                    outputUrls.removeAll {
-                        $0 == targetUrl
+                // Executes the script.
+                let scriptProcess = Process()
+                scriptProcess.currentDirectoryURL = targetFolderUrl
+                scriptProcess.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+                scriptProcess.arguments = [osaScriptUrl.path, targetUrl.path, targetUrl.deletingPathExtension().path]
+                // Script callback.
+                scriptProcess.terminationHandler = { _ in
+                    guard scriptProcess.terminationStatus == 0 else {
+                        return
                     }
-                    try! FileManager.default.removeItem(at: targetUrl)
+
+                    // Finds the output(s) of the script.
+                    let outputFilesPrefix = targetUrl.deletingPathExtension().lastPathComponent
+                    var outputUrls = try! FileManager.default.contentsOfDirectory(at: targetFolderUrl, includingPropertiesForKeys: nil)
+                            .filter {
+                                $0.deletingPathExtension().lastPathComponent == outputFilesPrefix
+                            }
+                    if outputUrls.count > 1 {
+                        outputUrls.removeAll {
+                            $0 == targetUrl
+                        }
+                        try! FileManager.default.removeItem(at: targetUrl)
+                    }
+                    self.postProcessDocuments(urls: outputUrls, with: type)
                 }
-                self.postProcessDocuments(urls: outputUrls, with: type)
+                // Runs the script asynchronously.
+                do {
+                    try scriptProcess.run()
+                } catch {
+                    let title = "PTS Erreur de script"
+                    let body = "PicToShare n'a pas pu exécuter le script associé au type de document choisi"
+                    NotificationManager.notifyUser(title, body, "PTS-Script")
+                }
+            } else {
+                postProcessDocuments(urls: [inputUrl], with: type)
             }
-            // Runs the script asynchronously.
-            try! scriptProcess.run()
-        } else {
-            postProcessDocuments(urls: [inputUrl], with: type)
+        } catch {
+            let title = "PTS Erreur d'import"
+            let body = "PicToShare n'a pas pu importer le fichier choisi"
+            NotificationManager.notifyUser(title, body, "PTS-Import")
         }
     }
 
@@ -121,22 +134,28 @@ class ImportationManager: ObservableObject {
             }
             
             if remainingCount <= 0 {
-                
-                let encoder = PropertyListEncoder()
-                encoder.outputFormat = .binary
-                
-                let itemKeywords = try! encoder.encode(keywords)
+                do {
+                    let encoder = PropertyListEncoder()
+                    encoder.outputFormat = .binary
+                    
+                    let itemKeywords = try encoder.encode(keywords)
 
-                for url in urls {
-                    try! url.setExtendedAttribute(
-                            data: itemKeywords,
-                            forName: "com.apple.metadata:kMDItemKeywords")
+                    for url in urls {
+                        try url.setExtendedAttribute(
+                                data: itemKeywords,
+                                forName: "com.apple.metadata:kMDItemKeywords")
+                    }
+                } catch {
+                    let title = "PTS Erreur d'annotation"
+                    let body = "PicToShare n'a pas pu introduire les annotations de contexte"
+                    NotificationManager.notifyUser(title, body, "PTS-AnnotContext")
                 }
             }
         }
     }
     
     private func postProcessDocuments(urls: [URL], with type: DocumentType) {
+        
         let annotationResults = AnnotationResults(type.contextAnnotators.count,
                                                   urls,
                                                   type.description)
@@ -146,12 +165,24 @@ class ImportationManager: ObservableObject {
         }
         
         for url in urls {
-            let bookmarkData = try! url.bookmarkData(options: [.suitableForBookmarkFile])
-            try! URL.writeBookmarkData(bookmarkData, to: type.folder.appendingPathComponent(url.lastPathComponent))
+            do {
+                let bookmarkData = try url.bookmarkData(options: [.suitableForBookmarkFile])
+                try URL.writeBookmarkData(bookmarkData, to: type.folder.appendingPathComponent(url.lastPathComponent))
+            } catch {
+                let title = "PTS Erreur de raccourci"
+                let body = "PicToShare n'a pas pu créer de raccourci dans le dossier PTS"
+                NotificationManager.notifyUser(title, body, "PTS-Raccourci")
+            }
         }
 
         for integrator in type.documentIntegrators {
-            try! integrator.integrate(documents: urls)
+            do {
+                try integrator.integrate(documents: urls)
+            } catch {
+                let title = "PTS Erreur d'intégration"
+                let body = "PicToShare n'a pas pu intégrer correctement le fichier"
+                NotificationManager.notifyUser(title, body, "PTS-Integration")
+            }
         }
     }
 }

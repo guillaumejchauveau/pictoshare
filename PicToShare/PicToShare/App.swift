@@ -25,6 +25,7 @@ struct PTSApp: App {
         configurationManager.load()
         configurationManager.saveAll()
         importationManager = ImportationManager(configurationManager)
+        NotificationManager()
 
         // Creates default document types.
         if !FileManager.default.fileExists(atPath: configurationManager.documentFolderURL.path) {
