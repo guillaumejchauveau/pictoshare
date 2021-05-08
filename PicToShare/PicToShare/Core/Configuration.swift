@@ -20,21 +20,9 @@ class DocumentTypeMetadata: DocumentType, ObservableObject {
     @Published var documentProcessorScript: URL?
     @Published var copyBeforeProcessing: Bool
     @Published var removeOriginalOnProcessingByproduct: Bool
-    @Published var documentAnnotatorNames: Set<String>
-    @Published var documentIntegratorNames: Set<String>
+    @Published var documentAnnotators: Set<HashableDocumentAnnotator>
+    @Published var documentIntegrators: Set<HashableDocumentIntegrator>
     private var subscriber: AnyCancellable!
-
-    var documentAnnotators: [DocumentAnnotator] {
-        documentAnnotatorNames.map {
-            configurationManager.documentAnnotators[$0]!
-        }
-    }
-
-    var documentIntegrators: [DocumentIntegrator] {
-        documentIntegratorNames.map {
-            configurationManager.documentIntegrators[$0]!
-        }
-    }
 
     var folder: URL {
         configurationManager.documentFolderURL.appendingPathComponent(savedDescription)
@@ -45,16 +33,16 @@ class DocumentTypeMetadata: DocumentType, ObservableObject {
          _ contentAnnotatorScript: URL? = nil,
          _ copyBeforeProcessing: Bool = true,
          _ removeOriginalOnProcessingByproduct: Bool = false,
-         _ documentAnnotatorNames: Set<String> = [],
-         _ documentIntegratorNames: Set<String> = []) {
+         _ documentAnnotators: Set<HashableDocumentAnnotator> = [],
+         _ documentIntegrators: Set<HashableDocumentIntegrator> = []) {
         self.configurationManager = configurationManager
         self.description = description
         savedDescription = description
         self.documentProcessorScript = contentAnnotatorScript
         self.copyBeforeProcessing = copyBeforeProcessing
         self.removeOriginalOnProcessingByproduct = removeOriginalOnProcessingByproduct
-        self.documentAnnotatorNames = documentAnnotatorNames
-        self.documentIntegratorNames = documentIntegratorNames
+        self.documentAnnotators = documentAnnotators
+        self.documentIntegrators = documentIntegrators
         subscriber = self.objectWillChange.sink {
             DispatchQueue.main
                     .asyncAfter(deadline: .now() + .milliseconds(200)) {
@@ -72,31 +60,19 @@ class ImportationContextMetadata: UserContext, ObservableObject, Equatable, Iden
     let configurationManager: ConfigurationManager
     var savedDescription: String
     @Published var description: String
-    @Published var documentAnnotatorNames: Set<String>
-    @Published var documentIntegratorNames: Set<String>
+    @Published var documentAnnotators: Set<HashableDocumentAnnotator>
+    @Published var documentIntegrators: Set<HashableDocumentIntegrator>
     private var subscriber: AnyCancellable!
-
-    var documentAnnotators: [DocumentAnnotator] {
-        documentAnnotatorNames.map {
-            configurationManager.documentAnnotators[$0]!
-        }
-    }
-
-    var documentIntegrators: [DocumentIntegrator] {
-        documentIntegratorNames.map {
-            configurationManager.documentIntegrators[$0]!
-        }
-    }
 
     init(_ description: String,
          _ configurationManager: ConfigurationManager,
-         _ documentAnnotatorNames: Set<String> = [],
-         _ documentIntegratorNames: Set<String> = []) {
+         _ documentAnnotators: Set<HashableDocumentAnnotator> = [],
+         _ documentIntegrators: Set<HashableDocumentIntegrator> = []) {
         self.configurationManager = configurationManager
         self.description = description
         savedDescription = description
-        self.documentAnnotatorNames = documentAnnotatorNames
-        self.documentIntegratorNames = documentIntegratorNames
+        self.documentAnnotators = documentAnnotators
+        self.documentIntegrators = documentIntegrators
         subscriber = self.objectWillChange.sink {
             DispatchQueue.main
                 .asyncAfter(deadline: .now() + .milliseconds(200)) {
@@ -112,8 +88,8 @@ class ConfigurationManager: ObservableObject {
         case preferencesError
     }
 
-    var documentAnnotators: [String: DocumentAnnotator]
-    var documentIntegrators: [String: DocumentIntegrator]
+    var documentAnnotators: [String: HashableDocumentAnnotator]
+    var documentIntegrators: [String: HashableDocumentIntegrator]
 
     let documentFolderURL: URL
 
@@ -136,16 +112,16 @@ class ConfigurationManager: ObservableObject {
     }
 
     init(_ ptsFolderName: String,
-         _ contextAnnotators: [DocumentAnnotator] = [],
+         _ documentAnnotators: [DocumentAnnotator] = [],
          _ documentIntegrators: [DocumentIntegrator] = []) {
-        var annotators: [String: DocumentAnnotator] = [:]
-        for contextAnnotator in contextAnnotators {
-            annotators[contextAnnotator.description] = contextAnnotator
+        var annotators: [String: HashableDocumentAnnotator] = [:]
+        for documentAnnotator in documentAnnotators {
+            annotators[documentAnnotator.description] = HashableDocumentAnnotator(documentAnnotator)
         }
         self.documentAnnotators = annotators
-        var integrators: [String: DocumentIntegrator] = [:]
+        var integrators: [String: HashableDocumentIntegrator] = [:]
         for documentIntegrator in documentIntegrators {
-            integrators[documentIntegrator.description] = documentIntegrator
+            integrators[documentIntegrator.description] = HashableDocumentIntegrator(documentIntegrator)
         }
         self.documentIntegrators = integrators
         documentFolderURL = try! FileManager.default
@@ -241,27 +217,25 @@ class ConfigurationManager: ObservableObject {
                 let removeOriginalOnProcessingByproduct = declaration["removeOriginalOnProcessingByproduct"]
                     as? Bool ?? false
 
-                var documentAnnotators: Set<String> = []
-                let documentAnnotatorDeclarations = declaration["documentAnnotators"]
+                var typeAnnotators: Set<HashableDocumentAnnotator> = []
+                let annotatorDeclarations = declaration["documentAnnotators"]
                         as? Array<CFPropertyList> ?? []
-                for rawDocumentAnnotatorDeclaration in documentAnnotatorDeclarations {
-                    if let annotatorDescription = rawDocumentAnnotatorDeclaration
-                            as? String {
-                        if self.documentAnnotators.keys.contains(annotatorDescription) {
-                            documentAnnotators.insert(annotatorDescription)
-                        }
+                for rawAnnotatorDeclaration in annotatorDeclarations {
+                    if let annotatorDescription = rawAnnotatorDeclaration
+                            as? String,
+                       let annotator = documentAnnotators[annotatorDescription] {
+                        typeAnnotators.insert(annotator)
                     }
                 }
 
-                var documentIntegrators: Set<String> = []
-                let documentIntegratorDeclarations = declaration["documentIntegrators"]
+                var typeIntegrators: Set<HashableDocumentIntegrator> = []
+                let integratorDeclarations = declaration["documentIntegrators"]
                         as? Array<CFPropertyList> ?? []
-                for rawDocumentIntegratorDeclaration in documentIntegratorDeclarations {
-                    if let documentIntegratorDescription = rawDocumentIntegratorDeclaration
-                            as? String {
-                        if self.documentIntegrators.keys.contains(documentIntegratorDescription) {
-                            documentIntegrators.insert(documentIntegratorDescription)
-                        }
+                for rawIntegratorDeclaration in integratorDeclarations {
+                    if let integratorDescription = rawIntegratorDeclaration
+                            as? String,
+                       let integrator = documentIntegrators[integratorDescription] {
+                        typeIntegrators.insert(integrator)
                     }
                 }
 
@@ -270,8 +244,8 @@ class ConfigurationManager: ObservableObject {
                         documentProcessorScript,
                         copyBeforeProcessing,
                         removeOriginalOnProcessingByproduct,
-                        documentAnnotators,
-                        documentIntegrators))
+                        typeAnnotators,
+                        typeIntegrators))
             } catch {
                 continue
             }
@@ -297,34 +271,32 @@ class ConfigurationManager: ObservableObject {
                     throw ConfigurationManager.Error.preferencesError
                 }
 
-                var documentAnnotators: Set<String> = []
+                var contextAnnotators: Set<HashableDocumentAnnotator> = []
                 let annotatorDeclarations = declaration["documentAnnotators"]
                     as? Array<CFPropertyList> ?? []
                 for rawAnnotatorDeclaration in annotatorDeclarations {
                     if let annotatorDescription = rawAnnotatorDeclaration
-                        as? String {
-                        if self.documentAnnotators.keys.contains(annotatorDescription) {
-                            documentAnnotators.insert(annotatorDescription)
-                        }
+                        as? String,
+                       let annotator = documentAnnotators[annotatorDescription] {
+                        contextAnnotators.insert(annotator)
                     }
                 }
 
-                var documentIntegrators: Set<String> = []
-                let documentIntegratorDeclarations = declaration["documentIntegrators"]
+                var contextIntegrators: Set<HashableDocumentIntegrator> = []
+                let integratorDeclarations = declaration["documentIntegrators"]
                     as? Array<CFPropertyList> ?? []
-                for rawDocumentIntegratorDeclaration in documentIntegratorDeclarations {
-                    if let documentIntegratorDescription = rawDocumentIntegratorDeclaration
-                        as? String {
-                        if self.documentIntegrators.keys.contains(documentIntegratorDescription) {
-                            documentIntegrators.insert(documentIntegratorDescription)
-                        }
+                for rawIntegratorDeclaration in integratorDeclarations {
+                    if let integratorDescription = rawIntegratorDeclaration
+                        as? String,
+                       let integrator = documentIntegrators[integratorDescription] {
+                        contextIntegrators.insert(integrator)
                     }
                 }
 
                 contexts.append(ImportationContextMetadata(description,
                                                   self,
-                                                  documentAnnotators,
-                                                  documentIntegrators))
+                                                  contextAnnotators,
+                                                  contextIntegrators))
             } catch {
                 continue
             }

@@ -32,8 +32,8 @@ struct DocumentTypesView: View {
                     documentProcessingScript: $configurationManager.types[index].documentProcessorScript,
                     copyBeforeProcessing: $configurationManager.types[index].copyBeforeProcessing,
                     removeOriginalOnProcessingByproduct: $configurationManager.types[index].removeOriginalOnProcessingByproduct,
-                    documentAnnotatorNames: $configurationManager.types[index].documentAnnotatorNames,
-                    documentIntegratorNames: $configurationManager.types[index].documentIntegratorNames,
+                    documentAnnotators: $configurationManager.types[index].documentAnnotators,
+                    documentIntegrators: $configurationManager.types[index].documentIntegrators,
                     editingDescription: configurationManager.types[index].description)
             }
         }
@@ -47,8 +47,8 @@ struct DocumentTypeView: View {
     @Binding var documentProcessingScript: URL?
     @Binding var copyBeforeProcessing: Bool
     @Binding var removeOriginalOnProcessingByproduct: Bool
-    @Binding var documentAnnotatorNames: Set<String>
-    @Binding var documentIntegratorNames: Set<String>
+    @Binding var documentAnnotators: Set<HashableDocumentAnnotator>
+    @Binding var documentIntegrators: Set<HashableDocumentIntegrator>
 
     @State private var chooseScriptFile = false
     @State var editingDescription: String
@@ -118,13 +118,13 @@ struct DocumentTypeView: View {
                 }
             }
 
-            NamesSetGroupView(label: Text("Annotations"),
-                              availableNames: $configurationManager.documentAnnotators,
-                              selectedNames: $documentAnnotatorNames)
+            SetGroupView(label: Text("Annotations"),
+                              available: $configurationManager.documentAnnotators,
+                              selected: $documentAnnotators)
 
-            NamesSetGroupView(label: Text("Intégrations"),
-                              availableNames: $configurationManager.documentIntegrators,
-                              selectedNames: $documentIntegratorNames)
+            SetGroupView(label: Text("Intégrations"),
+                              available: $configurationManager.documentIntegrators,
+                              selected: $documentIntegrators)
         }.padding()
     }
 }

@@ -33,8 +33,8 @@ struct UserContextsView: View {
                              landing: Landing()) { index in
                 UserContextView(
                     description: $configurationManager.contexts[index].description,
-                    documentAnnotatorNames: $configurationManager.contexts[index].documentAnnotatorNames,
-                    documentIntegratorNames: $configurationManager.contexts[index].documentIntegratorNames,
+                    documentAnnotators: $configurationManager.contexts[index].documentAnnotators,
+                    documentIntegrators: $configurationManager.contexts[index].documentIntegrators,
                     editingDescription: configurationManager.contexts[index].description)
             }
         }
@@ -46,8 +46,8 @@ struct UserContextView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
 
     @Binding var description: String
-    @Binding var documentAnnotatorNames: Set<String>
-    @Binding var documentIntegratorNames: Set<String>
+    @Binding var documentAnnotators: Set<HashableDocumentAnnotator>
+    @Binding var documentIntegrators: Set<HashableDocumentIntegrator>
 
     @State var editingDescription: String
 
@@ -73,13 +73,13 @@ struct UserContextView: View {
                 }
             }
 
-            NamesSetGroupView(label: Text("Annotations"),
-                              availableNames: $configurationManager.documentAnnotators,
-                              selectedNames: $documentAnnotatorNames)
+            SetGroupView(label: Text("Annotations"),
+                              available: $configurationManager.documentAnnotators,
+                              selected: $documentAnnotators)
 
-            NamesSetGroupView(label: Text("Intégrations"),
-                              availableNames: $configurationManager.documentIntegrators,
-                              selectedNames: $documentIntegratorNames)
+            SetGroupView(label: Text("Intégrations"),
+                              available: $configurationManager.documentIntegrators,
+                              selected: $documentIntegrators)
         }.padding()
     }
 }

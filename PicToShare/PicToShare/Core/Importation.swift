@@ -148,10 +148,10 @@ class ImportationManager: ObservableObject {
     }
     
     private func postProcessDocuments(urls: [URL], with type: DocumentType) {
-        var contextAnnotators = type.documentAnnotators
-        contextAnnotators.append(contentsOf: configurationManager.currentUserContext?.documentAnnotators ?? [])
-        var documentIntegrators = type.documentIntegrators
-        documentIntegrators.append(contentsOf: configurationManager.currentUserContext?.documentIntegrators ?? [])
+        let contextAnnotators = type.documentAnnotators
+            .union(configurationManager.currentUserContext?.documentAnnotators ?? [])
+        let documentIntegrators = type.documentIntegrators
+            .union(configurationManager.currentUserContext?.documentIntegrators ?? [])
 
         let annotationResults = AnnotationResults(contextAnnotators.count,
                                                   urls,
