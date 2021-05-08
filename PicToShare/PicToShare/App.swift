@@ -58,63 +58,6 @@ struct PTSApp: App {
     }
 }
 
-class StatusMenuDelegate: NSObject, NSMenuDelegate {
-    private let configurationManager: ConfigurationManager
-
-    init(_ configurationManager: ConfigurationManager, _ menu: NSMenu) {
-        self.configurationManager = configurationManager
-        super.init()
-        menu.showsStateColumn = true
-        menu.addItem(withTitle: "Ouvrir PicToShare",
-                action: #selector(openPTS),
-                keyEquivalent: "")
-                .target = self
-        menu.addItem(withTitle: "Aller au dossier PicToShare",
-                action: #selector(openFolderInFinder),
-                keyEquivalent: "")
-                .target = self
-        menu.addItem(NSMenuItem.separator())
-        menu.delegate = self
-        menu.autoenablesItems = true
-    }
-
-    func menuWillOpen(_ menu: NSMenu) {
-        while menu.numberOfItems > 3 {
-            menu.removeItem(at: 3)
-        }
-
-        let current = configurationManager.currentUserContext
-
-        var contexts: [UserContextMetadata?] = [nil]
-        contexts.append(contentsOf: configurationManager.contexts)
-
-        for context in contexts {
-            let item = menu.addItem(
-                    withTitle: context?.description ?? "Contexte général",
-                    action: #selector(selectUserContext), keyEquivalent: "")
-            item.target = self
-            item.state = current == context ? .on : .off
-            item.representedObject = context
-        }
-    }
-
-    @objc func openPTS(_ sender: Any) {
-        NSWorkspace.shared.open(configurationManager.picToShareURL)
-    }
-
-    @objc func openFolderInFinder(_ sender: Any) {
-        NSWorkspace.shared.open(configurationManager.documentFolderURL)
-    }
-
-    @objc func selectUserContext(_ sender: Any) {
-        guard let item = sender as? NSMenuItem,
-              let context = item.representedObject as? UserContextMetadata? else {
-            return
-        }
-        configurationManager.currentUserContext = context
-    }
-}
-
 
 struct MainView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
