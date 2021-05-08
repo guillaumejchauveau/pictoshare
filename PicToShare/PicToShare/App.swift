@@ -35,9 +35,7 @@ struct PTSApp: App {
         NSApp = NSApplication.shared
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem.button?.image = NSImage(
-                systemSymbolName: "doc.fill",
-                accessibilityDescription: nil)
+        statusItem.button?.image = NSImage(named: "StatusItemIcon")
         statusItem.menu = NSMenu()
         statusItemMenuDelegate = StatusMenuDelegate(configurationManager, statusItem.menu!)
     }
