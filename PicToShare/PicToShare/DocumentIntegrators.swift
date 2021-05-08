@@ -18,7 +18,10 @@ struct CurrentEventsDocumentIntegrator: DocumentIntegrator {
         // "Privacy - Calendar Usage Description" key in info.plist
         store.requestAccess(to: .event) { granted, error in
             guard granted && error == nil else {
-                print("Calendear Error : \(String(describing: error))")
+                NotificationManager.notifyUser(
+                        "Échec d'intégration au calendrier",
+                        "PicToShare n'a pas l'autorisation d'accèder au calendrier",
+                        "PTS-CalendarIntegration")
                 return
             }
 
@@ -43,11 +46,11 @@ struct CurrentEventsDocumentIntegrator: DocumentIntegrator {
 
                 do {
                     try store.save(event, span: .thisEvent)
-                }
-                catch {
-                    let title = "PTS Echec de synchronisation avec Calendrier"
-                    let body = "PicToShare n'a pas pu éditer le calendrier pour y intégrer un lien vers le fichier"
-                    NotificationManager.notifyUser(title, body, "PTS-Calendar")
+                } catch {
+                    NotificationManager.notifyUser(
+                            "Échec d'intégration au calendrier",
+                            "PicToShare n'a pas pu éditer le calendrier pour y intégrer un lien vers le fichier",
+                            "PTS-CalendarIntegration")
                 }
             }
         }

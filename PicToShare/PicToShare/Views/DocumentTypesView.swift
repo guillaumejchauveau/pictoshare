@@ -11,12 +11,12 @@ struct DocumentTypesView: View {
         var body: some View {
             ZStack {
                 Image(systemName: "questionmark.circle").imageScale(.large)
-                    .font(.system(size: 30))
-                    .offset(y: -80)
+                        .font(.system(size: 30))
+                        .offset(y: -80)
                 Text("""
-                    Créez des types de documents pour adapter les paramètres d'importation.
-                    Vous pouvez spécifier un script pour transformer le document avant de l'importer.
-                    """).font(.system(size: 16, weight: .light)).lineSpacing(5)
+                     Créez des types de documents pour adapter les paramètres d'importation.
+                     Vous pouvez spécifier un script pour transformer le document avant de l'importer.
+                     """).font(.system(size: 16, weight: .light)).lineSpacing(5)
             }.frame(width: 400)
         }
     }
@@ -24,17 +24,17 @@ struct DocumentTypesView: View {
     var body: some View {
         VStack(alignment: .leading) {
             ListSettingsView(items: $configurationManager.types,
-                             add: configurationManager.addType,
-                             remove: configurationManager.removeType,
-                             landing: Landing()) { index in
+                    add: configurationManager.addType,
+                    remove: configurationManager.removeType,
+                    landing: Landing()) { index in
                 DocumentTypeView(
-                    description: $configurationManager.types[index].description,
-                    documentProcessingScript: $configurationManager.types[index].documentProcessorScript,
-                    copyBeforeProcessing: $configurationManager.types[index].copyBeforeProcessing,
-                    removeOriginalOnProcessingByproduct: $configurationManager.types[index].removeOriginalOnProcessingByproduct,
-                    documentAnnotators: $configurationManager.types[index].documentAnnotators,
-                    documentIntegrators: $configurationManager.types[index].documentIntegrators,
-                    editingDescription: configurationManager.types[index].description)
+                        description: $configurationManager.types[index].description,
+                        documentProcessingScript: $configurationManager.types[index].documentProcessorScript,
+                        copyBeforeProcessing: $configurationManager.types[index].copyBeforeProcessing,
+                        removeOriginalOnProcessingByproduct: $configurationManager.types[index].removeOriginalOnProcessingByproduct,
+                        documentAnnotators: $configurationManager.types[index].documentAnnotators,
+                        documentIntegrators: $configurationManager.types[index].documentIntegrators,
+                        editingDescription: configurationManager.types[index].description)
             }
         }
     }
@@ -96,7 +96,7 @@ struct DocumentTypeView: View {
                         }) {
                             Image(systemName: "folder")
                         }.fileImporter(isPresented: $chooseScriptFile,
-                                       allowedContentTypes: [.osaScript]) { result in
+                                allowedContentTypes: [.osaScript]) { result in
                             documentProcessingScript = try? result.get()
                         }
 
@@ -110,21 +110,21 @@ struct DocumentTypeView: View {
                     }.padding(EdgeInsets(top: 0, leading: 2, bottom: 0, trailing: 2))
 
                     Toggle("Préserver une copie de l'original",
-                           isOn: $copyBeforeProcessing)
-                        .disabled(documentProcessingScript == nil)
+                            isOn: $copyBeforeProcessing)
+                            .disabled(documentProcessingScript == nil)
                     Toggle("Si le script crée de nouveaux fichiers, supprimer l'original",
-                        isOn: $removeOriginalOnProcessingByproduct)
-                        .disabled(documentProcessingScript == nil)
+                            isOn: $removeOriginalOnProcessingByproduct)
+                            .disabled(documentProcessingScript == nil)
                 }
             }
 
             SetGroupView(label: Text("Annotations"),
-                              available: $configurationManager.documentAnnotators,
-                              selected: $documentAnnotators)
+                    available: $configurationManager.documentAnnotators,
+                    selected: $documentAnnotators)
 
             SetGroupView(label: Text("Intégrations"),
-                              available: $configurationManager.documentIntegrators,
-                              selected: $documentIntegrators)
+                    available: $configurationManager.documentIntegrators,
+                    selected: $documentIntegrators)
         }.padding()
     }
 }

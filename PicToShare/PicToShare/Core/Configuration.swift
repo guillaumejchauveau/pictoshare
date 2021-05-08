@@ -30,7 +30,7 @@ class DocumentTypeMetadata: DocumentType, ObservableObject {
 
     init(_ description: String,
          _ configurationManager: ConfigurationManager,
-         _ contentAnnotatorScript: URL? = nil,
+         _ documentProcessorScript: URL? = nil,
          _ copyBeforeProcessing: Bool = true,
          _ removeOriginalOnProcessingByproduct: Bool = false,
          _ documentAnnotators: Set<HashableDocumentAnnotator> = [],
@@ -38,14 +38,14 @@ class DocumentTypeMetadata: DocumentType, ObservableObject {
         self.configurationManager = configurationManager
         self.description = description
         savedDescription = description
-        self.documentProcessorScript = contentAnnotatorScript
+        self.documentProcessorScript = documentProcessorScript
         self.copyBeforeProcessing = copyBeforeProcessing
         self.removeOriginalOnProcessingByproduct = removeOriginalOnProcessingByproduct
         self.documentAnnotators = documentAnnotators
         self.documentIntegrators = documentIntegrators
         subscriber = self.objectWillChange.sink {
             DispatchQueue.main
-                    .asyncAfter(deadline: .now() + .milliseconds(200)) {
+                    .asyncAfter(deadline: .now() + .milliseconds(100)) {
                 configurationManager.save(type: self)
             }
         }
@@ -53,7 +53,7 @@ class DocumentTypeMetadata: DocumentType, ObservableObject {
 }
 
 class ImportationContextMetadata: UserContext, ObservableObject, Equatable, Identifiable {
-    static func == (lhs: ImportationContextMetadata, rhs: ImportationContextMetadata) -> Bool {
+    static func ==(lhs: ImportationContextMetadata, rhs: ImportationContextMetadata) -> Bool {
         lhs.description == rhs.description
     }
 
@@ -75,9 +75,9 @@ class ImportationContextMetadata: UserContext, ObservableObject, Equatable, Iden
         self.documentIntegrators = documentIntegrators
         subscriber = self.objectWillChange.sink {
             DispatchQueue.main
-                .asyncAfter(deadline: .now() + .milliseconds(200)) {
-                    configurationManager.saveContexts()
-                }
+                    .asyncAfter(deadline: .now() + .milliseconds(100)) {
+                configurationManager.saveContexts()
+            }
         }
     }
 }
@@ -215,7 +215,7 @@ class ConfigurationManager: ObservableObject {
                         as? Bool ?? true
 
                 let removeOriginalOnProcessingByproduct = declaration["removeOriginalOnProcessingByproduct"]
-                    as? Bool ?? false
+                        as? Bool ?? false
 
                 var typeAnnotators: Set<HashableDocumentAnnotator> = []
                 let annotatorDeclarations = declaration["documentAnnotators"]
@@ -258,7 +258,7 @@ class ConfigurationManager: ObservableObject {
 
         contexts.removeAll()
         let contextDeclarations = getPreference("contexts")
-            as? Array<CFPropertyList> ?? []
+                as? Array<CFPropertyList> ?? []
         for rawDeclaration in contextDeclarations {
             do {
                 guard let declaration = rawDeclaration
@@ -273,10 +273,10 @@ class ConfigurationManager: ObservableObject {
 
                 var contextAnnotators: Set<HashableDocumentAnnotator> = []
                 let annotatorDeclarations = declaration["documentAnnotators"]
-                    as? Array<CFPropertyList> ?? []
+                        as? Array<CFPropertyList> ?? []
                 for rawAnnotatorDeclaration in annotatorDeclarations {
                     if let annotatorDescription = rawAnnotatorDeclaration
-                        as? String,
+                            as? String,
                        let annotator = documentAnnotators[annotatorDescription] {
                         contextAnnotators.insert(annotator)
                     }
@@ -284,19 +284,19 @@ class ConfigurationManager: ObservableObject {
 
                 var contextIntegrators: Set<HashableDocumentIntegrator> = []
                 let integratorDeclarations = declaration["documentIntegrators"]
-                    as? Array<CFPropertyList> ?? []
+                        as? Array<CFPropertyList> ?? []
                 for rawIntegratorDeclaration in integratorDeclarations {
                     if let integratorDescription = rawIntegratorDeclaration
-                        as? String,
+                            as? String,
                        let integrator = documentIntegrators[integratorDescription] {
                         contextIntegrators.insert(integrator)
                     }
                 }
 
                 contexts.append(ImportationContextMetadata(description,
-                                                  self,
-                                                  contextAnnotators,
-                                                  contextIntegrators))
+                        self,
+                        contextAnnotators,
+                        contextIntegrators))
             } catch {
                 continue
             }
@@ -308,6 +308,7 @@ class ConfigurationManager: ObservableObject {
             }
         }
     }
+
     /// Updates the folder corresponding to the given Document Type.
     /// Currently as multiple failing situations:
     /// - a file exists with the name of the document type;
@@ -325,6 +326,10 @@ class ConfigurationManager: ObservableObject {
                     type.savedDescription = type.description
                 } catch {
                     type.description = type.savedDescription
+                    NotificationManager.notifyUser(
+                            "Problème de configuration",
+                            "PicToShare n'a pas pu renommer le dossier du type \"\(type.description)\"",
+                            "PTS-TypeFolder")
                 }
             }
         }
@@ -358,9 +363,9 @@ class ConfigurationManager: ObservableObject {
     /// Saves all the configured Contexts.
     func saveContexts() {
         setPreference("contexts",
-                      contexts.map {
-                        $0.toCFPropertyList()
-                      } as CFArray)
+                contexts.map {
+                    $0.toCFPropertyList()
+                } as CFArray)
 
         CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
     }

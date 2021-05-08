@@ -9,7 +9,7 @@ import SwiftUI
 
 
 struct ListSettingsView<Item, Landing, Content>: View
-    where Item: CustomStringConvertible, Landing: View, Content: View {
+        where Item: CustomStringConvertible, Landing: View, Content: View {
     @State private var selection: Int? = nil
     @State private var showNewItemForm = false
     @State private var newItemDescription = ""
@@ -25,9 +25,9 @@ struct ListSettingsView<Item, Landing, Content>: View
             NavigationView {
                 List(items.indices, id: \.self) { index in
                     NavigationLink(
-                        destination: content(index),
-                        tag: index,
-                        selection: $selection) {
+                            destination: content(index),
+                            tag: index,
+                            selection: $selection) {
                         Text(items[index].description)
                     }
                 }
@@ -35,7 +35,7 @@ struct ListSettingsView<Item, Landing, Content>: View
             }.sheet(isPresented: $showNewItemForm) {
                 Form {
                     TextField("Nom", text: $newItemDescription)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
                     HStack {
                         Spacer(minLength: 50)
                         Button("Annuler") {
@@ -48,9 +48,9 @@ struct ListSettingsView<Item, Landing, Content>: View
                             showNewItemForm = false
                             newItemDescription = ""
                         }
-                        .keyboardShortcut(.return)
-                        .buttonStyle(AccentButtonStyle())
-                        .disabled(newItemDescription.isEmpty)
+                                .keyboardShortcut(.return)
+                                .buttonStyle(AccentButtonStyle())
+                                .disabled(newItemDescription.isEmpty)
                     }
                 }.padding()
             }
@@ -72,17 +72,17 @@ struct ListSettingsView<Item, Landing, Content>: View
                     // content of the destination view if we remove right after
                     // unselect.
                     DispatchQueue.main
-                        .asyncAfter(deadline: .now() + .milliseconds(200)) {
-                            if index < items.count {
-                                remove(index)
-                            }
+                            .asyncAfter(deadline: .now() + .milliseconds(200)) {
+                        if index < items.count {
+                            remove(index)
                         }
+                    }
                 }) {
                     Image(systemName: "minus")
                 }.disabled(selection == nil)
             }
-            .buttonStyle(BorderedButtonStyle())
-            .padding([.leading, .bottom, .trailing])
+                    .buttonStyle(BorderedButtonStyle())
+                    .padding([.leading, .bottom, .trailing])
         }
     }
 }

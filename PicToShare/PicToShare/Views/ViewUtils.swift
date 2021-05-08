@@ -81,10 +81,10 @@ struct SetGroupView<Label, Item>: View where Label: View, Item: CustomStringConv
         GroupBox(label: label) {
             HStack {
                 VStack(alignment: .leading) {
-                    ForEach(available.values.map({$0}), id: \.self) { item in
+                    ForEach(available.values.map({ $0 }), id: \.self) { item in
                         SetItemToggleView(selected: $selected,
-                                           item: item,
-                                           state: selected.contains(item))
+                                item: item,
+                                state: selected.contains(item))
                     }
                 }
                 Spacer()

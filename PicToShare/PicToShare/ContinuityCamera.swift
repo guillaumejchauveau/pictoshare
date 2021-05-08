@@ -50,9 +50,10 @@ class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
         do {
             try data!.write(to: fileUrl)
         } catch {
-            let title = "PTS Erreur Continuity"
-            let body = "PicToShare n'a pas pu enregistrer le fichier provenant de Continuity"
-            NotificationManager.notifyUser(title, body, "PTS-Continuity")
+            NotificationManager.notifyUser(
+                    "Erreur avec Continuity Camera",
+                    "PicToShare n'a pas pu enregistrer le fichier provenant de Continuity",
+                    "PTS-ContinuityCamera")
         }
         importationManager.queue(document: fileUrl)
         return true
@@ -68,7 +69,7 @@ class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
 
         // AppKit uses the Responder Chain to figure out where to insert the Continuity Camera menu items.
         // So making ourselves `firstResponder` here is important.
-        view.window!.makeFirstResponder(self)
+        view.window?.makeFirstResponder(self)
         NSMenu.popUpContextMenu(menu, with: event, for: view)
     }
 }

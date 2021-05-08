@@ -25,7 +25,6 @@ struct PTSApp: App {
         configurationManager.loadContexts()
         configurationManager.saveTypes()
         importationManager = ImportationManager(configurationManager)
-        NotificationManager()
 
         // Creates default Document Types.
         if !FileManager.default.fileExists(atPath: configurationManager.documentFolderURL.path) {
@@ -80,70 +79,70 @@ struct MainView: View {
                 }
             }
         }.frame(width: 480, height: 300).padding()
-        .sheet(isPresented: $showNewContextForm) {
-            Form {
-                TextField("Nom", text: $newContextDescription)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                HStack {
-                    Spacer(minLength: 50)
-                    Button("Annuler") {
-                        showNewContextForm = false
-                        newContextDescription = ""
-                    }
-                    Button("Créer") {
-                        configurationManager.addContext(with: newContextDescription)
-                        showNewContextForm = false
-                        newContextDescription = ""
-                        configurationManager.currentUserContext = configurationManager.contexts.last
-                    }
-                    .keyboardShortcut(.return)
-                    .buttonStyle(AccentButtonStyle())
-                    .disabled(newContextDescription.isEmpty)
+                .sheet(isPresented: $showNewContextForm) {
+                    Form {
+                        TextField("Nom", text: $newContextDescription)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        HStack {
+                            Spacer(minLength: 50)
+                            Button("Annuler") {
+                                showNewContextForm = false
+                                newContextDescription = ""
+                            }
+                            Button("Créer") {
+                                configurationManager.addContext(with: newContextDescription)
+                                showNewContextForm = false
+                                newContextDescription = ""
+                                configurationManager.currentUserContext = configurationManager.contexts.last
+                            }
+                                    .keyboardShortcut(.return)
+                                    .buttonStyle(AccentButtonStyle())
+                                    .disabled(newContextDescription.isEmpty)
+                        }
+                    }.padding()
                 }
-            }.padding()
-        }
-        .toolbar {
-            ToolbarItemGroup(placement: .primaryAction) {
-                Menu {
-                    if configurationManager.currentUserContext != nil {
-                        Button("Contexte général") {
-                            configurationManager.currentUserContext = nil
+                .toolbar {
+                    ToolbarItemGroup(placement: .primaryAction) {
+                        Menu {
+                            if configurationManager.currentUserContext != nil {
+                                Button("Contexte général") {
+                                    configurationManager.currentUserContext = nil
+                                }
+                            }
+                            ForEach(configurationManager.contexts.filter {
+                                $0.description != configurationManager.currentUserContext?.description
+                            }) { context in
+                                Button(context.description) {
+                                    configurationManager.currentUserContext = context
+                                }
+                            }
+                            Divider()
+                            Button("Ajouter") {
+                                showNewContextForm = true
+                            }
+                        } label: {
+                            Text(configurationManager.currentUserContext?.description ?? "Contexte général")
+                                    .foregroundColor(.gray)
+                        }.frame(width: 150)
+
+                        Button(action: {}) {
+                            ZStack {
+                                Image(systemName: "camera")
+                                // Hacky way of adding a button opening a NSMenu for Continuity Camera.
+                                ContinuityCameraButton()
+                                        .environmentObject(configurationManager)
+                            }
+                        }
+
+                        Button(action: { showFilePrompt = true }) {
+                            Image(systemName: "internaldrive")
+                        }.fileImporter(isPresented: $showFilePrompt,
+                                allowedContentTypes: [.content],
+                                allowsMultipleSelection: true) {
+                            importationManager.queue(documents: (try? $0.get()) ?? [])
                         }
                     }
-                    ForEach(configurationManager.contexts.filter {
-                              $0.description != configurationManager.currentUserContext?.description
-                        }) { context in
-                        Button(context.description) {
-                            configurationManager.currentUserContext = context
-                        }
-                    }
-                    Divider()
-                    Button("Créer") {
-                        showNewContextForm = true
-                    }
-                } label: {
-                    Text(configurationManager.currentUserContext?.description ?? "Contexte général")
-                        .foregroundColor(.gray)
-                }.frame(width: 150)
-
-                Button(action: {}) {
-                    ZStack {
-                        Image(systemName: "camera")
-                        // Hacky way of adding a button opening a NSMenu for Continuity Camera.
-                        ContinuityCameraButton()
-                            .environmentObject(configurationManager)
-                    }
                 }
-
-                Button(action: { showFilePrompt = true }) {
-                    Image(systemName: "internaldrive")
-                }.fileImporter(isPresented: $showFilePrompt,
-                               allowedContentTypes: [.content],
-                               allowsMultipleSelection: true) {
-                    importationManager.queue(documents: (try? $0.get()) ?? [])
-                }
-            }
-        }
     }
 }
 
