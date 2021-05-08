@@ -9,35 +9,92 @@ import Foundation
 
 /// Object providing a list of keywords to add to imported Documents.
 /// The keywords are usually based on information in the current context.
-protocol ContextAnnotator: CustomStringConvertible {
-    func makeAnnotations(_ completion: @escaping (Result<[String], ContextAnnotatorError>) -> Void)
+protocol DocumentAnnotator: CustomStringConvertible {
+    typealias CompletionHandler = (Result<[String], DocumentAnnotatorError>) -> Void
+
+    func makeAnnotations(_ completion: @escaping CompletionHandler)
 }
 
-enum ContextAnnotatorError: Error {
+enum DocumentAnnotatorError: Error {
     case permissionError
-    case locationNotFoundError
 }
 
 /// Object attaching the Document file to an external application or content.
 protocol DocumentIntegrator: CustomStringConvertible {
-    func integrate(documents: [URL]) throws
+    func integrate(documents: [URL])
 }
 
 
-/// Object defining how to process a Document with two components: the Content Annotator, and Context
-/// Annotators.
-/// The first component is the URL of an AppleScript, that will process the input file into the output file at the
-/// proper destination. The Context Annotators will then add Spotlight metadata to the output file.
-/// The implementation of the integration of the output file to external applications is not yet planned.
 protocol DocumentType: CustomStringConvertible {
-    /// The script used to process the file.
-    var contentAnnotatorScript: URL? { get }
+    /// A path to the script used to process the Document.
+    var documentProcessorScript: URL? { get }
     /// Indicates if a copy of the file should be made before running the script.
-    var copyBeforeScript: Bool { get }
-    /// The ContextAnnotators used to annotate the Document.
-    var contextAnnotators: [ContextAnnotator] { get }
-    /// The DocumentIntegrators that will use the Document.
-    var documentIntegrators: [DocumentIntegrator] { get }
+    var copyBeforeProcessing: Bool { get }
+    /// Indicates if a the original file should be removed if the script creates new files.
+    var removeOriginalOnProcessingByproduct: Bool { get }
+    /// The Document Annotators used to annotate the Document.
+    var documentAnnotators: Set<HashableDocumentAnnotator> { get }
+    /// The Document Integrators that will use the Document.
+    var documentIntegrators: Set<HashableDocumentIntegrator> { get }
     /// The URL of the folder containing links to all Documents of this Type.
     var folder: URL { get }
+}
+
+protocol UserContext: CustomStringConvertible {
+    /// Additionnal Document Annotators.
+    var documentAnnotators: Set<HashableDocumentAnnotator> { get }
+    /// Additionnal Document Integrators.
+    var documentIntegrators: Set<HashableDocumentIntegrator> { get }
+}
+
+
+// As Protocols cannot comform to Hashable, the following implement a compromise.
+
+struct HashableDocumentAnnotator: DocumentAnnotator, Hashable {
+    static func == (lhs: HashableDocumentAnnotator, rhs: HashableDocumentAnnotator) -> Bool {
+        lhs.description == rhs.description
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(description)
+    }
+
+    func makeAnnotations(_ completion: @escaping CompletionHandler) {
+        annotator.makeAnnotations(completion)
+    }
+
+    var description: String {
+        annotator.description
+    }
+
+    private let annotator: DocumentAnnotator
+
+    init(_ annotator: DocumentAnnotator) {
+        self.annotator = annotator
+    }
+}
+
+struct HashableDocumentIntegrator: DocumentIntegrator, Hashable {
+    static func == (lhs: HashableDocumentIntegrator, rhs: HashableDocumentIntegrator) -> Bool {
+        lhs.description == rhs.description
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(description)
+    }
+
+
+    func integrate(documents: [URL]) {
+        integrator.integrate(documents: documents)
+    }
+
+    var description: String {
+        integrator.description
+    }
+
+    private let integrator: DocumentIntegrator
+
+    init(_ integrator: DocumentIntegrator) {
+        self.integrator = integrator
+    }
 }

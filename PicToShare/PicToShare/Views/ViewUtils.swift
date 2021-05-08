@@ -50,41 +50,41 @@ extension NSTextField {
     }
 }
 
-struct NamesSetToggleView: View {
-    @Binding var names: Set<String>
-    var description: String
+struct SetItemToggleView<Item>: View where Item: CustomStringConvertible, Item: Hashable {
+    @Binding var selected: Set<Item>
+    var item: Item
     @State var state: Bool
 
     var body: some View {
-        Toggle(description, isOn: Binding<Bool>(
+        Toggle(item.description, isOn: Binding<Bool>(
                 get: {
                     state
                 },
                 set: {
                     state = $0
                     if state {
-                        names.insert(description)
+                        selected.insert(item)
                     } else {
-                        names.remove(description)
+                        selected.remove(item)
                     }
                 }
         ))
     }
 }
 
-struct NamesSetGroupView<Label, ValueType>: View where Label: View {
+struct SetGroupView<Label, Item>: View where Label: View, Item: CustomStringConvertible, Item: Hashable {
     var label: Label
-    @Binding var availableNames: Dictionary<String, ValueType>
-    @Binding var selectedNames: Set<String>
+    @Binding var available: Dictionary<String, Item>
+    @Binding var selected: Set<Item>
 
     var body: some View {
         GroupBox(label: label) {
             HStack {
                 VStack(alignment: .leading) {
-                    ForEach(availableNames.keys.sorted(by: >), id: \.self) { description in
-                        NamesSetToggleView(names: $selectedNames,
-                                           description: description,
-                                           state: selectedNames.contains(description))
+                    ForEach(available.values.map({$0}), id: \.self) { item in
+                        SetItemToggleView(selected: $selected,
+                                           item: item,
+                                           state: selected.contains(item))
                     }
                 }
                 Spacer()
