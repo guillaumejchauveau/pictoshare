@@ -10,7 +10,7 @@ import Foundation
 /// Object providing a list of keywords to add to imported Documents.
 /// The keywords are usually based on information in the current context.
 protocol DocumentAnnotator: CustomStringConvertible {
-    typealias CompletionHandler = (Result<[String], DocumentAnnotatorError>) -> Void
+    typealias CompletionHandler = ([String]) -> Void
 
     func makeAnnotations(_ completion: @escaping CompletionHandler)
 }
@@ -41,17 +41,17 @@ protocol DocumentType: CustomStringConvertible {
 }
 
 protocol UserContext: CustomStringConvertible {
-    /// Additionnal Document Annotators.
+    /// Additional Document Annotators.
     var documentAnnotators: Set<HashableDocumentAnnotator> { get }
-    /// Additionnal Document Integrators.
+    /// Additional Document Integrators.
     var documentIntegrators: Set<HashableDocumentIntegrator> { get }
 }
 
 
-// As Protocols cannot comform to Hashable, the following implement a compromise.
+// As Protocols cannot conform to Hashable, the following implement a compromise.
 
 struct HashableDocumentAnnotator: DocumentAnnotator, Hashable {
-    static func == (lhs: HashableDocumentAnnotator, rhs: HashableDocumentAnnotator) -> Bool {
+    static func ==(lhs: HashableDocumentAnnotator, rhs: HashableDocumentAnnotator) -> Bool {
         lhs.description == rhs.description
     }
 
@@ -75,7 +75,7 @@ struct HashableDocumentAnnotator: DocumentAnnotator, Hashable {
 }
 
 struct HashableDocumentIntegrator: DocumentIntegrator, Hashable {
-    static func == (lhs: HashableDocumentIntegrator, rhs: HashableDocumentIntegrator) -> Bool {
+    static func ==(lhs: HashableDocumentIntegrator, rhs: HashableDocumentIntegrator) -> Bool {
         lhs.description == rhs.description
     }
 

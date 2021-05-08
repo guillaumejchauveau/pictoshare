@@ -47,7 +47,14 @@ class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
             return false
         }
         let fileUrl = configurationManager.documentFolderURL.appendingPathComponent(fileName)
-        try! data!.write(to: fileUrl)
+        do {
+            try data!.write(to: fileUrl)
+        } catch {
+            NotificationManager.notifyUser(
+                    "Erreur avec Continuity Camera",
+                    "PicToShare n'a pas pu enregistrer le fichier provenant de Continuity",
+                    "PTS-ContinuityCamera")
+        }
         importationManager.queue(document: fileUrl)
         return true
     }
@@ -62,7 +69,7 @@ class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
 
         // AppKit uses the Responder Chain to figure out where to insert the Continuity Camera menu items.
         // So making ourselves `firstResponder` here is important.
-        view.window!.makeFirstResponder(self)
+        view.window?.makeFirstResponder(self)
         NSMenu.popUpContextMenu(menu, with: event, for: view)
     }
 }
