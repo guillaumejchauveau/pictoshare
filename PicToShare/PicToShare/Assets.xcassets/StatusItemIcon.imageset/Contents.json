@@ -1,7 +1,8 @@
 {
-  "colors" : [
+  "images" : [
     {
-      "idiom" : "universal"
+      "filename" : "StatusItem.png",
+      "idiom" : "mac"
     }
   ],
   "info" : {
