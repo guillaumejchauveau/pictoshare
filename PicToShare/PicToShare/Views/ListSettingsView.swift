@@ -8,7 +8,8 @@
 import SwiftUI
 
 
-struct ListSettingsView<Item, Content>: View where Item: CustomStringConvertible, Content: View {
+struct ListSettingsView<Item, Landing, Content>: View
+    where Item: CustomStringConvertible, Landing: View, Content: View {
     @State private var selection: Int? = nil
     @State private var showNewItemForm = false
     @State private var newItemDescription = ""
@@ -16,6 +17,7 @@ struct ListSettingsView<Item, Content>: View where Item: CustomStringConvertible
     @Binding var items: [Item]
     var add: (String) -> Void
     var remove: (Int) -> Void
+    var landing: Landing
     @ViewBuilder var content: (_ index: Int) -> Content
 
     var body: some View {
@@ -29,6 +31,7 @@ struct ListSettingsView<Item, Content>: View where Item: CustomStringConvertible
                         Text(items[index].description)
                     }
                 }
+                landing
             }.sheet(isPresented: $showNewItemForm) {
                 Form {
                     TextField("Nom", text: $newItemDescription)

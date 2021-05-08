@@ -11,11 +11,26 @@ import SwiftUI
 struct UserContextsView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
 
+    struct Landing: View {
+        var body: some View {
+            ZStack {
+                Image(systemName: "questionmark.circle").imageScale(.large)
+                    .font(.system(size: 30))
+                    .offset(y: -80)
+                Text("""
+                Créez des contextes pour adapter l'importation selon votre activité.
+                Les annotations et intégrations configurées seront ajoutées à celles du type de document.
+                """).font(.system(size: 16, weight: .light)).lineSpacing(5)
+            }.frame(width: 400)
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading) {
             ListSettingsView(items: $configurationManager.contexts,
                              add: configurationManager.addContext,
-                             remove: configurationManager.removeContext) { index in
+                             remove: configurationManager.removeContext,
+                             landing: Landing()) { index in
                 UserContextView(
                     description: $configurationManager.contexts[index].description,
                     documentAnnotatorNames: $configurationManager.contexts[index].documentAnnotatorNames,

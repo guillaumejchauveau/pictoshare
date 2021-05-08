@@ -165,6 +165,6 @@ struct SettingsView: View {
                         Label("Contextes", systemImage: "at")
                     }
                     .tag(Tabs.contexts)
-        }
+        }.frame(width: 700, height: 400)
     }
 }

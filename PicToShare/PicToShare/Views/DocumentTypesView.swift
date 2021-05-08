@@ -7,11 +7,26 @@ import SwiftUI
 struct DocumentTypesView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
 
+    struct Landing: View {
+        var body: some View {
+            ZStack {
+                Image(systemName: "questionmark.circle").imageScale(.large)
+                    .font(.system(size: 30))
+                    .offset(y: -80)
+                Text("""
+                    Créez des types de documents pour adapter les paramètres d'importation.
+                    Vous pouvez spécifier un script pour transformer le document avant de l'importer.
+                    """).font(.system(size: 16, weight: .light)).lineSpacing(5)
+            }.frame(width: 400)
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading) {
             ListSettingsView(items: $configurationManager.types,
                              add: configurationManager.addType,
-                             remove: configurationManager.removeType) { index in
+                             remove: configurationManager.removeType,
+                             landing: Landing()) { index in
                 DocumentTypeView(
                     description: $configurationManager.types[index].description,
                     documentProcessingScript: $configurationManager.types[index].documentProcessorScript,
