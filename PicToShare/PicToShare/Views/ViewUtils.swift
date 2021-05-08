@@ -1,7 +1,3 @@
-//
-// Created by Guillaume Chauveau on 30/03/2021.
-//
-
 import SwiftUI
 
 /// Button with the Accent Color as background.
