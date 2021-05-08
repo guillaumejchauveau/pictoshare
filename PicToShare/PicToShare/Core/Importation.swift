@@ -132,6 +132,7 @@ class ImportationManager: ObservableObject {
             remainingCount = annotatorCount
             self.urls = urls
             keywords.append(contentsOf: defaults.compactMap({ $0 }))
+          
             if annotatorCount == 0 {
                 write()
             }

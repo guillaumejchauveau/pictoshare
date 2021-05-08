@@ -309,6 +309,62 @@ class ConfigurationManager: ObservableObject {
         }
     }
 
+    /// Configures Importation Contexts by reading data from persistent storage.
+    func loadContexts() {
+        CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
+
+        contexts.removeAll()
+        let contextDeclarations = getPreference("contexts")
+            as? Array<CFPropertyList> ?? []
+        for rawDeclaration in contextDeclarations {
+            do {
+                guard let declaration = rawDeclaration
+                        as? Dictionary<String, Any> else {
+                    throw ConfigurationManager.Error.preferencesError
+                }
+
+                guard let description = declaration["description"]
+                        as? String else {
+                    throw ConfigurationManager.Error.preferencesError
+                }
+
+                var contextAnnotators: Set<HashableDocumentAnnotator> = []
+                let annotatorDeclarations = declaration["documentAnnotators"]
+                    as? Array<CFPropertyList> ?? []
+                for rawAnnotatorDeclaration in annotatorDeclarations {
+                    if let annotatorDescription = rawAnnotatorDeclaration
+                        as? String,
+                       let annotator = documentAnnotators[annotatorDescription] {
+                        contextAnnotators.insert(annotator)
+                    }
+                }
+
+                var contextIntegrators: Set<HashableDocumentIntegrator> = []
+                let integratorDeclarations = declaration["documentIntegrators"]
+                    as? Array<CFPropertyList> ?? []
+                for rawIntegratorDeclaration in integratorDeclarations {
+                    if let integratorDescription = rawIntegratorDeclaration
+                        as? String,
+                       let integrator = documentIntegrators[integratorDescription] {
+                        contextIntegrators.insert(integrator)
+                    }
+                }
+
+                contexts.append(ImportationContextMetadata(description,
+                                                  self,
+                                                  contextAnnotators,
+                                                  contextIntegrators))
+            } catch {
+                continue
+            }
+        }
+
+        if let savedCurrentDescription = getPreference("currentUserContext") as? String {
+            currentUserContext = contexts.first {
+                $0.description == savedCurrentDescription
+            }
+        }
+    }
     /// Updates the folder corresponding to the given Document Type.
     /// Currently as multiple failing situations:
     /// - a file exists with the name of the document type;
