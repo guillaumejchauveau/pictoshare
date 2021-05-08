@@ -1,10 +1,3 @@
-//
-//  Configuration.swift
-//  PicToShare/Core
-//
-//  Created by Guillaume Chauveau on 25/02/2021.
-//
-
 import Foundation
 import Combine
 
@@ -52,8 +45,8 @@ class DocumentTypeMetadata: DocumentType, ObservableObject {
     }
 }
 
-class ImportationContextMetadata: UserContext, ObservableObject, Equatable, Identifiable {
-    static func ==(lhs: ImportationContextMetadata, rhs: ImportationContextMetadata) -> Bool {
+class UserContextMetadata: UserContext, ObservableObject, Equatable, Identifiable {
+    static func ==(lhs: UserContextMetadata, rhs: UserContextMetadata) -> Bool {
         lhs.description == rhs.description
     }
 
@@ -92,15 +85,16 @@ class ConfigurationManager: ObservableObject {
     var documentIntegrators: [String: HashableDocumentIntegrator]
 
     let documentFolderURL: URL
+    let picToShareURL = URL(string: "pictoshare://main")!
 
     /// The configured Document Types.
     @Published var types: [DocumentTypeMetadata] = []
 
     /// The configured Importation Contexts.
-    @Published var contexts: [ImportationContextMetadata] = []
+    @Published var contexts: [UserContextMetadata] = []
 
-    private var currentContext_: ImportationContextMetadata? = nil
-    var currentUserContext: ImportationContextMetadata? {
+    private var currentContext_: UserContextMetadata? = nil
+    var currentUserContext: UserContextMetadata? {
         get {
             currentContext_
         }
@@ -145,7 +139,7 @@ class ConfigurationManager: ObservableObject {
 
     /// Configures a new Importation Context.
     func addContext(with description: String) {
-        contexts.append(ImportationContextMetadata(description, self))
+        contexts.append(UserContextMetadata(description, self))
         saveContexts()
     }
 
@@ -293,7 +287,7 @@ class ConfigurationManager: ObservableObject {
                     }
                 }
 
-                contexts.append(ImportationContextMetadata(description,
+                contexts.append(UserContextMetadata(description,
                         self,
                         contextAnnotators,
                         contextIntegrators))
@@ -385,7 +379,7 @@ extension DocumentTypeMetadata: CFPropertyListable {
     }
 }
 
-extension ImportationContextMetadata: CFPropertyListable {
+extension UserContextMetadata: CFPropertyListable {
     func toCFPropertyList() -> CFPropertyList {
         [
             "description": description,
