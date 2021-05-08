@@ -7,11 +7,13 @@ import EventKit
 
 
 struct CurrentEventsDocumentIntegrator: DocumentIntegrator {
+    let description = "Ajouter aux événements en cours"
+
     private let store = EKEventStore()
 
     /// ATM, it can fail after asking for rights to use the Calendar. Reasons are unknown
     /// It fails and the store.save line
-    func integrate(documents: [URL]) throws {
+    func integrate(documents: [URL]) {
         // You must ask for the user's permission to get Calendar data by adding the
         // "Privacy - Calendar Usage Description" key in info.plist
         store.requestAccess(to: .event) { granted, error in
@@ -50,6 +52,4 @@ struct CurrentEventsDocumentIntegrator: DocumentIntegrator {
             }
         }
     }
-
-    var description = "Événements en cours"
 }

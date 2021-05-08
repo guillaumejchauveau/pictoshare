@@ -17,23 +17,12 @@ class DocumentTypeMetadata: DocumentType, ObservableObject {
     let configurationManager: ConfigurationManager
     var savedDescription: String
     @Published var description: String
-    @Published var contentAnnotatorScript: URL?
-    @Published var copyBeforeScript: Bool
-    @Published var contextAnnotatorNames: Set<String>
-    @Published var documentIntegratorNames: Set<String>
+    @Published var documentProcessorScript: URL?
+    @Published var copyBeforeProcessing: Bool
+    @Published var removeOriginalOnProcessingByproduct: Bool
+    @Published var documentAnnotators: Set<HashableDocumentAnnotator>
+    @Published var documentIntegrators: Set<HashableDocumentIntegrator>
     private var subscriber: AnyCancellable!
-
-    var contextAnnotators: [ContextAnnotator] {
-        contextAnnotatorNames.map {
-            configurationManager.contextAnnotators[$0]!
-        }
-    }
-
-    var documentIntegrators: [DocumentIntegrator] {
-        documentIntegratorNames.map {
-            configurationManager.documentIntegrators[$0]!
-        }
-    }
 
     var folder: URL {
         configurationManager.documentFolderURL.appendingPathComponent(savedDescription)
@@ -42,23 +31,54 @@ class DocumentTypeMetadata: DocumentType, ObservableObject {
     init(_ description: String,
          _ configurationManager: ConfigurationManager,
          _ contentAnnotatorScript: URL? = nil,
-         _ copyBeforeScript: Bool = true,
-         _ contextAnnotatorNames: Set<String> = [],
-         _ documentIntegratorNames: Set<String> = []) {
+         _ copyBeforeProcessing: Bool = true,
+         _ removeOriginalOnProcessingByproduct: Bool = false,
+         _ documentAnnotators: Set<HashableDocumentAnnotator> = [],
+         _ documentIntegrators: Set<HashableDocumentIntegrator> = []) {
         self.configurationManager = configurationManager
         self.description = description
         savedDescription = description
-        self.contentAnnotatorScript = contentAnnotatorScript
-        self.copyBeforeScript = copyBeforeScript
-        self.contextAnnotatorNames = contextAnnotatorNames
-        self.documentIntegratorNames = documentIntegratorNames
+        self.documentProcessorScript = contentAnnotatorScript
+        self.copyBeforeProcessing = copyBeforeProcessing
+        self.removeOriginalOnProcessingByproduct = removeOriginalOnProcessingByproduct
+        self.documentAnnotators = documentAnnotators
+        self.documentIntegrators = documentIntegrators
         subscriber = self.objectWillChange.sink {
             DispatchQueue.main
                     .asyncAfter(deadline: .now() + .milliseconds(200)) {
                 configurationManager.save(type: self)
             }
         }
-        configurationManager.save(type: self)
+    }
+}
+
+class ImportationContextMetadata: UserContext, ObservableObject, Equatable, Identifiable {
+    static func == (lhs: ImportationContextMetadata, rhs: ImportationContextMetadata) -> Bool {
+        lhs.description == rhs.description
+    }
+
+    let configurationManager: ConfigurationManager
+    var savedDescription: String
+    @Published var description: String
+    @Published var documentAnnotators: Set<HashableDocumentAnnotator>
+    @Published var documentIntegrators: Set<HashableDocumentIntegrator>
+    private var subscriber: AnyCancellable!
+
+    init(_ description: String,
+         _ configurationManager: ConfigurationManager,
+         _ documentAnnotators: Set<HashableDocumentAnnotator> = [],
+         _ documentIntegrators: Set<HashableDocumentIntegrator> = []) {
+        self.configurationManager = configurationManager
+        self.description = description
+        savedDescription = description
+        self.documentAnnotators = documentAnnotators
+        self.documentIntegrators = documentIntegrators
+        subscriber = self.objectWillChange.sink {
+            DispatchQueue.main
+                .asyncAfter(deadline: .now() + .milliseconds(200)) {
+                    configurationManager.saveContexts()
+                }
+        }
     }
 }
 
@@ -68,25 +88,40 @@ class ConfigurationManager: ObservableObject {
         case preferencesError
     }
 
-    var contextAnnotators: [String: ContextAnnotator]
-    var documentIntegrators: [String: DocumentIntegrator]
+    var documentAnnotators: [String: HashableDocumentAnnotator]
+    var documentIntegrators: [String: HashableDocumentIntegrator]
 
     let documentFolderURL: URL
 
-    /// The Document Types configured.
+    /// The configured Document Types.
     @Published var types: [DocumentTypeMetadata] = []
 
-    init(_ ptsFolderName: String,
-         _ contextAnnotators: [ContextAnnotator] = [],
-         _ documentIntegrators: [DocumentIntegrator] = []) {
-        var annotators: [String: ContextAnnotator] = [:]
-        for contextAnnotator in contextAnnotators {
-            annotators[contextAnnotator.description] = contextAnnotator
+    /// The configured Importation Contexts.
+    @Published var contexts: [ImportationContextMetadata] = []
+
+    private var currentContext_: ImportationContextMetadata? = nil
+    var currentUserContext: ImportationContextMetadata? {
+        get {
+            currentContext_
         }
-        self.contextAnnotators = annotators
-        var integrators: [String: DocumentIntegrator] = [:]
+        set {
+            currentContext_ = newValue
+            setPreference("currentUserContext", (newValue?.description ?? "") as CFString)
+            objectWillChange.send()
+        }
+    }
+
+    init(_ ptsFolderName: String,
+         _ documentAnnotators: [DocumentAnnotator] = [],
+         _ documentIntegrators: [DocumentIntegrator] = []) {
+        var annotators: [String: HashableDocumentAnnotator] = [:]
+        for documentAnnotator in documentAnnotators {
+            annotators[documentAnnotator.description] = HashableDocumentAnnotator(documentAnnotator)
+        }
+        self.documentAnnotators = annotators
+        var integrators: [String: HashableDocumentIntegrator] = [:]
         for documentIntegrator in documentIntegrators {
-            integrators[documentIntegrator.description] = documentIntegrator
+            integrators[documentIntegrator.description] = HashableDocumentIntegrator(documentIntegrator)
         }
         self.documentIntegrators = integrators
         documentFolderURL = try! FileManager.default
@@ -100,6 +135,26 @@ class ConfigurationManager: ObservableObject {
     /// Configures a new Document Type.
     func addType(with description: String) {
         types.append(DocumentTypeMetadata(description, self))
+        saveTypes()
+    }
+
+    func removeType(at index: Int) {
+        types.remove(at: index)
+        saveTypes()
+    }
+
+    /// Configures a new Importation Context.
+    func addContext(with description: String) {
+        contexts.append(ImportationContextMetadata(description, self))
+        saveContexts()
+    }
+
+    func removeContext(at index: Int) {
+        let context = contexts.remove(at: index)
+        if currentUserContext == context {
+            currentUserContext = nil
+        }
+        saveContexts()
     }
 
     //**************************************************************************
@@ -130,7 +185,7 @@ class ConfigurationManager: ObservableObject {
     }
 
     /// Configures Document Types by reading data from persistent storage.
-    func load() {
+    func loadTypes() {
         CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
 
         types.removeAll()
@@ -148,53 +203,111 @@ class ConfigurationManager: ObservableObject {
                     throw ConfigurationManager.Error.preferencesError
                 }
 
-                let contentAnnotatorURL: URL?
-                if let contentAnnotatorPath = declaration["contentAnnotator"]
+                let documentProcessorScript: URL?
+                if let scriptPath = declaration["documentProcessorScript"]
                         as? String {
-                    contentAnnotatorURL = URL(string: contentAnnotatorPath)
+                    documentProcessorScript = URL(string: scriptPath)
                 } else {
-                    contentAnnotatorURL = nil
+                    documentProcessorScript = nil
                 }
 
-                let copyBeforeScript = declaration["copyBeforeScript"]
+                let copyBeforeProcessing = declaration["copyBeforeProcessing"]
                         as? Bool ?? true
 
-                var contextAnnotators: Set<String> = []
-                let contextAnnotatorDeclarations = declaration["contextAnnotators"]
+                let removeOriginalOnProcessingByproduct = declaration["removeOriginalOnProcessingByproduct"]
+                    as? Bool ?? false
+
+                var typeAnnotators: Set<HashableDocumentAnnotator> = []
+                let annotatorDeclarations = declaration["documentAnnotators"]
                         as? Array<CFPropertyList> ?? []
-                for rawContextAnnotatorDeclaration in contextAnnotatorDeclarations {
-                    if let contextAnnotatorDescription = rawContextAnnotatorDeclaration
-                            as? String {
-                        if self.contextAnnotators.keys.contains(contextAnnotatorDescription) {
-                            contextAnnotators.insert(contextAnnotatorDescription)
-                        }
+                for rawAnnotatorDeclaration in annotatorDeclarations {
+                    if let annotatorDescription = rawAnnotatorDeclaration
+                            as? String,
+                       let annotator = documentAnnotators[annotatorDescription] {
+                        typeAnnotators.insert(annotator)
                     }
                 }
 
-                var documentIntegrators: Set<String> = []
-                let documentIntegratorDeclarations = declaration["documentIntegrators"]
+                var typeIntegrators: Set<HashableDocumentIntegrator> = []
+                let integratorDeclarations = declaration["documentIntegrators"]
                         as? Array<CFPropertyList> ?? []
-                for rawDocumentIntegratorDeclaration in documentIntegratorDeclarations {
-                    if let documentIntegratorDescription = rawDocumentIntegratorDeclaration
-                            as? String {
-                        if self.documentIntegrators.keys.contains(documentIntegratorDescription) {
-                            documentIntegrators.insert(documentIntegratorDescription)
-                        }
+                for rawIntegratorDeclaration in integratorDeclarations {
+                    if let integratorDescription = rawIntegratorDeclaration
+                            as? String,
+                       let integrator = documentIntegrators[integratorDescription] {
+                        typeIntegrators.insert(integrator)
                     }
                 }
 
                 types.append(DocumentTypeMetadata(description,
                         self,
-                        contentAnnotatorURL,
-                        copyBeforeScript,
-                        contextAnnotators,
-                        documentIntegrators))
+                        documentProcessorScript,
+                        copyBeforeProcessing,
+                        removeOriginalOnProcessingByproduct,
+                        typeAnnotators,
+                        typeIntegrators))
             } catch {
                 continue
             }
         }
     }
 
+    /// Configures Importation Contexts by reading data from persistent storage.
+    func loadContexts() {
+        CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
+
+        contexts.removeAll()
+        let contextDeclarations = getPreference("contexts")
+            as? Array<CFPropertyList> ?? []
+        for rawDeclaration in contextDeclarations {
+            do {
+                guard let declaration = rawDeclaration
+                        as? Dictionary<String, Any> else {
+                    throw ConfigurationManager.Error.preferencesError
+                }
+
+                guard let description = declaration["description"]
+                        as? String else {
+                    throw ConfigurationManager.Error.preferencesError
+                }
+
+                var contextAnnotators: Set<HashableDocumentAnnotator> = []
+                let annotatorDeclarations = declaration["documentAnnotators"]
+                    as? Array<CFPropertyList> ?? []
+                for rawAnnotatorDeclaration in annotatorDeclarations {
+                    if let annotatorDescription = rawAnnotatorDeclaration
+                        as? String,
+                       let annotator = documentAnnotators[annotatorDescription] {
+                        contextAnnotators.insert(annotator)
+                    }
+                }
+
+                var contextIntegrators: Set<HashableDocumentIntegrator> = []
+                let integratorDeclarations = declaration["documentIntegrators"]
+                    as? Array<CFPropertyList> ?? []
+                for rawIntegratorDeclaration in integratorDeclarations {
+                    if let integratorDescription = rawIntegratorDeclaration
+                        as? String,
+                       let integrator = documentIntegrators[integratorDescription] {
+                        contextIntegrators.insert(integrator)
+                    }
+                }
+
+                contexts.append(ImportationContextMetadata(description,
+                                                  self,
+                                                  contextAnnotators,
+                                                  contextIntegrators))
+            } catch {
+                continue
+            }
+        }
+
+        if let savedCurrentDescription = getPreference("currentUserContext") as? String {
+            currentUserContext = contexts.first {
+                $0.description == savedCurrentDescription
+            }
+        }
+    }
     /// Updates the folder corresponding to the given Document Type.
     /// Currently as multiple failing situations:
     /// - a file exists with the name of the document type;
@@ -230,7 +343,7 @@ class ConfigurationManager: ObservableObject {
     }
 
     /// Saves all the configured Document Types.
-    func saveAll() {
+    func saveTypes() {
         for type in types {
             updateTypeFolder(type)
         }
@@ -241,6 +354,16 @@ class ConfigurationManager: ObservableObject {
 
         CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
     }
+
+    /// Saves all the configured Contexts.
+    func saveContexts() {
+        setPreference("contexts",
+                      contexts.map {
+                        $0.toCFPropertyList()
+                      } as CFArray)
+
+        CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
+    }
 }
 
 
@@ -248,9 +371,20 @@ extension DocumentTypeMetadata: CFPropertyListable {
     func toCFPropertyList() -> CFPropertyList {
         [
             "description": description,
-            "contentAnnotator": contentAnnotatorScript?.path ?? "",
-            "copyBeforeScript": copyBeforeScript,
-            "contextAnnotators": contextAnnotators.map({ $0.description }) as CFArray,
+            "documentProcessorScript": documentProcessorScript?.path ?? "",
+            "copyBeforeProcessing": copyBeforeProcessing,
+            "removeOriginalOnProcessingByproduct": removeOriginalOnProcessingByproduct,
+            "documentAnnotators": documentAnnotators.map({ $0.description }) as CFArray,
+            "documentIntegrators": documentIntegrators.map({ $0.description }) as CFArray
+        ] as CFPropertyList
+    }
+}
+
+extension ImportationContextMetadata: CFPropertyListable {
+    func toCFPropertyList() -> CFPropertyList {
+        [
+            "description": description,
+            "documentAnnotators": documentAnnotators.map({ $0.description }) as CFArray,
             "documentIntegrators": documentIntegrators.map({ $0.description }) as CFArray
         ] as CFPropertyList
     }

@@ -2,13 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
-	<dict>
-		<key>Annotation</key>
-		<string>PicToShare a besoin d&apos;avoir accès au service de Géolocalisation</string>
-	</dict>
 	<key>NSCalendarsUsageDescription</key>
-	<string>PicToShare a besoin d&apos;avoir accès au Calendrier</string>
+	<string>Calendar integration and annotation</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -27,8 +22,6 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
-	<key>NSCalendarsUsageDescription</key>
-	<string>Calendar integration and annotation</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 </dict>
