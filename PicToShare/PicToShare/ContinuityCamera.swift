@@ -1,7 +1,3 @@
-//
-// Created by Guillaume Chauveau on 12/04/2021.
-//
-
 import SwiftUI
 
 

@@ -1,10 +1,3 @@
-//
-//  ContextAnnotators.swift
-//  PicToShare
-//
-//  Created by Guillaume Chauveau on 05/05/2021.
-//
-
 import EventKit
 import CoreLocation
 import MapKit

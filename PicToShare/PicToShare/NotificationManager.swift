@@ -1,10 +1,3 @@
-//
-//  NotificationManager.swift
-//  PicToShare
-//
-//  Created by Steven on 07/05/2021.
-//
-
 import UserNotifications
 
 class NotificationManager {

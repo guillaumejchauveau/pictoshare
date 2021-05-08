@@ -1,7 +1,3 @@
-//
-// Created by Guillaume Chauveau on 06/05/2021.
-//
-
 import SwiftUI
 import Quartz
 

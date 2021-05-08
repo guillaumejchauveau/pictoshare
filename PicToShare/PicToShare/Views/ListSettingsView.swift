@@ -1,10 +1,3 @@
-//
-//  ListSettingsView.swift
-//  PicToShare
-//
-//  Created by Guillaume Chauveau on 07/05/2021.
-//
-
 import SwiftUI
 
 

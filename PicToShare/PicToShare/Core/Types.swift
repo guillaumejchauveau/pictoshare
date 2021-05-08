@@ -1,10 +1,3 @@
-//
-//  Types.swift
-//  PicToShare/Core
-//
-//  Created by Guillaume Chauveau on 25/02/2021.
-//
-
 import Foundation
 
 /// Object providing a list of keywords to add to imported Documents.
