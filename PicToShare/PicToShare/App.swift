@@ -11,7 +11,7 @@ struct PTSApp: App {
             [
                 CurrentEventsDocumentIntegrator()
             ])
-    private let importationManager: ImportationManager
+    private let importationManager = ImportationManager()
 
     private let statusItem: NSStatusItem
     private let statusItemMenuDelegate: StatusMenuDelegate
@@ -24,7 +24,6 @@ struct PTSApp: App {
         configurationManager.loadTypes()
         configurationManager.loadContexts()
         configurationManager.saveTypes()
-        importationManager = ImportationManager(configurationManager)
 
         // Creates default Document Types.
         if !FileManager.default.fileExists(
@@ -73,8 +72,6 @@ struct MainView: View {
         HStack {
             if importationManager.queueHead != nil {
                 ImportationView()
-                        .environmentObject(configurationManager)
-                        .environmentObject(importationManager)
             } else {
                 VStack(alignment: .leading) {
                     Text("Utilisez la barre d'outil pour importer")
@@ -146,7 +143,6 @@ struct MainView: View {
                                 Image(systemName: "camera")
                                 // Hacky way of adding a button opening a NSMenu for Continuity Camera.
                                 ContinuityCameraButton()
-                                        .environmentObject(configurationManager)
                             }
                         }
 

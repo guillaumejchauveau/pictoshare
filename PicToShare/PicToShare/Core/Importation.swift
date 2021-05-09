@@ -1,8 +1,9 @@
 import Foundation
 
-struct ImportationMetadata {
+struct ImportationConfiguration {
     let url: URL
     let type: DocumentType
+    let context: UserContext?
     let annotators: Set<HashableDocumentAnnotator>
     let integrators: Set<HashableDocumentIntegrator>
 }
@@ -15,11 +16,6 @@ class ImportationManager: ObservableObject {
     }
 
     private var importationQueue: [URL] = []
-    private let configurationManager: ConfigurationManager
-
-    init(_ configurationManager: ConfigurationManager) {
-        self.configurationManager = configurationManager
-    }
 
     var queueHead: URL? {
         importationQueue.first
@@ -47,23 +43,23 @@ class ImportationManager: ObservableObject {
     /// Imports a Document given a Document Type.
     ///
     /// - Parameters:
-    func importDocument(with metadata: ImportationMetadata) {
-        guard metadata.url.isFileURL else {
+    func importDocument(with configuration: ImportationConfiguration) {
+        guard configuration.url.isFileURL else {
             return
         }
 
-        if metadata.type.documentProcessorScript == nil {
-            postProcess(documents: [metadata.url], with: metadata)
+        if configuration.type.documentProcessorScript == nil {
+            postProcess(documents: [configuration.url], with: configuration)
             return
         }
 
-        let inputUrlFolder = metadata.url.deletingLastPathComponent()
-        if metadata.type.copyBeforeProcessing {
+        let inputUrlFolder = configuration.url.deletingLastPathComponent()
+        if configuration.type.copyBeforeProcessing {
             let copyUrl = inputUrlFolder
-                    .appendingPathComponent(metadata.url.deletingPathExtension().lastPathComponent + ".copy")
-                    .appendingPathExtension(metadata.url.pathExtension)
+                    .appendingPathComponent(configuration.url.deletingPathExtension().lastPathComponent + ".copy")
+                    .appendingPathExtension(configuration.url.pathExtension)
             do {
-                try FileManager.default.copyItem(at: metadata.url, to: copyUrl)
+                try FileManager.default.copyItem(at: configuration.url, to: copyUrl)
             } catch {
                 NotificationManager.notifyUser(
                         "Échec de l'importation",
@@ -77,9 +73,9 @@ class ImportationManager: ObservableObject {
         scriptProcess.currentDirectoryURL = inputUrlFolder
         scriptProcess.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
         scriptProcess.arguments = [
-            metadata.type.documentProcessorScript!.path,
-            metadata.url.path,
-            metadata.url.deletingPathExtension().path
+            configuration.type.documentProcessorScript!.path,
+            configuration.url.path,
+            configuration.url.deletingPathExtension().path
         ]
 
         // Script callback.
@@ -93,19 +89,19 @@ class ImportationManager: ObservableObject {
             }
 
             // Finds the output(s) of the script.
-            let outputFilesPrefix = metadata.url.deletingPathExtension().lastPathComponent
+            let outputFilesPrefix = configuration.url.deletingPathExtension().lastPathComponent
             var outputUrls = try! FileManager.default.contentsOfDirectory(at: inputUrlFolder,
                             includingPropertiesForKeys: nil)
                     .filter {
                         $0.deletingPathExtension().lastPathComponent == outputFilesPrefix
                     }
-            if outputUrls.count > 1 && metadata.type.removeOriginalOnProcessingByproduct {
+            if outputUrls.count > 1 && configuration.type.removeOriginalOnProcessingByproduct {
                 outputUrls.removeAll {
-                    $0 == metadata.url
+                    $0 == configuration.url
                 }
-                try? FileManager.default.removeItem(at: metadata.url)
+                try? FileManager.default.removeItem(at: configuration.url)
             }
-            postProcess(documents: outputUrls, with: metadata)
+            postProcess(documents: outputUrls, with: configuration)
         }
 
         // Runs the script asynchronously.
@@ -165,22 +161,22 @@ class ImportationManager: ObservableObject {
         }
     }
 
-    private func postProcess(documents urls: [URL], with metadata: ImportationMetadata) {
-        let annotationResults = AnnotationResults(metadata.annotators.count,
+    private func postProcess(documents urls: [URL], with configuration: ImportationConfiguration) {
+        let annotationResults = AnnotationResults(configuration.annotators.count,
                 urls,
                 [
-                    metadata.type.description,
-                    configurationManager.currentUserContext?.description
+                    configuration.type.description,
+                    configuration.context?.description
                 ])
 
-        for annotator in metadata.annotators {
+        for annotator in configuration.annotators {
             annotator.makeAnnotations(annotationResults.complete)
         }
 
         for url in urls {
             do {
                 let bookmarkData = try url.bookmarkData(options: [.suitableForBookmarkFile])
-                try URL.writeBookmarkData(bookmarkData, to: metadata.type.folder.appendingPathComponent(url.lastPathComponent))
+                try URL.writeBookmarkData(bookmarkData, to: configuration.type.folder.appendingPathComponent(url.lastPathComponent))
             } catch {
                 NotificationManager.notifyUser(
                         "Échec de la classification",
@@ -189,7 +185,7 @@ class ImportationManager: ObservableObject {
             }
         }
 
-        for integrator in metadata.integrators {
+        for integrator in configuration.integrators {
             integrator.integrate(documents: urls)
         }
     }

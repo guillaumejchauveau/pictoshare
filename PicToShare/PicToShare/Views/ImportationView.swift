@@ -64,9 +64,10 @@ struct ImportationView: View {
                     }
                     let type = configurationManager.types[selectedType]
                     let context = configurationManager.currentUserContext
-                    importationManager.importDocument(with: ImportationMetadata(
+                    importationManager.importDocument(with: ImportationConfiguration(
                             url: importationManager.queueHead!,
                             type: type,
+                            context: configurationManager.currentUserContext,
                             annotators: type.documentAnnotators
                                     .union(context?.documentAnnotators ?? []),
                             integrators: type.documentIntegrators
