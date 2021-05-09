@@ -41,7 +41,7 @@ class StatusMenuDelegate: NSObject, NSMenuDelegate {
     }
 
     @objc func openPTS(_ sender: Any) {
-        NSWorkspace.shared.open(configurationManager.picToShareURL)
+        PTSApp.openPTSUrl()
     }
 
     @objc func openFolderInFinder(_ sender: Any) {
