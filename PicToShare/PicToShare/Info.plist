@@ -39,5 +39,29 @@
 	<string>Calendar integration and annotation</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Location annotation</string>
+	<key>NSServices</key>
+	<array>
+		<dict>
+			<key>NSMenuItem</key>
+			<dict>
+				<key>default</key>
+				<string>PicToShare: importer</string>
+			</dict>
+			<key>NSMessage</key>
+			<string>importFiles</string>
+			<key>NSPortName</key>
+			<string>PicToShare</string>
+			<key>NSRequiredContext</key>
+			<dict>
+				<key>NSTextContent</key>
+				<string>FilePath</string>
+			</dict>
+			<key>NSSendTypes</key>
+			<array>
+				<string>public.plain-text</string>
+				<string>NSFilenamesPboardType</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
