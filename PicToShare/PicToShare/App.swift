@@ -16,8 +16,6 @@ struct PTSApp: App {
     private let statusItem: NSStatusItem
     private let statusItemMenuDelegate: StatusMenuDelegate
 
-    private let servicesProvider: ServicesProvider
-
     static func openPTSUrl() {
         NSWorkspace.shared.open(URL(string: "pictoshare://main")!)
     }
@@ -44,8 +42,6 @@ struct PTSApp: App {
         statusItem.button?.image = NSImage(named: "StatusItemIcon")
         statusItem.menu = NSMenu()
         statusItemMenuDelegate = StatusMenuDelegate(configurationManager, statusItem.menu!)
-
-        servicesProvider = ServicesProvider(importationManager)
     }
 
     var body: some Scene {

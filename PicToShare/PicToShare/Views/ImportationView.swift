@@ -70,8 +70,7 @@ struct ImportationView: View {
                             annotators: type.documentAnnotators
                                     .union(context?.documentAnnotators ?? []),
                             integrators: type.documentIntegrators
-                                    .union(context?.documentIntegrators ?? []),
-                            pasteboardInsertMode: importationManager.nextImportPasteboardInsertMode))
+                                    .union(context?.documentIntegrators ?? [])))
                     importationManager.popQueueHead()
                     processedCount += 1
                 }.buttonStyle(AccentButtonStyle())

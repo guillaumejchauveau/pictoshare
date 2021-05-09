@@ -1,19 +1,10 @@
 import Foundation
-import AppKit.NSPasteboard
-import UniformTypeIdentifiers
 
 struct ImportationMetadata {
-    enum PasteboardInsertMode {
-        case none
-        case link(pboard: NSPasteboard)
-        case content(pboard: NSPasteboard)
-    }
-
     let url: URL
     let type: DocumentType
     let annotators: Set<HashableDocumentAnnotator>
     let integrators: Set<HashableDocumentIntegrator>
-    let pasteboardInsertMode: PasteboardInsertMode
 }
 
 /// Object responsible of the Importation process.
@@ -28,20 +19,6 @@ class ImportationManager: ObservableObject {
 
     init(_ configurationManager: ConfigurationManager) {
         self.configurationManager = configurationManager
-    }
-
-    private var nextImportPasteboardInsertMode_: ImportationMetadata.PasteboardInsertMode = .none
-
-    var nextImportPasteboardInsertMode: ImportationMetadata.PasteboardInsertMode {
-        get {
-            let value = nextImportPasteboardInsertMode_
-            nextImportPasteboardInsertMode_ = .none
-            return value
-        }
-
-        set {
-            nextImportPasteboardInsertMode_ = newValue
-        }
     }
 
     var queueHead: URL? {
@@ -200,23 +177,9 @@ class ImportationManager: ObservableObject {
             annotator.makeAnnotations(annotationResults.complete)
         }
 
-        var pasteboardItems: [NSPasteboardWriting] = []
-
         for url in urls {
             do {
                 let bookmarkData = try url.bookmarkData(options: [.suitableForBookmarkFile])
-
-                switch metadata.pasteboardInsertMode {
-                case .link(_):
-                    let item = NSPasteboardItem()
-                    item.setData(bookmarkData, forType: .init(UTType.urlBookmarkData.identifier))
-                    item.setData(url.dataRepresentation, forType: .fileURL)
-                    item.setString(url.path, forType: .string)
-                    pasteboardItems.append(item)
-                default:
-                    break
-                }
-
                 try URL.writeBookmarkData(bookmarkData, to: metadata.type.folder.appendingPathComponent(url.lastPathComponent))
             } catch {
                 NotificationManager.notifyUser(
@@ -225,16 +188,6 @@ class ImportationManager: ObservableObject {
                         "PTS-Bookmark")
             }
         }
-
-        switch metadata.pasteboardInsertMode {
-        case .link(let pboard), .content(let pboard):
-            pboard.clearContents()
-            pboard.writeObjects(pasteboardItems)
-        default:
-            break
-        }
-
-        print(pasteboardItems)
 
         for integrator in metadata.integrators {
             integrator.integrate(documents: urls)
