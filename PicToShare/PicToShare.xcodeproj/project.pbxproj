@@ -7,8 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9515D5432648282000B3C8BA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9515D5422648282000B3C8BA /* AppDelegate.swift */; };
-		9515D5472648282300B3C8BA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9515D5462648282300B3C8BA /* Assets.xcassets */; };
+		9515D53B2647D53500B3C8BA /* ServicesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9515D53A2647D53500B3C8BA /* ServicesProvider.swift */; };
 		95BD8EAF2616311100D83532 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95BD8EAE2616311100D83532 /* Assets.xcassets */; };
 		95BD8EC92616344100D83532 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EC52616344100D83532 /* Configuration.swift */; };
 		95BD8ECA2616344100D83532 /* Importation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EC62616344100D83532 /* Importation.swift */; };
@@ -28,11 +27,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		9515D5402648282000B3C8BA /* PicToShare-Services.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PicToShare-Services.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		9515D5422648282000B3C8BA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		9515D5462648282300B3C8BA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		9515D54E2648282300B3C8BA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9515D54F2648282300B3C8BA /* PicToShare_Services.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PicToShare_Services.entitlements; sourceTree = "<group>"; };
+		9515D53A2647D53500B3C8BA /* ServicesProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServicesProvider.swift; sourceTree = "<group>"; };
 		95BD8EA72616311000D83532 /* PicToShare.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PicToShare.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		95BD8EAE2616311100D83532 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		95BD8EB32616311100D83532 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -55,13 +50,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		9515D53D2648282000B3C8BA /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		95BD8EA42616311000D83532 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -84,22 +72,10 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
-		9515D5412648282000B3C8BA /* PicToShare-Services */ = {
-			isa = PBXGroup;
-			children = (
-				9515D5422648282000B3C8BA /* AppDelegate.swift */,
-				9515D5462648282300B3C8BA /* Assets.xcassets */,
-				9515D54E2648282300B3C8BA /* Info.plist */,
-				9515D54F2648282300B3C8BA /* PicToShare_Services.entitlements */,
-			);
-			path = "PicToShare-Services";
-			sourceTree = "<group>";
-		};
 		95BD8E9E2616311000D83532 = {
 			isa = PBXGroup;
 			children = (
 				95BD8EA92616311000D83532 /* PicToShare */,
-				9515D5412648282000B3C8BA /* PicToShare-Services */,
 				95BD8EA82616311000D83532 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -108,7 +84,6 @@
 			isa = PBXGroup;
 			children = (
 				95BD8EA72616311000D83532 /* PicToShare.app */,
-				9515D5402648282000B3C8BA /* PicToShare-Services.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -127,6 +102,7 @@
 				F9A7C28A555F204F09D31E55 /* DocumentIntegrators.swift */,
 				B0BDB95F2645930D00A86FA7 /* NotificationManager.swift */,
 				F9A7CBD1B17DA9CD664A2158 /* StatusItem.swift */,
+				9515D53A2647D53500B3C8BA /* ServicesProvider.swift */,
 			);
 			path = PicToShare;
 			sourceTree = "<group>";
@@ -145,23 +121,6 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		9515D53F2648282000B3C8BA /* PicToShare-Services */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 9515D5522648282300B3C8BA /* Build configuration list for PBXNativeTarget "PicToShare-Services" */;
-			buildPhases = (
-				9515D53C2648282000B3C8BA /* Sources */,
-				9515D53D2648282000B3C8BA /* Frameworks */,
-				9515D53E2648282000B3C8BA /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "PicToShare-Services";
-			productName = "PicToShare-Services";
-			productReference = 9515D5402648282000B3C8BA /* PicToShare-Services.app */;
-			productType = "com.apple.product-type.application";
-		};
 		95BD8EA62616311000D83532 /* PicToShare */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 95BD8EB72616311100D83532 /* Build configuration list for PBXNativeTarget "PicToShare" */;
@@ -187,12 +146,9 @@
 		95BD8E9F2616311000D83532 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1250;
+				LastSwiftUpdateCheck = 1240;
 				LastUpgradeCheck = 1250;
 				TargetAttributes = {
-					9515D53F2648282000B3C8BA = {
-						CreatedOnToolsVersion = 12.5;
-					};
 					95BD8EA62616311000D83532 = {
 						CreatedOnToolsVersion = 12.4;
 					};
@@ -215,20 +171,11 @@
 			projectRoot = "";
 			targets = (
 				95BD8EA62616311000D83532 /* PicToShare */,
-				9515D53F2648282000B3C8BA /* PicToShare-Services */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		9515D53E2648282000B3C8BA /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				9515D5472648282300B3C8BA /* Assets.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		95BD8EA52616311000D83532 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -240,14 +187,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		9515D53C2648282000B3C8BA /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				9515D5432648282000B3C8BA /* AppDelegate.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		95BD8EA32616311000D83532 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -265,6 +204,7 @@
 				F9A7C6884F6D835DFBD3F4FB /* DocumentTypesView.swift in Sources */,
 				F9A7C856ABCC5868A2849686 /* ImportationView.swift in Sources */,
 				F9A7C89AF6396B2FCF324263 /* ViewUtils.swift in Sources */,
+				9515D53B2647D53500B3C8BA /* ServicesProvider.swift in Sources */,
 				F9A7C08D79F175A83BD76A0E /* DocumentIntegrators.swift in Sources */,
 				F9A7CA86CCAA0E2623FC62DA /* StatusItem.swift in Sources */,
 			);
@@ -273,50 +213,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		9515D5502648282300B3C8BA /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "PicToShare-Services/PicToShare_Services.entitlements";
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = 6AC95X39C5;
-				ENABLE_HARDENED_RUNTIME = NO;
-				INFOPLIST_FILE = "PicToShare-Services/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "fr.insa-rennes.PicToShare-Services";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		9515D5512648282300B3C8BA /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "PicToShare-Services/PicToShare_Services.entitlements";
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = 6AC95X39C5;
-				ENABLE_HARDENED_RUNTIME = NO;
-				INFOPLIST_FILE = "PicToShare-Services/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "fr.insa-rennes.PicToShare-Services";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
 		95BD8EB52616311100D83532 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -483,15 +379,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		9515D5522648282300B3C8BA /* Build configuration list for PBXNativeTarget "PicToShare-Services" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				9515D5502648282300B3C8BA /* Debug */,
-				9515D5512648282300B3C8BA /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		95BD8EA22616311000D83532 /* Build configuration list for PBXProject "PicToShare" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
