@@ -1,5 +1,20 @@
 import Foundation
+import AppKit.NSPasteboard
+import UniformTypeIdentifiers
 
+struct ImportationMetadata {
+    enum PasteboardInsertMode {
+        case none
+        case link(pboard: NSPasteboard)
+        case content(pboard: NSPasteboard)
+    }
+
+    let url: URL
+    let type: DocumentType
+    let annotators: Set<HashableDocumentAnnotator>
+    let integrators: Set<HashableDocumentIntegrator>
+    let pasteboardInsertMode: PasteboardInsertMode
+}
 
 /// Object responsible of the Importation process.
 class ImportationManager: ObservableObject {
@@ -8,58 +23,70 @@ class ImportationManager: ObservableObject {
         case ScriptExecutionError(status: Int32)
     }
 
-    private var documentQueue: [URL] = []
+    private var importationQueue: [URL] = []
     private let configurationManager: ConfigurationManager
 
     init(_ configurationManager: ConfigurationManager) {
         self.configurationManager = configurationManager
     }
 
+    private var nextImportPasteboardInsertMode_: ImportationMetadata.PasteboardInsertMode = .none
+
+    var nextImportPasteboardInsertMode: ImportationMetadata.PasteboardInsertMode {
+        get {
+            let value = nextImportPasteboardInsertMode_
+            nextImportPasteboardInsertMode_ = .none
+            return value
+        }
+
+        set {
+            nextImportPasteboardInsertMode_ = newValue
+        }
+    }
+
     var queueHead: URL? {
-        documentQueue.first
+        importationQueue.first
     }
 
     var queueCount: Int {
-        documentQueue.count
+        importationQueue.count
     }
 
     func queue(document url: URL) {
-        documentQueue.append(url)
+        importationQueue.append(url)
         objectWillChange.send()
     }
 
     func queue<S>(documents urls: S) where S.Element == URL, S: Sequence {
-        documentQueue.append(contentsOf: urls)
+        importationQueue.append(contentsOf: urls)
         objectWillChange.send()
     }
 
     func popQueueHead() {
-        documentQueue.removeFirst()
+        importationQueue.removeFirst()
         objectWillChange.send()
     }
 
     /// Imports a Document given a Document Type.
     ///
     /// - Parameters:
-    ///   - inputUrl: The Document to import.
-    ///   - type: The Type to use for importation.
-    func importDocument(_ inputUrl: URL, with type: DocumentType) {
-        guard inputUrl.isFileURL else {
+    func importDocument(with metadata: ImportationMetadata) {
+        guard metadata.url.isFileURL else {
             return
         }
 
-        if type.documentProcessorScript == nil {
-            postProcessDocuments(urls: [inputUrl], with: type)
+        if metadata.type.documentProcessorScript == nil {
+            postProcess(documents: [metadata.url], with: metadata)
             return
         }
 
-        let inputUrlFolder = inputUrl.deletingLastPathComponent()
-        if type.copyBeforeProcessing {
+        let inputUrlFolder = metadata.url.deletingLastPathComponent()
+        if metadata.type.copyBeforeProcessing {
             let copyUrl = inputUrlFolder
-                    .appendingPathComponent(inputUrl.deletingPathExtension().lastPathComponent + ".copy")
-                    .appendingPathExtension(inputUrl.pathExtension)
+                    .appendingPathComponent(metadata.url.deletingPathExtension().lastPathComponent + ".copy")
+                    .appendingPathExtension(metadata.url.pathExtension)
             do {
-                try FileManager.default.copyItem(at: inputUrl, to: copyUrl)
+                try FileManager.default.copyItem(at: metadata.url, to: copyUrl)
             } catch {
                 NotificationManager.notifyUser(
                         "Échec de l'importation",
@@ -73,9 +100,9 @@ class ImportationManager: ObservableObject {
         scriptProcess.currentDirectoryURL = inputUrlFolder
         scriptProcess.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
         scriptProcess.arguments = [
-            type.documentProcessorScript!.path,
-            inputUrl.path,
-            inputUrl.deletingPathExtension().path
+            metadata.type.documentProcessorScript!.path,
+            metadata.url.path,
+            metadata.url.deletingPathExtension().path
         ]
 
         // Script callback.
@@ -89,19 +116,19 @@ class ImportationManager: ObservableObject {
             }
 
             // Finds the output(s) of the script.
-            let outputFilesPrefix = inputUrl.deletingPathExtension().lastPathComponent
+            let outputFilesPrefix = metadata.url.deletingPathExtension().lastPathComponent
             var outputUrls = try! FileManager.default.contentsOfDirectory(at: inputUrlFolder,
                             includingPropertiesForKeys: nil)
                     .filter {
                         $0.deletingPathExtension().lastPathComponent == outputFilesPrefix
                     }
-            if outputUrls.count > 1 && type.removeOriginalOnProcessingByproduct {
+            if outputUrls.count > 1 && metadata.type.removeOriginalOnProcessingByproduct {
                 outputUrls.removeAll {
-                    $0 == inputUrl
+                    $0 == metadata.url
                 }
-                try? FileManager.default.removeItem(at: inputUrl)
+                try? FileManager.default.removeItem(at: metadata.url)
             }
-            postProcessDocuments(urls: outputUrls, with: type)
+            postProcess(documents: outputUrls, with: metadata)
         }
 
         // Runs the script asynchronously.
@@ -161,27 +188,36 @@ class ImportationManager: ObservableObject {
         }
     }
 
-    private func postProcessDocuments(urls: [URL], with type: DocumentType) {
-        let contextAnnotators = type.documentAnnotators
-                .union(configurationManager.currentUserContext?.documentAnnotators ?? [])
-        let documentIntegrators = type.documentIntegrators
-                .union(configurationManager.currentUserContext?.documentIntegrators ?? [])
-
-        let annotationResults = AnnotationResults(contextAnnotators.count,
+    private func postProcess(documents urls: [URL], with metadata: ImportationMetadata) {
+        let annotationResults = AnnotationResults(metadata.annotators.count,
                 urls,
                 [
-                    type.description,
+                    metadata.type.description,
                     configurationManager.currentUserContext?.description
                 ])
 
-        for annotator in contextAnnotators {
+        for annotator in metadata.annotators {
             annotator.makeAnnotations(annotationResults.complete)
         }
+
+        var pasteboardItems: [NSPasteboardWriting] = []
 
         for url in urls {
             do {
                 let bookmarkData = try url.bookmarkData(options: [.suitableForBookmarkFile])
-                try URL.writeBookmarkData(bookmarkData, to: type.folder.appendingPathComponent(url.lastPathComponent))
+
+                switch metadata.pasteboardInsertMode {
+                case .link(_):
+                    let item = NSPasteboardItem()
+                    item.setData(bookmarkData, forType: .init(UTType.urlBookmarkData.identifier))
+                    item.setData(url.dataRepresentation, forType: .fileURL)
+                    item.setString(url.path, forType: .string)
+                    pasteboardItems.append(item)
+                default:
+                    break
+                }
+
+                try URL.writeBookmarkData(bookmarkData, to: metadata.type.folder.appendingPathComponent(url.lastPathComponent))
             } catch {
                 NotificationManager.notifyUser(
                         "Échec de la classification",
@@ -190,7 +226,17 @@ class ImportationManager: ObservableObject {
             }
         }
 
-        for integrator in documentIntegrators {
+        switch metadata.pasteboardInsertMode {
+        case .link(let pboard), .content(let pboard):
+            pboard.clearContents()
+            pboard.writeObjects(pasteboardItems)
+        default:
+            break
+        }
+
+        print(pasteboardItems)
+
+        for integrator in metadata.integrators {
             integrator.integrate(documents: urls)
         }
     }

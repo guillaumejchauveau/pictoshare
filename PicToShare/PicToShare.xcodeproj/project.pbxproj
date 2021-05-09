@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9515D53B2647D53500B3C8BA /* ServicesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9515D53A2647D53500B3C8BA /* ServicesProvider.swift */; };
 		95BD8EAF2616311100D83532 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95BD8EAE2616311100D83532 /* Assets.xcassets */; };
 		95BD8EC92616344100D83532 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EC52616344100D83532 /* Configuration.swift */; };
 		95BD8ECA2616344100D83532 /* Importation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EC62616344100D83532 /* Importation.swift */; };
@@ -26,6 +27,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		9515D53A2647D53500B3C8BA /* ServicesProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServicesProvider.swift; sourceTree = "<group>"; };
 		95BD8EA72616311000D83532 /* PicToShare.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PicToShare.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		95BD8EAE2616311100D83532 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		95BD8EB32616311100D83532 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -100,6 +102,7 @@
 				F9A7C28A555F204F09D31E55 /* DocumentIntegrators.swift */,
 				B0BDB95F2645930D00A86FA7 /* NotificationManager.swift */,
 				F9A7CBD1B17DA9CD664A2158 /* StatusItem.swift */,
+				9515D53A2647D53500B3C8BA /* ServicesProvider.swift */,
 			);
 			path = PicToShare;
 			sourceTree = "<group>";
@@ -201,6 +204,7 @@
 				F9A7C6884F6D835DFBD3F4FB /* DocumentTypesView.swift in Sources */,
 				F9A7C856ABCC5868A2849686 /* ImportationView.swift in Sources */,
 				F9A7C89AF6396B2FCF324263 /* ViewUtils.swift in Sources */,
+				9515D53B2647D53500B3C8BA /* ServicesProvider.swift in Sources */,
 				F9A7C08D79F175A83BD76A0E /* DocumentIntegrators.swift in Sources */,
 				F9A7CA86CCAA0E2623FC62DA /* StatusItem.swift in Sources */,
 			);

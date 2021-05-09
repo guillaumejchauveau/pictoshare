@@ -85,7 +85,6 @@ class ConfigurationManager: ObservableObject {
     var documentIntegrators: [String: HashableDocumentIntegrator]
 
     let documentFolderURL: URL
-    let picToShareURL = URL(string: "pictoshare://main")!
 
     /// The configured Document Types.
     @Published var types: [DocumentTypeMetadata] = []

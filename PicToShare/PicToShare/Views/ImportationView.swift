@@ -62,9 +62,16 @@ struct ImportationView: View {
                                   selectedType >= 0 else {
                         return
                     }
-                    importationManager.importDocument(
-                            importationManager.queueHead!,
-                            with: configurationManager.types[selectedType])
+                    let type = configurationManager.types[selectedType]
+                    let context = configurationManager.currentUserContext
+                    importationManager.importDocument(with: ImportationMetadata(
+                            url: importationManager.queueHead!,
+                            type: type,
+                            annotators: type.documentAnnotators
+                                    .union(context?.documentAnnotators ?? []),
+                            integrators: type.documentIntegrators
+                                    .union(context?.documentIntegrators ?? []),
+                            pasteboardInsertMode: importationManager.nextImportPasteboardInsertMode))
                     importationManager.popQueueHead()
                     processedCount += 1
                 }.buttonStyle(AccentButtonStyle())
