@@ -75,12 +75,12 @@ class UserContextMetadata: UserContext, ObservableObject, Equatable, Identifiabl
     }
 }
 
+extension PicToShareError {
+    static let configuration = PicToShareError(type: "pts.error.configuration")
+}
+
 /// Responsible of Document Types configuration and storage.
 class ConfigurationManager: ObservableObject {
-    enum Error: Swift.Error {
-        case preferencesError
-    }
-
     var documentAnnotators: [String: HashableDocumentAnnotator]
     var documentIntegrators: [String: HashableDocumentIntegrator]
 
@@ -190,63 +190,59 @@ class ConfigurationManager: ObservableObject {
         let typeDeclarations = getPreference("types")
                 as? Array<CFPropertyList> ?? []
         for rawDeclaration in typeDeclarations {
-            do {
-                guard let declaration = rawDeclaration
-                        as? Dictionary<String, Any> else {
-                    throw ConfigurationManager.Error.preferencesError
-                }
-
-                guard let description = declaration["description"]
-                        as? String else {
-                    throw ConfigurationManager.Error.preferencesError
-                }
-
-                let documentProcessorScript: URL?
-                if let scriptPath = declaration["documentProcessorScript"]
-                        as? String {
-                    documentProcessorScript = URL(string: scriptPath)
-                } else {
-                    documentProcessorScript = nil
-                }
-
-                let copyBeforeProcessing = declaration["copyBeforeProcessing"]
-                        as? Bool ?? true
-
-                let removeOriginalOnProcessingByproduct = declaration["removeOriginalOnProcessingByproduct"]
-                        as? Bool ?? false
-
-                var typeAnnotators: Set<HashableDocumentAnnotator> = []
-                let annotatorDeclarations = declaration["documentAnnotators"]
-                        as? Array<CFPropertyList> ?? []
-                for rawAnnotatorDeclaration in annotatorDeclarations {
-                    if let annotatorDescription = rawAnnotatorDeclaration
-                            as? String,
-                       let annotator = documentAnnotators[annotatorDescription] {
-                        typeAnnotators.insert(annotator)
-                    }
-                }
-
-                var typeIntegrators: Set<HashableDocumentIntegrator> = []
-                let integratorDeclarations = declaration["documentIntegrators"]
-                        as? Array<CFPropertyList> ?? []
-                for rawIntegratorDeclaration in integratorDeclarations {
-                    if let integratorDescription = rawIntegratorDeclaration
-                            as? String,
-                       let integrator = documentIntegrators[integratorDescription] {
-                        typeIntegrators.insert(integrator)
-                    }
-                }
-
-                types.append(DocumentTypeMetadata(description,
-                        self,
-                        documentProcessorScript,
-                        copyBeforeProcessing,
-                        removeOriginalOnProcessingByproduct,
-                        typeAnnotators,
-                        typeIntegrators))
-            } catch {
+            guard let declaration = rawDeclaration
+                    as? Dictionary<String, Any> else {
                 continue
             }
+
+            guard let description = declaration["description"]
+                    as? String else {
+                continue
+            }
+
+            let documentProcessorScript: URL?
+            if let scriptPath = declaration["documentProcessorScript"]
+                    as? String {
+                documentProcessorScript = URL(string: scriptPath)
+            } else {
+                documentProcessorScript = nil
+            }
+
+            let copyBeforeProcessing = declaration["copyBeforeProcessing"]
+                    as? Bool ?? true
+
+            let removeOriginalOnProcessingByproduct = declaration["removeOriginalOnProcessingByproduct"]
+                    as? Bool ?? false
+
+            var typeAnnotators: Set<HashableDocumentAnnotator> = []
+            let annotatorDeclarations = declaration["documentAnnotators"]
+                    as? Array<CFPropertyList> ?? []
+            for rawAnnotatorDeclaration in annotatorDeclarations {
+                if let annotatorDescription = rawAnnotatorDeclaration
+                        as? String,
+                   let annotator = documentAnnotators[annotatorDescription] {
+                    typeAnnotators.insert(annotator)
+                }
+            }
+
+            var typeIntegrators: Set<HashableDocumentIntegrator> = []
+            let integratorDeclarations = declaration["documentIntegrators"]
+                    as? Array<CFPropertyList> ?? []
+            for rawIntegratorDeclaration in integratorDeclarations {
+                if let integratorDescription = rawIntegratorDeclaration
+                        as? String,
+                   let integrator = documentIntegrators[integratorDescription] {
+                    typeIntegrators.insert(integrator)
+                }
+            }
+
+            types.append(DocumentTypeMetadata(description,
+                    self,
+                    documentProcessorScript,
+                    copyBeforeProcessing,
+                    removeOriginalOnProcessingByproduct,
+                    typeAnnotators,
+                    typeIntegrators))
         }
     }
 
@@ -258,46 +254,42 @@ class ConfigurationManager: ObservableObject {
         let contextDeclarations = getPreference("contexts")
                 as? Array<CFPropertyList> ?? []
         for rawDeclaration in contextDeclarations {
-            do {
-                guard let declaration = rawDeclaration
-                        as? Dictionary<String, Any> else {
-                    throw ConfigurationManager.Error.preferencesError
-                }
-
-                guard let description = declaration["description"]
-                        as? String else {
-                    throw ConfigurationManager.Error.preferencesError
-                }
-
-                var contextAnnotators: Set<HashableDocumentAnnotator> = []
-                let annotatorDeclarations = declaration["documentAnnotators"]
-                        as? Array<CFPropertyList> ?? []
-                for rawAnnotatorDeclaration in annotatorDeclarations {
-                    if let annotatorDescription = rawAnnotatorDeclaration
-                            as? String,
-                       let annotator = documentAnnotators[annotatorDescription] {
-                        contextAnnotators.insert(annotator)
-                    }
-                }
-
-                var contextIntegrators: Set<HashableDocumentIntegrator> = []
-                let integratorDeclarations = declaration["documentIntegrators"]
-                        as? Array<CFPropertyList> ?? []
-                for rawIntegratorDeclaration in integratorDeclarations {
-                    if let integratorDescription = rawIntegratorDeclaration
-                            as? String,
-                       let integrator = documentIntegrators[integratorDescription] {
-                        contextIntegrators.insert(integrator)
-                    }
-                }
-
-                contexts.append(UserContextMetadata(description,
-                        self,
-                        contextAnnotators,
-                        contextIntegrators))
-            } catch {
+            guard let declaration = rawDeclaration
+                    as? Dictionary<String, Any> else {
                 continue
             }
+
+            guard let description = declaration["description"]
+                    as? String else {
+                continue
+            }
+
+            var contextAnnotators: Set<HashableDocumentAnnotator> = []
+            let annotatorDeclarations = declaration["documentAnnotators"]
+                    as? Array<CFPropertyList> ?? []
+            for rawAnnotatorDeclaration in annotatorDeclarations {
+                if let annotatorDescription = rawAnnotatorDeclaration
+                        as? String,
+                   let annotator = documentAnnotators[annotatorDescription] {
+                    contextAnnotators.insert(annotator)
+                }
+            }
+
+            var contextIntegrators: Set<HashableDocumentIntegrator> = []
+            let integratorDeclarations = declaration["documentIntegrators"]
+                    as? Array<CFPropertyList> ?? []
+            for rawIntegratorDeclaration in integratorDeclarations {
+                if let integratorDescription = rawIntegratorDeclaration
+                        as? String,
+                   let integrator = documentIntegrators[integratorDescription] {
+                    contextIntegrators.insert(integrator)
+                }
+            }
+
+            contexts.append(UserContextMetadata(description,
+                    self,
+                    contextAnnotators,
+                    contextIntegrators))
         }
 
         if let savedCurrentDescription = getPreference("currentUserContext") as? String {
@@ -324,10 +316,9 @@ class ConfigurationManager: ObservableObject {
                     type.savedDescription = type.description
                 } catch {
                     type.description = type.savedDescription
-                    NotificationManager.notifyUser(
-                            "Problème de configuration",
-                            "PicToShare n'a pas pu renommer le dossier du type \"\(type.description)\"",
-                            "PTS-TypeFolder")
+                    ErrorManager.error(.configuration, String(format:
+                    NSLocalizedString("pts.error.configuration.changeTypeDescription", comment: ""),
+                            type.description))
                 }
             }
         }

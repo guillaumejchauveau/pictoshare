@@ -1,5 +1,8 @@
 import SwiftUI
 
+extension PicToShareError {
+    static let continuity = PicToShareError(type: "pts.error.continuity")
+}
 
 class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
     var configurationManager: ConfigurationManager!
@@ -54,10 +57,7 @@ class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
             try data!.write(to: fileUrl)
             importationManager.queue(document: fileUrl)
         } catch {
-            NotificationManager.notifyUser(
-                    "Erreur avec Continuity Camera",
-                    "PicToShare n'a pas pu enregistrer le fichier provenant de Continuity",
-                    "PTS-ContinuityCamera")
+            ErrorManager.error(.continuity, key: "pts.error.continuity.save")
         }
         return true
     }

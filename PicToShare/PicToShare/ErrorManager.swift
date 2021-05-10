@@ -1,6 +1,10 @@
 import UserNotifications
 
-class NotificationManager {
+struct PicToShareError: Error {
+    let type: String
+}
+
+class ErrorManager {
     private let center = UNUserNotificationCenter.current()
 
     private init() {
@@ -14,11 +18,11 @@ class NotificationManager {
         }
     }
 
-    func notifyUser(_ title: String, _ body: String, _ identifier: String) {
+    private func notifyUser(_ title: String, _ body: String, _ identifier: String) {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
-        content.sound = .default
+        content.sound = .defaultCritical
 
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
 
@@ -30,12 +34,19 @@ class NotificationManager {
         }
     }
 
-    private static var instance: NotificationManager? = nil
+    private static var instance: ErrorManager? = nil
 
-    static func notifyUser(_ title: String, _ body: String, _ identifier: String) {
+    static func error(_ error: PicToShareError, key bodyKey: String) {
+        Self.error(error, NSLocalizedString(bodyKey, comment: ""))
+    }
+
+    static func error(_ error: PicToShareError, _ body: String) {
         if instance == nil {
-            instance = NotificationManager()
+            instance = ErrorManager()
         }
-        instance!.notifyUser(title, body, identifier)
+        instance!.notifyUser(
+                NSLocalizedString(error.type, comment: ""),
+                body,
+                error.type)
     }
 }

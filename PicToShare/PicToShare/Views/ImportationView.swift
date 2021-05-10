@@ -30,7 +30,7 @@ struct ImportationView: View {
         VStack {
             FilePreviewView()
             HStack {
-                Text(importationManager.queueHead!.lastPathComponent)
+                Text(importationManager.queueHead?.lastPathComponent ?? "")
             }
         }
         VStack {

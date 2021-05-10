@@ -1,5 +1,9 @@
 import Foundation
 
+extension PicToShareError {
+    static let importation = PicToShareError(type: "pts.error.importation")
+}
+
 struct ImportationConfiguration {
     var url: URL
     let type: DocumentType
@@ -10,11 +14,6 @@ struct ImportationConfiguration {
 
 /// Object responsible of the Importation process.
 class ImportationManager: ObservableObject {
-    enum Error: Swift.Error {
-        case InputUrlError
-        case ScriptExecutionError(status: Int32)
-    }
-
     private let configurationManager: ConfigurationManager
     private var importationQueue: [URL] = []
 
@@ -74,15 +73,14 @@ class ImportationManager: ObservableObject {
 
         if configuration.type.copyBeforeProcessing {
             let copyUrl = inputUrlFolder
-                    .appendingPathComponent(configuration.url.deletingPathExtension().lastPathComponent + ".copy")
+                    .appendingPathComponent(
+                            configuration.url.deletingPathExtension().lastPathComponent + "." +
+                                    NSLocalizedString("pts.copySuffix", comment: ""))
                     .appendingPathExtension(configuration.url.pathExtension)
             do {
                 try FileManager.default.copyItem(at: configuration.url, to: copyUrl)
             } catch {
-                NotificationManager.notifyUser(
-                        "Échec de l'importation",
-                        "PicToShare n'a pas pu copier le document original",
-                        "PTS-CalendarIntegration")
+                ErrorManager.error(.importation, key: "pts.error.importation.copyBeforeProcessing")
             }
         }
 
@@ -99,10 +97,9 @@ class ImportationManager: ObservableObject {
         // Script callback.
         scriptProcess.terminationHandler = { [self] _ in
             guard scriptProcess.terminationStatus == 0 else {
-                NotificationManager.notifyUser(
-                        "Échec de l'importation",
-                        "Le script configuré s'est terminé avec une erreur: \(scriptProcess.terminationStatus)",
-                        "PTS-ProcessorScriptRun")
+                ErrorManager.error(.importation, String(format:
+                        NSLocalizedString("pts.error.importation.scriptTermination", comment: ""),
+                                scriptProcess.terminationStatus))
                 return
             }
 
@@ -128,10 +125,7 @@ class ImportationManager: ObservableObject {
         do {
             try scriptProcess.run()
         } catch {
-            NotificationManager.notifyUser(
-                    "Échec de l'importation",
-                    "PicToShare n'a pas pu exécuter le script configuré",
-                    "PTS-ProcessorScriptRun")
+            ErrorManager.error(.importation, key: "pts.error.importation.scriptRun")
         }
     }
 
@@ -173,10 +167,7 @@ class ImportationManager: ObservableObject {
                             forName: "com.apple.metadata:kMDItemKeywords")
                 }
             } catch {
-                NotificationManager.notifyUser(
-                        "Échec de l'annotation",
-                        "PicToShare n'a pas pu écrire les annotations",
-                        "PTS-Annotation")
+                ErrorManager.error(.importation, key: "pts.error.importation.annotation")
             }
         }
     }
@@ -196,12 +187,10 @@ class ImportationManager: ObservableObject {
         for url in urls {
             do {
                 let bookmarkData = try url.bookmarkData(options: [.suitableForBookmarkFile])
-                try URL.writeBookmarkData(bookmarkData, to: configuration.type.folder.appendingPathComponent(url.lastPathComponent))
+                try URL.writeBookmarkData(bookmarkData,
+                        to: configuration.type.folder.appendingPathComponent(url.lastPathComponent))
             } catch {
-                NotificationManager.notifyUser(
-                        "Échec de la classification",
-                        "PicToShare n'a pas pu créer un marque-page vers le document",
-                        "PTS-Bookmark")
+                ErrorManager.error(.importation, key: "pts.error.importation.bookmark")
             }
         }
 

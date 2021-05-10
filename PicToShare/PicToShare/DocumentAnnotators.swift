@@ -2,6 +2,12 @@ import EventKit
 import CoreLocation
 import MapKit
 
+
+extension PicToShareError {
+    static let currentCalendarEventsDocumentAnnotator =
+            PicToShareError(type: "pts.error.annotators.currentCalendarEvents")
+}
+
 struct CurrentCalendarEventsDocumentAnnotator: DocumentAnnotator {
     let description = NSLocalizedString("pts.annotators.currentCalendarEvents", comment: "")
 
@@ -10,10 +16,8 @@ struct CurrentCalendarEventsDocumentAnnotator: DocumentAnnotator {
     func makeAnnotations(_ completion: @escaping CompletionHandler) {
         store.requestAccess(to: .event) { granted, error in
             guard granted, error == nil else {
-                NotificationManager.notifyUser(
-                        "Échec d'annotation avec le calendrier",
-                        "PicToShare n'a pas l'autorisation d'accèder au calendrier",
-                        "PTS-CalendarAnnotation")
+                ErrorManager.error(.currentCalendarEventsDocumentAnnotator,
+                        key: "pts.error.annotators.permissions")
                 completion([])
                 return
             }
@@ -31,6 +35,11 @@ struct CurrentCalendarEventsDocumentAnnotator: DocumentAnnotator {
     }
 }
 
+extension PicToShareError {
+    static let geoLocalizationDocumentAnnotator =
+            PicToShareError(type: "pts.error.annotators.geoLocalization")
+}
+
 struct GeoLocalizationDocumentAnnotator: DocumentAnnotator {
     private class Delegate: NSObject, CLLocationManagerDelegate {
         var locationRequests: [() -> Void] = []
@@ -42,10 +51,8 @@ struct GeoLocalizationDocumentAnnotator: DocumentAnnotator {
         }
 
         func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-            NotificationManager.notifyUser(
-                    "Échec d'annotation avec la géolocalisation",
-                    "PicToShare n'a pas l'autorisation d'accèder à l'emplacement",
-                    "PTS-GeoLocalizationAnnotation")
+            ErrorManager.error(.geoLocalizationDocumentAnnotator,
+                    key: "pts.error.annotators.geoLocalization.permissions")
         }
     }
 
@@ -60,10 +67,8 @@ struct GeoLocalizationDocumentAnnotator: DocumentAnnotator {
 
     func makeAnnotations(_ completion: @escaping CompletionHandler) {
         guard CLLocationManager.locationServicesEnabled() else {
-            NotificationManager.notifyUser(
-                    "Échec d'annotation avec la géolocalisation",
-                    "Le service de localisation est désactivé",
-                    "PTS-GeoLocalizationAnnotation")
+            ErrorManager.error(.geoLocalizationDocumentAnnotator,
+                    key: "pts.error.annotators.geoLocalization.service")
             completion([])
             return
         }
@@ -79,10 +84,8 @@ struct GeoLocalizationDocumentAnnotator: DocumentAnnotator {
 
     private func processLocation(_ completion: @escaping CompletionHandler) {
         guard let coordinate = locationManager.location?.coordinate else {
-            NotificationManager.notifyUser(
-                    "Échec d'annotation avec la géolocalisation",
-                    "PicToShare n'a pas pu accèder à l'emplacement",
-                    "PTS-GeoLocalizationAnnotation")
+            ErrorManager.error(.geoLocalizationDocumentAnnotator,
+                    key: "pts.error.annotators.geoLocalization.location")
             completion([])
             return
         }

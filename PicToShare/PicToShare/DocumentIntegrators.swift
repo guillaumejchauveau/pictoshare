@@ -2,6 +2,11 @@ import Foundation
 import EventKit
 
 
+extension PicToShareError {
+    static let currentCalendarEventsDocumentIntegrator =
+            PicToShareError(type: "pts.error.integrators.currentCalendarEvents")
+}
+
 struct CurrentCalendarEventsDocumentIntegrator: DocumentIntegrator {
     let description = NSLocalizedString("pts.integrators.currentCalendarEvents", comment: "")
 
@@ -14,10 +19,8 @@ struct CurrentCalendarEventsDocumentIntegrator: DocumentIntegrator {
         // "Privacy - Calendar Usage Description" key in info.plist
         store.requestAccess(to: .event) { granted, error in
             guard granted && error == nil else {
-                NotificationManager.notifyUser(
-                        "Échec d'intégration au calendrier",
-                        "PicToShare n'a pas l'autorisation d'accèder au calendrier",
-                        "PTS-CalendarIntegration")
+                ErrorManager.error(.currentCalendarEventsDocumentIntegrator,
+                        key: "pts.error.integrators.currentCalendarEvents.permissions")
                 return
             }
 
@@ -43,10 +46,8 @@ struct CurrentCalendarEventsDocumentIntegrator: DocumentIntegrator {
                 do {
                     try store.save(event, span: .thisEvent)
                 } catch {
-                    NotificationManager.notifyUser(
-                            "Échec d'intégration au calendrier",
-                            "PicToShare n'a pas pu éditer le calendrier pour y intégrer un lien vers le fichier",
-                            "PTS-CalendarIntegration")
+                    ErrorManager.error(.currentCalendarEventsDocumentIntegrator,
+                            key: "pts.error.integrators.currentCalendarEvents.integrate")
                 }
             }
         }
