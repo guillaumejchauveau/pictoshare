@@ -2,8 +2,8 @@ import Foundation
 import EventKit
 
 
-struct CurrentEventsDocumentIntegrator: DocumentIntegrator {
-    let description = "Ajouter aux événements en cours"
+struct CurrentCalendarEventsDocumentIntegrator: DocumentIntegrator {
+    let description = NSLocalizedString("pts.integrators.currentCalendarEvents", comment: "")
 
     private let store = EKEventStore()
 

@@ -1,0 +1,32 @@
+"name" = "Nom";
+"add" = "Ajouter";
+"cancel" = "Annuler";
+"create" = "Créer";
+"ignore" = "Ignorer";
+"import" = "Importer";
+
+"pts.open" = "Ouvrir PicToShare";
+"pts.openPTSFolder" = "Aller au dossier PicToShare";
+"pts.documentTypes" = "Types de document";
+"pts.userContexts" = "Types d'événement";
+"pts.userContext.nil" = "Pas d'événement";
+"pts.processingScript" = "Script de traitement";
+"pts.annotations" = "Annotations de contexte";
+"pts.integrations" = "Intégrations";
+
+"pts.landing.title" = "Utilisez la barre d'outil pour importer";
+"pts.landing.continuity" = "Prendre une photo avec un appareil connecté";
+"pts.landing.filesystem" = "Choisir un ou plusieurs fichiers sur votre ordinateur";
+
+"pts.continuity.menuItemTitle" = "Aucun appareil disponible";
+
+"pts.settings.types.landing" = "Créez des types de documents pour adapter les paramètres d'importation.\nVous pouvez spécifier un script pour transformer le document avant de l'importer.";
+"pts.settings.types.noProcessingScript" = "Aucun script associé";
+"pts.settings.types.copyBeforeProcessing" = "Préserver une copie de l'original";
+"pts.settings.types.removeOriginalOnProcessingByproduct" = "Si le script crée de nouveaux fichiers, supprimer l'original";
+
+"pts.settings.userContexts.landing" = "Créez des types d'événement pour adapter l'importation selon votre activité.\nLes annotations de contexte et intégrations configurées seront ajoutées à celles du type de document.";
+
+"pts.annotators.currentCalendarEvents" = "Événements en cours";
+"pts.annotators.geoLocalization" = "Géolocalisation";
+"pts.integrators.currentCalendarEvents" = "Ajouter aux événements en cours";

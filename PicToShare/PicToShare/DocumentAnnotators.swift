@@ -3,7 +3,7 @@ import CoreLocation
 import MapKit
 
 struct CurrentCalendarEventsDocumentAnnotator: DocumentAnnotator {
-    let description: String = "Événements en cours"
+    let description = NSLocalizedString("pts.annotators.currentCalendarEvents", comment: "")
 
     private let store = EKEventStore()
 
@@ -49,7 +49,7 @@ struct GeoLocalizationDocumentAnnotator: DocumentAnnotator {
         }
     }
 
-    let description: String = "Géolocalisation"
+    let description = NSLocalizedString("pts.annotators.geoLocalization", comment: "")
 
     private let locationManager = CLLocationManager()
     private let delegate = Delegate()

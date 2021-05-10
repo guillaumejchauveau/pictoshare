@@ -4,14 +4,15 @@ import SwiftUI
 struct PTSApp: App {
     private let configurationManager = ConfigurationManager(
             "PTSFolder",
+            "Continuity",
             [
                 CurrentCalendarEventsDocumentAnnotator(),
                 GeoLocalizationDocumentAnnotator()
             ],
             [
-                CurrentEventsDocumentIntegrator()
+                CurrentCalendarEventsDocumentIntegrator()
             ])
-    private let importationManager = ImportationManager()
+    private let importationManager: ImportationManager
 
     private let statusItem: NSStatusItem
     private let statusItemMenuDelegate: StatusMenuDelegate
@@ -27,11 +28,13 @@ struct PTSApp: App {
         configurationManager.loadContexts()
         configurationManager.saveTypes()
 
+        importationManager = ImportationManager(configurationManager)
+
         // Creates default Document Types.
         if !FileManager.default.fileExists(
                 atPath: configurationManager.documentFolderURL.path) {
             configurationManager.addType(with: "Carte de visite")
-            configurationManager.addType(with: "Affiche evenement")
+            configurationManager.addType(with: "Affiche événement")
             configurationManager.addType(with: "Tableau blanc")
             configurationManager.saveTypes()
         }
@@ -78,20 +81,20 @@ struct MainView: View {
                 ImportationView()
             } else {
                 VStack(alignment: .leading) {
-                    Text("Utilisez la barre d'outil pour importer")
+                    Text("pts.landing.title")
                             .font(.system(size: 20))
                             .padding(.bottom, 10)
                     HStack {
                         Image(systemName: "camera").imageScale(.large)
                                 .font(.system(size: 16))
-                        Text("Prendre une photo avec un appareil connecté")
+                        Text("pts.landing.continuity")
                                 .font(.system(size: 16, weight: .light))
                     }
                             .padding(.bottom, 5)
                     HStack {
                         Image(systemName: "internaldrive").imageScale(.large)
                                 .font(.system(size: 16))
-                        Text("Choisir un ou plusieurs fichiers sur votre ordinateur")
+                        Text("pts.landing.filesystem")
                                 .font(.system(size: 16, weight: .light))
                     }
                 }
@@ -99,15 +102,15 @@ struct MainView: View {
         }.frame(width: 480, height: 300).padding()
                 .sheet(isPresented: $showNewContextForm) {
                     Form {
-                        TextField("Nom", text: $newContextDescription)
+                        TextField("name", text: $newContextDescription)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                         HStack {
                             Spacer(minLength: 50)
-                            Button("Annuler") {
+                            Button("cancel") {
                                 showNewContextForm = false
                                 newContextDescription = ""
                             }
-                            Button("Créer") {
+                            Button("create") {
                                 configurationManager.addContext(with: newContextDescription)
                                 showNewContextForm = false
                                 newContextDescription = ""
@@ -122,7 +125,7 @@ struct MainView: View {
                     ToolbarItemGroup(placement: .primaryAction) {
                         Menu {
                             if configurationManager.currentUserContext != nil {
-                                Button("Contexte général") {
+                                Button("pts.userContext.nil") {
                                     configurationManager.currentUserContext = nil
                                 }
                             }
@@ -134,12 +137,17 @@ struct MainView: View {
                                 }
                             }
                             Divider()
-                            Button("Ajouter") {
+                            Button("add") {
                                 showNewContextForm = true
                             }
                         } label: {
-                            Text(configurationManager.currentUserContext?.description ?? "Contexte général")
-                                    .foregroundColor(.gray)
+                            if let currentUserContextDescription = configurationManager.currentUserContext?.description {
+                                Text(currentUserContextDescription)
+                                        .foregroundColor(.gray)
+                            } else {
+                                Text("pts.userContext.nil")
+                                        .foregroundColor(.gray)
+                            }
                         }.frame(width: 150)
 
                         Button(action: {}) {
@@ -173,12 +181,12 @@ struct SettingsView: View {
         TabView {
             DocumentTypesView()
                     .tabItem {
-                        Label("Types", systemImage: "doc.on.doc.fill")
+                        Label("pts.documentTypes", systemImage: "doc.on.doc.fill")
                     }
                     .tag(Tabs.types)
             UserContextsView()
                     .tabItem {
-                        Label("Contextes", systemImage: "at")
+                        Label("pts.userContexts", systemImage: "at")
                     }
                     .tag(Tabs.contexts)
         }.frame(width: 700, height: 400)

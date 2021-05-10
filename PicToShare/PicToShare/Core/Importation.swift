@@ -1,7 +1,7 @@
 import Foundation
 
 struct ImportationConfiguration {
-    let url: URL
+    var url: URL
     let type: DocumentType
     let context: UserContext?
     let annotators: Set<HashableDocumentAnnotator>
@@ -15,7 +15,12 @@ class ImportationManager: ObservableObject {
         case ScriptExecutionError(status: Int32)
     }
 
+    private let configurationManager: ConfigurationManager
     private var importationQueue: [URL] = []
+
+    init(_ configurationManager: ConfigurationManager) {
+        self.configurationManager = configurationManager
+    }
 
     var queueHead: URL? {
         importationQueue.first
@@ -43,9 +48,23 @@ class ImportationManager: ObservableObject {
     /// Imports a Document given a Document Type.
     ///
     /// - Parameters:
-    func importDocument(with configuration: ImportationConfiguration) {
-        guard configuration.url.isFileURL else {
+    func importDocument(with importationConfiguration: ImportationConfiguration) {
+        guard importationConfiguration.url.isFileURL else {
             return
+        }
+        var configuration = importationConfiguration
+        let inputUrlFolder = configuration.url.deletingLastPathComponent()
+        if inputUrlFolder == configurationManager.continuityFolderURL {
+            let newDocumentUrl = inputUrlFolder.appendingPathComponent(
+                    configuration.type.description + "_" +
+                            (configuration.context?.description ?? "") + "_" +
+                            configuration.url.lastPathComponent)
+            do {
+                try FileManager.default.moveItem(at: configuration.url, to: newDocumentUrl)
+                configuration.url = newDocumentUrl
+            } catch {
+
+            }
         }
 
         if configuration.type.documentProcessorScript == nil {
@@ -53,7 +72,6 @@ class ImportationManager: ObservableObject {
             return
         }
 
-        let inputUrlFolder = configuration.url.deletingLastPathComponent()
         if configuration.type.copyBeforeProcessing {
             let copyUrl = inputUrlFolder
                     .appendingPathComponent(configuration.url.deletingPathExtension().lastPathComponent + ".copy")
@@ -95,11 +113,13 @@ class ImportationManager: ObservableObject {
                     .filter {
                         $0.deletingPathExtension().lastPathComponent == outputFilesPrefix
                     }
-            if outputUrls.count > 1 && configuration.type.removeOriginalOnProcessingByproduct {
+            if outputUrls.count > 1 {
                 outputUrls.removeAll {
                     $0 == configuration.url
                 }
-                try? FileManager.default.removeItem(at: configuration.url)
+                if configuration.type.removeOriginalOnProcessingByproduct {
+                    try? FileManager.default.removeItem(at: configuration.url)
+                }
             }
             postProcess(documents: outputUrls, with: configuration)
         }

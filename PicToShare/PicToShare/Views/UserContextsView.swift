@@ -10,10 +10,8 @@ struct UserContextsView: View {
                 Image(systemName: "questionmark.circle").imageScale(.large)
                         .font(.system(size: 30))
                         .offset(y: -80)
-                Text("""
-                     Créez des contextes pour adapter l'importation selon votre activité.
-                     Les annotations et intégrations configurées seront ajoutées à celles du type de document.
-                     """).font(.system(size: 16, weight: .light)).lineSpacing(5)
+                Text("pts.settings.userContexts.landing")
+                        .font(.system(size: 16, weight: .light)).lineSpacing(5)
             }.frame(width: 400)
         }
     }
@@ -54,7 +52,7 @@ struct UserContextView: View {
 
     var body: some View {
         Form {
-            GroupBox(label: Text("Nom")) {
+            GroupBox(label: Text("name")) {
                 HStack {
                     TextField("", text: $editingDescription, onCommit: validateDescription)
                             .textFieldStyle(PlainTextFieldStyle())
@@ -66,11 +64,11 @@ struct UserContextView: View {
                 }
             }
 
-            SetGroupView(label: Text("Annotations"),
+            SetGroupView(label: Text("pts.annotations"),
                     available: $configurationManager.documentAnnotators,
                     selected: $documentAnnotators)
 
-            SetGroupView(label: Text("Intégrations"),
+            SetGroupView(label: Text("pts.integrations"),
                     available: $configurationManager.documentIntegrators,
                     selected: $documentIntegrators)
         }.padding()

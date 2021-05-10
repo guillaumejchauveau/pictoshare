@@ -1,0 +1,32 @@
+"name" = "Name";
+"add" = "Add";
+"cancel" = "Cancel";
+"create" = "Create";
+"ignore" = "Ignore";
+"import" = "Import";
+
+"pts.open" = "Open PicToShare";
+"pts.openPTSFolder" = "Go to PicToShare folder";
+"pts.documentTypes" = "Document types";
+"pts.userContexts" = "Event types";
+"pts.userContext.nil" = "No event";
+"pts.processingScript" = "Processing script";
+"pts.annotations" = "Context annotations";
+"pts.integrations" = "Integrations";
+
+"pts.landing.title" = "Use the toolbar to import";
+"pts.landing.continuity" = "Take a picture with a connected device";
+"pts.landing.filesystem" = "Choose one or more files on your system";
+
+"pts.continuity.menuItemTitle" = "No connected devices";
+
+"pts.settings.types.landing" = "Create document types to adapt the importation parameters.\nYou can specify a script to transform the document before importation.";
+"pts.settings.types.noProcessingScript" = "No script associated";
+"pts.settings.types.copyBeforeProcessing" = "Preserve a copy of the original";
+"pts.settings.types.removeOriginalOnProcessingByproduct" = "If the script creates new files, delete the original";
+
+"pts.settings.userContexts.landing" = "Create event types to adapt the importation depending on your activity.\nContext annotations and integrations will be added to those in the document type.";
+
+"pts.annotators.currentCalendarEvents" = "Current events";
+"pts.annotators.geoLocalization" = "Geolocalisation";
+"pts.integrators.currentCalendarEvents" = "Add to current events";

@@ -85,6 +85,7 @@ class ConfigurationManager: ObservableObject {
     var documentIntegrators: [String: HashableDocumentIntegrator]
 
     let documentFolderURL: URL
+    let continuityFolderURL: URL
 
     /// The configured Document Types.
     @Published var types: [DocumentTypeMetadata] = []
@@ -105,6 +106,7 @@ class ConfigurationManager: ObservableObject {
     }
 
     init(_ ptsFolderName: String,
+         _ continuityFolderName: String,
          _ documentAnnotators: [DocumentAnnotator] = [],
          _ documentIntegrators: [DocumentIntegrator] = []) {
         var annotators: [String: HashableDocumentAnnotator] = [:]
@@ -117,12 +119,15 @@ class ConfigurationManager: ObservableObject {
             integrators[documentIntegrator.description] = HashableDocumentIntegrator(documentIntegrator)
         }
         self.documentIntegrators = integrators
-        documentFolderURL = try! FileManager.default
+        let userDocumentsURL = try! FileManager.default
                 .url(for: .documentDirectory,
-                        in: .userDomainMask,
-                        appropriateFor: nil,
-                        create: true)
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: true)
+        documentFolderURL = userDocumentsURL
                 .appendingPathComponent(ptsFolderName, isDirectory: true)
+        continuityFolderURL = documentFolderURL
+                .appendingPathComponent(continuityFolderName, isDirectory: true)
     }
 
     /// Configures a new Document Type.

@@ -7,11 +7,11 @@ class StatusMenuDelegate: NSObject, NSMenuDelegate {
         self.configurationManager = configurationManager
         super.init()
         menu.showsStateColumn = true
-        menu.addItem(withTitle: "Ouvrir PicToShare",
+        menu.addItem(withTitle: NSLocalizedString("pts.open", comment: ""),
                 action: #selector(openPTS),
                 keyEquivalent: "")
                 .target = self
-        menu.addItem(withTitle: "Aller au dossier PicToShare",
+        menu.addItem(withTitle: NSLocalizedString("pts.openPTSFolder", comment: ""),
                 action: #selector(openFolderInFinder),
                 keyEquivalent: "")
                 .target = self
@@ -32,7 +32,7 @@ class StatusMenuDelegate: NSObject, NSMenuDelegate {
 
         for context in contexts {
             let item = menu.addItem(
-                    withTitle: context?.description ?? "Contexte général",
+                    withTitle: context?.description ?? NSLocalizedString("pts.userContext.nil", comment: ""),
                     action: #selector(selectUserContext), keyEquivalent: "")
             item.target = self
             item.state = current == context ? .on : .off

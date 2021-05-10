@@ -27,15 +27,15 @@ struct ListSettingsView<Item, Landing, Content>: View
                 landing
             }.sheet(isPresented: $showNewItemForm) {
                 Form {
-                    TextField("Nom", text: $newItemDescription)
+                    TextField("name", text: $newItemDescription)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                     HStack {
                         Spacer(minLength: 50)
-                        Button("Annuler") {
+                        Button("cancel") {
                             showNewItemForm = false
                             newItemDescription = ""
                         }
-                        Button("Créer") {
+                        Button("create") {
                             add(newItemDescription)
                             selection = items.count - 1
                             showNewItemForm = false

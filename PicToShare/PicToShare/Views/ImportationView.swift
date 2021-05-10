@@ -30,7 +30,7 @@ struct ImportationView: View {
         VStack {
             FilePreviewView()
             HStack {
-                Text("\(processedCount + 1) sur \(processedCount + importationManager.queueCount)")
+                Text(importationManager.queueHead!.lastPathComponent)
             }
         }
         VStack {
@@ -47,14 +47,14 @@ struct ImportationView: View {
                 }
             }
             HStack {
-                Button("Ignorer") {
+                Button("ignore") {
                     guard importationManager.queueHead != nil else {
                         return
                     }
                     importationManager.popQueueHead()
                     processedCount += 1
                 }
-                Button("Importer") {
+                Button("import") {
                     guard importationManager.queueHead != nil else {
                         return
                     }

@@ -9,10 +9,8 @@ struct DocumentTypesView: View {
                 Image(systemName: "questionmark.circle").imageScale(.large)
                         .font(.system(size: 30))
                         .offset(y: -80)
-                Text("""
-                     Créez des types de documents pour adapter les paramètres d'importation.
-                     Vous pouvez spécifier un script pour transformer le document avant de l'importer.
-                     """).font(.system(size: 16, weight: .light)).lineSpacing(5)
+                Text("pts.settings.types.landing")
+                        .font(.system(size: 16, weight: .light)).lineSpacing(5)
             }.frame(width: 400)
         }
     }
@@ -59,7 +57,7 @@ struct DocumentTypeView: View {
 
     var body: some View {
         Form {
-            GroupBox(label: Text("Nom")) {
+            GroupBox(label: Text("name")) {
                 HStack {
                     TextField("", text: $editingDescription, onCommit: validateDescription)
                             .textFieldStyle(PlainTextFieldStyle())
@@ -71,7 +69,7 @@ struct DocumentTypeView: View {
                 }
             }
 
-            GroupBox(label: Text("Script de traitement")) {
+            GroupBox(label: Text("pts.processingScript")) {
                 VStack(alignment: .leading) {
                     HStack {
                         if let scriptName = documentProcessingScript?.lastPathComponent {
@@ -80,7 +78,7 @@ struct DocumentTypeView: View {
                                     .lineLimit(1)
                                     .truncationMode(.head)
                         } else {
-                            Text("Aucun script associé")
+                            Text("pts.settings.types.noProcessingScript")
                                     .font(.system(size: 12))
                                     .foregroundColor(.gray)
                         }
@@ -105,20 +103,20 @@ struct DocumentTypeView: View {
                         }.disabled(documentProcessingScript == nil)
                     }.padding(EdgeInsets(top: 0, leading: 2, bottom: 0, trailing: 2))
 
-                    Toggle("Préserver une copie de l'original",
+                    Toggle("pts.settings.types.copyBeforeProcessing",
                             isOn: $copyBeforeProcessing)
                             .disabled(documentProcessingScript == nil)
-                    Toggle("Si le script crée de nouveaux fichiers, supprimer l'original",
+                    Toggle("pts.settings.types.removeOriginalOnProcessingByproduct",
                             isOn: $removeOriginalOnProcessingByproduct)
                             .disabled(documentProcessingScript == nil)
                 }
             }
 
-            SetGroupView(label: Text("Annotations"),
+            SetGroupView(label: Text("pts.annotations"),
                     available: $configurationManager.documentAnnotators,
                     selected: $documentAnnotators)
 
-            SetGroupView(label: Text("Intégrations"),
+            SetGroupView(label: Text("pts.integrations"),
                     available: $configurationManager.documentIntegrators,
                     selected: $documentIntegrators)
         }.padding()
