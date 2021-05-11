@@ -2,22 +2,23 @@ import Foundation
 import Combine
 
 
-/// Internal representation of a configured Document Type.
-///
-/// Conforms to the Core `DocumentType` protocol to use directly with an
-/// Importation Manager.
-class DocumentTypeMetadata: DocumentType, ObservableObject {
-    let configurationManager: ConfigurationManager
+class DocumentTypeMetadata: PartialImportationConfiguration, ObservableObject,
+        CustomStringConvertible {
+    private let configurationManager: ConfigurationManager
+    private var subscriber: AnyCancellable!
+
     var savedDescription: String
     @Published var description: String
     @Published var documentProcessorScript: URL?
-    @Published var copyBeforeProcessing: Bool
-    @Published var removeOriginalOnProcessingByproduct: Bool
+    @Published var copyBeforeProcessing: Bool?
+    @Published var removeOriginalOnProcessingByproduct: Bool?
     @Published var documentAnnotators: Set<HashableDocumentAnnotator>
+    var additionalDocumentAnnotations: [String] {
+        [description]
+    }
     @Published var documentIntegrators: Set<HashableDocumentIntegrator>
-    private var subscriber: AnyCancellable!
 
-    var folder: URL {
+    var folder: URL? {
         configurationManager.documentFolderURL.appendingPathComponent(savedDescription)
     }
 
@@ -45,17 +46,22 @@ class DocumentTypeMetadata: DocumentType, ObservableObject {
     }
 }
 
-class UserContextMetadata: UserContext, ObservableObject, Equatable, Identifiable {
+class UserContextMetadata: PartialImportationConfiguration, ObservableObject,
+        CustomStringConvertible, Equatable, Identifiable {
     static func ==(lhs: UserContextMetadata, rhs: UserContextMetadata) -> Bool {
         lhs.description == rhs.description
     }
 
-    let configurationManager: ConfigurationManager
+    private let configurationManager: ConfigurationManager
+    private var subscriber: AnyCancellable!
+
     var savedDescription: String
     @Published var description: String
     @Published var documentAnnotators: Set<HashableDocumentAnnotator>
+    var additionalDocumentAnnotations: [String] {
+        [description]
+    }
     @Published var documentIntegrators: Set<HashableDocumentIntegrator>
-    private var subscriber: AnyCancellable!
 
     init(_ description: String,
          _ configurationManager: ConfigurationManager,
@@ -79,10 +85,10 @@ extension PicToShareError {
     static let configuration = PicToShareError(type: "pts.error.configuration")
 }
 
-/// Responsible of Document Types configuration and storage.
+/// Responsible of Core Objects configuration and storage.
 class ConfigurationManager: ObservableObject {
-    var documentAnnotators: [String: HashableDocumentAnnotator]
-    var documentIntegrators: [String: HashableDocumentIntegrator]
+    var documentAnnotators: [HashableDocumentAnnotator]
+    var documentIntegrators: [HashableDocumentIntegrator]
 
     let documentFolderURL: URL
     let continuityFolderURL: URL
@@ -109,16 +115,8 @@ class ConfigurationManager: ObservableObject {
          _ continuityFolderName: String,
          _ documentAnnotators: [DocumentAnnotator] = [],
          _ documentIntegrators: [DocumentIntegrator] = []) {
-        var annotators: [String: HashableDocumentAnnotator] = [:]
-        for documentAnnotator in documentAnnotators {
-            annotators[documentAnnotator.description] = HashableDocumentAnnotator(documentAnnotator)
-        }
-        self.documentAnnotators = annotators
-        var integrators: [String: HashableDocumentIntegrator] = [:]
-        for documentIntegrator in documentIntegrators {
-            integrators[documentIntegrator.description] = HashableDocumentIntegrator(documentIntegrator)
-        }
-        self.documentIntegrators = integrators
+        self.documentAnnotators = documentAnnotators.map(HashableDocumentAnnotator.init)
+        self.documentIntegrators = documentIntegrators.map(HashableDocumentIntegrator.init)
         let userDocumentsURL = try! FileManager.default
                 .url(for: .documentDirectory,
                 in: .userDomainMask,
@@ -220,7 +218,8 @@ class ConfigurationManager: ObservableObject {
             for rawAnnotatorDeclaration in annotatorDeclarations {
                 if let annotatorDescription = rawAnnotatorDeclaration
                         as? String,
-                   let annotator = documentAnnotators[annotatorDescription] {
+                   let annotator = documentAnnotators
+                           .first(where: { $0.description == annotatorDescription }) {
                     typeAnnotators.insert(annotator)
                 }
             }
@@ -231,7 +230,8 @@ class ConfigurationManager: ObservableObject {
             for rawIntegratorDeclaration in integratorDeclarations {
                 if let integratorDescription = rawIntegratorDeclaration
                         as? String,
-                   let integrator = documentIntegrators[integratorDescription] {
+                   let integrator = documentIntegrators
+                           .first(where: { $0.description == integratorDescription }) {
                     typeIntegrators.insert(integrator)
                 }
             }
@@ -270,7 +270,8 @@ class ConfigurationManager: ObservableObject {
             for rawAnnotatorDeclaration in annotatorDeclarations {
                 if let annotatorDescription = rawAnnotatorDeclaration
                         as? String,
-                   let annotator = documentAnnotators[annotatorDescription] {
+                   let annotator = documentAnnotators
+                           .first(where: { $0.description == annotatorDescription }) {
                     contextAnnotators.insert(annotator)
                 }
             }
@@ -281,7 +282,8 @@ class ConfigurationManager: ObservableObject {
             for rawIntegratorDeclaration in integratorDeclarations {
                 if let integratorDescription = rawIntegratorDeclaration
                         as? String,
-                   let integrator = documentIntegrators[integratorDescription] {
+                   let integrator = documentIntegrators
+                           .first(where: { $0.description == integratorDescription }) {
                     contextIntegrators.insert(integrator)
                 }
             }
@@ -366,8 +368,8 @@ extension DocumentTypeMetadata: CFPropertyListable {
         [
             "description": description,
             "documentProcessorScript": documentProcessorScript?.path ?? "",
-            "copyBeforeProcessing": copyBeforeProcessing,
-            "removeOriginalOnProcessingByproduct": removeOriginalOnProcessingByproduct,
+            "copyBeforeProcessing": copyBeforeProcessing ?? true,
+            "removeOriginalOnProcessingByproduct": removeOriginalOnProcessingByproduct ?? false,
             "documentAnnotators": documentAnnotators.map({ $0.description }) as CFArray,
             "documentIntegrators": documentIntegrators.map({ $0.description }) as CFArray
         ] as CFPropertyList

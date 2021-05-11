@@ -1,22 +1,19 @@
+// This file contains all the Document Integrator implementations for PicToShare.
+
 import Foundation
 import EventKit
 
 
-extension PicToShareError {
-    static let currentCalendarEventsDocumentIntegrator =
-            PicToShareError(type: "pts.error.integrators.currentCalendarEvents")
-}
-
+/// Current calendar events integrators: adds a link to the documents in the
+/// description of all active events at the moment of integration.
 struct CurrentCalendarEventsDocumentIntegrator: DocumentIntegrator {
     let description = NSLocalizedString("pts.integrators.currentCalendarEvents", comment: "")
 
     private let store = EKEventStore()
 
-    /// ATM, it can fail after asking for rights to use the Calendar. Reasons are unknown
-    /// It fails and the store.save line
+    /// ATM, it can fail after asking for rights to use the Calendar. Reasons are unknown.
+    /// It fails at the store.save line.
     func integrate(documents: [URL]) {
-        // You must ask for the user's permission to get Calendar data by adding the
-        // "Privacy - Calendar Usage Description" key in info.plist
         store.requestAccess(to: .event) { granted, error in
             guard granted && error == nil else {
                 ErrorManager.error(.currentCalendarEventsDocumentIntegrator,
@@ -28,12 +25,12 @@ struct CurrentCalendarEventsDocumentIntegrator: DocumentIntegrator {
                 $0.absoluteString
             }.joined(separator: "\n")
 
-            // Create a query that will only select the events occurring now, from all calendars
+            // Created a query that will only select the events occurring now, from all calendars.
             let predicate = store.predicateForEvents(withStart: Date(),
                     end: Date(),
                     calendars: nil)
 
-            // Fetch the events matching the predicate
+            // Fetches the events matching the predicate.
             let events = store.events(matching: predicate)
 
             for event in events {
@@ -52,4 +49,9 @@ struct CurrentCalendarEventsDocumentIntegrator: DocumentIntegrator {
             }
         }
     }
+}
+
+extension PicToShareError {
+    static let currentCalendarEventsDocumentIntegrator =
+            PicToShareError(type: "pts.error.integrators.currentCalendarEvents")
 }

@@ -24,7 +24,6 @@ struct ImportationView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
     @EnvironmentObject var importationManager: ImportationManager
     @State private var selectedType = 0
-    @State private var processedCount = 0
 
     var body: some View {
         VStack {
@@ -51,8 +50,7 @@ struct ImportationView: View {
                     guard importationManager.queueHead != nil else {
                         return
                     }
-                    importationManager.popQueueHead()
-                    processedCount += 1
+                    _ = importationManager.popQueueHead()
                 }
                 Button("import") {
                     guard importationManager.queueHead != nil else {
@@ -64,16 +62,25 @@ struct ImportationView: View {
                     }
                     let type = configurationManager.types[selectedType]
                     let context = configurationManager.currentUserContext
-                    importationManager.importDocument(with: ImportationConfiguration(
-                            url: importationManager.queueHead!,
-                            type: type,
-                            context: configurationManager.currentUserContext,
-                            annotators: type.documentAnnotators
-                                    .union(context?.documentAnnotators ?? []),
-                            integrators: type.documentIntegrators
-                                    .union(context?.documentIntegrators ?? [])))
-                    importationManager.popQueueHead()
-                    processedCount += 1
+                    var document = importationManager.popQueueHead()!
+                    let documentFolder = document.deletingLastPathComponent()
+
+                    // Rename Continuity Camera document before importing.
+                    if documentFolder == configurationManager.continuityFolderURL {
+                        let newDocument = documentFolder.appendingPathComponent(
+                                type.description + "_" + (context?.description ?? "") +
+                                        "_" + document.lastPathComponent)
+                        // Do-catch block to change the document URL only if the move
+                        // succeeded.
+                        do {
+                            try FileManager.default.moveItem(at: document, to: newDocument)
+                            document = newDocument
+                        } catch {
+
+                        }
+                    }
+
+                    importationManager.importDocument(document, with: type, context)
                 }.buttonStyle(AccentButtonStyle())
             }
         }

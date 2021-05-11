@@ -39,8 +39,8 @@ struct DocumentTypeView: View {
 
     @Binding var description: String
     @Binding var documentProcessingScript: URL?
-    @Binding var copyBeforeProcessing: Bool
-    @Binding var removeOriginalOnProcessingByproduct: Bool
+    @Binding var copyBeforeProcessing: Bool?
+    @Binding var removeOriginalOnProcessingByproduct: Bool?
     @Binding var documentAnnotators: Set<HashableDocumentAnnotator>
     @Binding var documentIntegrators: Set<HashableDocumentIntegrator>
 
@@ -104,21 +104,31 @@ struct DocumentTypeView: View {
                     }.padding(EdgeInsets(top: 0, leading: 2, bottom: 0, trailing: 2))
 
                     Toggle("pts.settings.types.copyBeforeProcessing",
-                            isOn: $copyBeforeProcessing)
+                            isOn: Binding<Bool>($copyBeforeProcessing)!)
                             .disabled(documentProcessingScript == nil)
                     Toggle("pts.settings.types.removeOriginalOnProcessingByproduct",
-                            isOn: $removeOriginalOnProcessingByproduct)
+                            isOn: Binding<Bool>($removeOriginalOnProcessingByproduct)!)
                             .disabled(documentProcessingScript == nil)
                 }
             }
 
-            SetGroupView(label: Text("pts.annotations"),
-                    available: $configurationManager.documentAnnotators,
-                    selected: $documentAnnotators)
+            GroupBox(label: Text("pts.annotations")) {
+                HStack {
+                    SetOptionsView(
+                            options: $configurationManager.documentAnnotators,
+                            selected: $documentAnnotators)
+                    Spacer()
+                }
+            }
 
-            SetGroupView(label: Text("pts.integrations"),
-                    available: $configurationManager.documentIntegrators,
-                    selected: $documentIntegrators)
+            GroupBox(label: Text("pts.integrations")) {
+                HStack {
+                    SetOptionsView(
+                            options: $configurationManager.documentIntegrators,
+                            selected: $documentIntegrators)
+                    Spacer()
+                }
+            }
         }.padding()
     }
 }

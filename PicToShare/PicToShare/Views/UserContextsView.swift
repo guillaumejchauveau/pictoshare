@@ -64,13 +64,23 @@ struct UserContextView: View {
                 }
             }
 
-            SetGroupView(label: Text("pts.annotations"),
-                    available: $configurationManager.documentAnnotators,
-                    selected: $documentAnnotators)
+            GroupBox(label: Text("pts.annotations")) {
+                HStack {
+                    SetOptionsView(
+                            options: $configurationManager.documentAnnotators,
+                            selected: $documentAnnotators)
+                    Spacer()
+                }
+            }
 
-            SetGroupView(label: Text("pts.integrations"),
-                    available: $configurationManager.documentIntegrators,
-                    selected: $documentIntegrators)
+            GroupBox(label: Text("pts.integrations")) {
+                HStack {
+                    SetOptionsView(
+                            options: $configurationManager.documentIntegrators,
+                            selected: $documentIntegrators)
+                    Spacer()
+                }
+            }
         }.padding()
     }
 }

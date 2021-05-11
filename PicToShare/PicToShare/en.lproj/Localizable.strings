@@ -36,6 +36,7 @@
 "pts.error.configuration.changeTypeDescription" = "PicToShare could not rename the folder of type “%@”.";
 
 "pts.error.importation" = "Importation error";
+"pts.error.importation.configuration" = "Invalid importation configuration";
 "pts.error.importation.copyBeforeProcessing" = "PicToShare could not copy the original file.";
 "pts.error.importation.scriptRun" = "PicToShare could not execute the configured script.";
 "pts.error.importation.scriptTermination" = "The configured script finished with an error: %lld.";

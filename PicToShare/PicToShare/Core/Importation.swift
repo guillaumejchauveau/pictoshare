@@ -5,11 +5,39 @@ extension PicToShareError {
 }
 
 struct ImportationConfiguration {
-    var url: URL
-    let type: DocumentType
-    let context: UserContext?
-    let annotators: Set<HashableDocumentAnnotator>
-    let integrators: Set<HashableDocumentIntegrator>
+    var documentProcessorScript: URL? = nil
+    var copyBeforeProcessing: Bool = true
+    var removeOriginalOnProcessingByproduct: Bool = false
+    var documentAnnotators: Set<HashableDocumentAnnotator> = []
+    var additionalDocumentAnnotations: [String] = []
+    var documentIntegrators: Set<HashableDocumentIntegrator> = []
+    var folder: URL
+
+    init(_ partials: [PartialImportationConfiguration?]) throws {
+        var chosenFolder: URL? = nil
+        for partial in partials.compactMap({ $0 }) {
+            if let script = partial.documentProcessorScript {
+                documentProcessorScript = script
+            }
+            if let copy = partial.copyBeforeProcessing {
+                copyBeforeProcessing = copy
+            }
+            if let remove = partial.removeOriginalOnProcessingByproduct {
+                removeOriginalOnProcessingByproduct = remove
+            }
+            if let folder = partial.folder {
+                chosenFolder = folder
+            }
+            documentAnnotators = documentAnnotators.union(partial.documentAnnotators)
+            additionalDocumentAnnotations.append(contentsOf: partial.additionalDocumentAnnotations)
+            documentIntegrators = documentIntegrators.union(partial.documentIntegrators)
+        }
+
+        guard let folder = chosenFolder else {
+            throw PicToShareError.importation
+        }
+        self.folder = folder
+    }
 }
 
 /// Object responsible of the Importation process.
@@ -25,10 +53,6 @@ class ImportationManager: ObservableObject {
         importationQueue.first
     }
 
-    var queueCount: Int {
-        importationQueue.count
-    }
-
     func queue(document url: URL) {
         importationQueue.append(url)
         objectWillChange.send()
@@ -39,46 +63,40 @@ class ImportationManager: ObservableObject {
         objectWillChange.send()
     }
 
-    func popQueueHead() {
-        importationQueue.removeFirst()
+    func popQueueHead() -> URL? {
+        let document = importationQueue.removeFirst()
         objectWillChange.send()
+        return document
     }
 
-    /// Imports a Document given a Document Type.
-    ///
-    /// - Parameters:
-    func importDocument(with importationConfiguration: ImportationConfiguration) {
-        guard importationConfiguration.url.isFileURL else {
+    func importDocument(_ document: URL, with configurations: PartialImportationConfiguration?...) {
+        do {
+            let configuration = try ImportationConfiguration(configurations)
+            importDocument(document, with: configuration)
+        } catch {
+            ErrorManager.error(.importation, key: "pts.error.importation.configuration")
+        }
+    }
+
+    func importDocument(_ document: URL, with configuration: ImportationConfiguration) {
+        guard document.isFileURL else {
             return
         }
-        var configuration = importationConfiguration
-        let inputUrlFolder = configuration.url.deletingLastPathComponent()
-        if inputUrlFolder == configurationManager.continuityFolderURL {
-            let newDocumentUrl = inputUrlFolder.appendingPathComponent(
-                    configuration.type.description + "_" +
-                            (configuration.context?.description ?? "") + "_" +
-                            configuration.url.lastPathComponent)
-            do {
-                try FileManager.default.moveItem(at: configuration.url, to: newDocumentUrl)
-                configuration.url = newDocumentUrl
-            } catch {
+        let documentFolder = document.deletingLastPathComponent()
 
-            }
-        }
-
-        if configuration.type.documentProcessorScript == nil {
-            postProcess(documents: [configuration.url], with: configuration)
+        if configuration.documentProcessorScript == nil {
+            postProcess(documents: [document], with: configuration)
             return
         }
 
-        if configuration.type.copyBeforeProcessing {
-            let copyUrl = inputUrlFolder
+        if configuration.copyBeforeProcessing {
+            let copyUrl = documentFolder
                     .appendingPathComponent(
-                            configuration.url.deletingPathExtension().lastPathComponent + "." +
+                            document.deletingPathExtension().lastPathComponent + "." +
                                     NSLocalizedString("pts.copySuffix", comment: ""))
-                    .appendingPathExtension(configuration.url.pathExtension)
+                    .appendingPathExtension(document.pathExtension)
             do {
-                try FileManager.default.copyItem(at: configuration.url, to: copyUrl)
+                try FileManager.default.copyItem(at: document, to: copyUrl)
             } catch {
                 ErrorManager.error(.importation, key: "pts.error.importation.copyBeforeProcessing")
             }
@@ -86,36 +104,36 @@ class ImportationManager: ObservableObject {
 
         // Executes the script.
         let scriptProcess = Process()
-        scriptProcess.currentDirectoryURL = inputUrlFolder
+        scriptProcess.currentDirectoryURL = documentFolder
         scriptProcess.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
         scriptProcess.arguments = [
-            configuration.type.documentProcessorScript!.path,
-            configuration.url.path,
-            configuration.url.deletingPathExtension().path
+            configuration.documentProcessorScript!.path,
+            document.path,
+            document.deletingPathExtension().path
         ]
 
         // Script callback.
         scriptProcess.terminationHandler = { [self] _ in
             guard scriptProcess.terminationStatus == 0 else {
                 ErrorManager.error(.importation, String(format:
-                        NSLocalizedString("pts.error.importation.scriptTermination", comment: ""),
-                                scriptProcess.terminationStatus))
+                NSLocalizedString("pts.error.importation.scriptTermination", comment: ""),
+                        scriptProcess.terminationStatus))
                 return
             }
 
             // Finds the output(s) of the script.
-            let outputFilesPrefix = configuration.url.deletingPathExtension().lastPathComponent
-            var outputUrls = try! FileManager.default.contentsOfDirectory(at: inputUrlFolder,
+            let outputFilesPrefix = document.deletingPathExtension().lastPathComponent
+            var outputUrls = try! FileManager.default.contentsOfDirectory(at: documentFolder,
                             includingPropertiesForKeys: nil)
                     .filter {
                         $0.deletingPathExtension().lastPathComponent == outputFilesPrefix
                     }
             if outputUrls.count > 1 {
                 outputUrls.removeAll {
-                    $0 == configuration.url
+                    $0 == document
                 }
-                if configuration.type.removeOriginalOnProcessingByproduct {
-                    try? FileManager.default.removeItem(at: configuration.url)
+                if configuration.removeOriginalOnProcessingByproduct {
+                    try? FileManager.default.removeItem(at: document)
                 }
             }
             postProcess(documents: outputUrls, with: configuration)
@@ -131,14 +149,14 @@ class ImportationManager: ObservableObject {
 
 
     private class AnnotationResults {
-        private var keywords: [String] = []
+        private var keywords: [String]
         private var remainingCount: Int
         private let urls: [URL]
 
-        init(_ annotatorCount: Int, _ urls: [URL], _ defaults: [String?]) {
+        init(_ annotatorCount: Int, _ urls: [URL], _ defaults: [String] = []) {
+            keywords = defaults
             remainingCount = annotatorCount
             self.urls = urls
-            keywords.append(contentsOf: defaults.compactMap({ $0 }))
 
             if annotatorCount == 0 {
                 write()
@@ -173,14 +191,12 @@ class ImportationManager: ObservableObject {
     }
 
     private func postProcess(documents urls: [URL], with configuration: ImportationConfiguration) {
-        let annotationResults = AnnotationResults(configuration.annotators.count,
+        let annotationResults = AnnotationResults(
+                configuration.documentAnnotators.count,
                 urls,
-                [
-                    configuration.type.description,
-                    configuration.context?.description
-                ])
+                configuration.additionalDocumentAnnotations)
 
-        for annotator in configuration.annotators {
+        for annotator in configuration.documentAnnotators {
             annotator.makeAnnotations(annotationResults.complete)
         }
 
@@ -188,13 +204,13 @@ class ImportationManager: ObservableObject {
             do {
                 let bookmarkData = try url.bookmarkData(options: [.suitableForBookmarkFile])
                 try URL.writeBookmarkData(bookmarkData,
-                        to: configuration.type.folder.appendingPathComponent(url.lastPathComponent))
+                        to: configuration.folder.appendingPathComponent(url.lastPathComponent))
             } catch {
                 ErrorManager.error(.importation, key: "pts.error.importation.bookmark")
             }
         }
 
-        for integrator in configuration.integrators {
+        for integrator in configuration.documentIntegrators {
             integrator.integrate(documents: urls)
         }
     }

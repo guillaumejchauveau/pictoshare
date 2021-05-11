@@ -19,11 +19,16 @@ struct PTSApp: App {
 
     private let servicesProvider: ServicesProvider
 
-    static func openPTSUrl() {
+    /// Opens the PTS application from anywhere.
+    static func openPTS() {
         NSWorkspace.shared.open(URL(string: "pictoshare://main")!)
     }
 
+    /// PTS entry point.
+    /// Initializes application managers and OS integrations.
     init() {
+        // Loads the configuration from persistent storage and creates folders
+        // if necessary.
         configurationManager.loadTypes()
         configurationManager.loadContexts()
         configurationManager.saveTypes()
@@ -39,7 +44,9 @@ struct PTSApp: App {
             configurationManager.saveTypes()
         }
 
-        // Forces initialization.
+        // Forces NSApplication initialization now, required for next steps.
+        // This step is normally performed after the App object initialization
+        // in the default main function.
         NSApp = NSApplication.shared
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -51,6 +58,7 @@ struct PTSApp: App {
     }
 
     var body: some Scene {
+        // Main window opened by PTSApp.openPTS().
         WindowGroup {
             MainView()
                     .environmentObject(configurationManager)
@@ -71,8 +79,11 @@ struct MainView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
     @EnvironmentObject var importationManager: ImportationManager
 
+    /// State of the file system importation window.
     @State private var showFilePrompt = false
+    /// State of the user context create sheet.
     @State private var showNewContextForm = false
+    /// Field data for the user context create sheet.
     @State private var newContextDescription = ""
 
     var body: some View {
@@ -80,6 +91,7 @@ struct MainView: View {
             if importationManager.queueHead != nil {
                 ImportationView()
             } else {
+                // Landing view if no documents are queued for importation.
                 VStack(alignment: .leading) {
                     Text("pts.landing.title")
                             .font(.system(size: 20))
@@ -100,6 +112,8 @@ struct MainView: View {
                 }
             }
         }.frame(width: 480, height: 300).padding()
+                // User context create sheet. Allows the user to create a new
+                // context from the main window.
                 .sheet(isPresented: $showNewContextForm) {
                     Form {
                         TextField("name", text: $newContextDescription)
@@ -121,8 +135,10 @@ struct MainView: View {
                         }
                     }.padding()
                 }
+                // Main window toolbar.
                 .toolbar {
                     ToolbarItemGroup(placement: .primaryAction) {
+                        // User context selection menu.
                         Menu {
                             if configurationManager.currentUserContext != nil {
                                 Button("pts.userContext.nil") {
@@ -137,6 +153,7 @@ struct MainView: View {
                                 }
                             }
                             Divider()
+                            // Button for the user context creation sheet.
                             Button("add") {
                                 showNewContextForm = true
                             }
@@ -150,6 +167,7 @@ struct MainView: View {
                             }
                         }.frame(width: 150)
 
+                        // Continuity Camera importation button.
                         Button(action: {}) {
                             ZStack {
                                 Image(systemName: "camera")
@@ -158,6 +176,7 @@ struct MainView: View {
                             }
                         }
 
+                        // File system importation button
                         Button(action: { showFilePrompt = true }) {
                             Image(systemName: "internaldrive")
                         }.fileImporter(isPresented: $showFilePrompt,
@@ -173,8 +192,8 @@ struct MainView: View {
 
 struct SettingsView: View {
     private enum Tabs: Hashable {
-        case types
-        case contexts
+        case documentTypes
+        case userContexts
     }
 
     var body: some View {
@@ -183,12 +202,12 @@ struct SettingsView: View {
                     .tabItem {
                         Label("pts.documentTypes", systemImage: "doc.on.doc.fill")
                     }
-                    .tag(Tabs.types)
+                    .tag(Tabs.documentTypes)
             UserContextsView()
                     .tabItem {
                         Label("pts.userContexts", systemImage: "at")
                     }
-                    .tag(Tabs.contexts)
+                    .tag(Tabs.userContexts)
         }.frame(width: 700, height: 400)
     }
 }

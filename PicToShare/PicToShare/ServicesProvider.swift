@@ -1,12 +1,15 @@
 import Cocoa
 
+/// Application services provider.
 class ServicesProvider {
     private let importationManager: ImportationManager
+
     init(_ importationManager: ImportationManager) {
         self.importationManager = importationManager
         NSRegisterServicesProvider(self, "PicToShare")
     }
 
+    /// Services for importing files from outside PTS, like from the Finder.
     @objc func importFiles(_ pboard: NSPasteboard, userData: String, error: AutoreleasingUnsafeMutablePointer<NSString>) {
         guard let items = pboard.pasteboardItems else {
             return
@@ -17,6 +20,6 @@ class ServicesProvider {
             }
             return URL(dataRepresentation: data, relativeTo: nil)
         })
-        PTSApp.openPTSUrl()
+        PTSApp.openPTS()
     }
 }
