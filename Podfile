@@ -8,5 +8,4 @@ target 'PicToShare' do
   use_frameworks!
 
   # Pods for PicToShare
-  #pod 'GraphicsRenderer', '1.3.0'
 end

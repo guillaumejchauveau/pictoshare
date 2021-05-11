@@ -1,7 +1,7 @@
 import SwiftUI
 import Quartz
 
-
+/// SwiftUI View wrapper for QLPreviewView
 struct FilePreviewView: NSViewRepresentable {
     @EnvironmentObject var importationManager: ImportationManager
 
@@ -19,42 +19,42 @@ struct FilePreviewView: NSViewRepresentable {
     }
 }
 
-
+/// View for selecting a Document Type on importation.
 struct ImportationView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
     @EnvironmentObject var importationManager: ImportationManager
     @State private var selectedType = 0
-    @State private var processedCount = 0
 
     var body: some View {
         VStack {
             FilePreviewView()
-            HStack {
-                Text("\(processedCount + 1) sur \(processedCount + importationManager.queueCount)")
-            }
+            Text(importationManager.queueHead?.lastPathComponent ?? "")
         }
         VStack {
             GroupBox {
                 ScrollView {
-                    Spacer()
                     Picker("", selection: $selectedType) {
                         ForEach(configurationManager.types.indices,
                                 id: \.self) { index in
-                            Text(configurationManager.types[index].description)
-                                    .frame(width: 200)
+                            HStack {
+                                Text(configurationManager.types[index].description)
+                                Spacer()
+                            }
                         }
-                    }.pickerStyle(RadioGroupPickerStyle())
+                    }
+                            .pickerStyle(RadioGroupPickerStyle())
+                            .frame(width: 200)
+                            .padding(EdgeInsets(top: 5, leading: 0, bottom: 5, trailing: 0))
                 }
             }
             HStack {
-                Button("Ignorer") {
+                Button("ignore") {
                     guard importationManager.queueHead != nil else {
                         return
                     }
-                    importationManager.popQueueHead()
-                    processedCount += 1
+                    _ = importationManager.popQueueHead()
                 }
-                Button("Importer") {
+                Button("import") {
                     guard importationManager.queueHead != nil else {
                         return
                     }
@@ -64,17 +64,28 @@ struct ImportationView: View {
                     }
                     let type = configurationManager.types[selectedType]
                     let context = configurationManager.currentUserContext
-                    importationManager.importDocument(with: ImportationConfiguration(
-                            url: importationManager.queueHead!,
-                            type: type,
-                            context: configurationManager.currentUserContext,
-                            annotators: type.documentAnnotators
-                                    .union(context?.documentAnnotators ?? []),
-                            integrators: type.documentIntegrators
-                                    .union(context?.documentIntegrators ?? [])))
-                    importationManager.popQueueHead()
-                    processedCount += 1
-                }.buttonStyle(AccentButtonStyle())
+                    var document = importationManager.popQueueHead()!
+                    let documentFolder = document.deletingLastPathComponent()
+
+                    // Rename Continuity Camera document before importing.
+                    if documentFolder == configurationManager.continuityFolderURL {
+                        let newDocument = documentFolder.appendingPathComponent(
+                                type.description + "_" + (context?.description ?? "") +
+                                        "_" + document.lastPathComponent)
+                        // Do-catch block to change the document URL only if the move
+                        // succeeded.
+                        do {
+                            try FileManager.default.moveItem(at: document, to: newDocument)
+                            document = newDocument
+                        } catch {
+
+                        }
+                    }
+
+                    importationManager.importDocument(document, with: type, context)
+                }
+                        .buttonStyle(AccentButtonStyle())
+                        .disabled(selectedType >= configurationManager.types.count)
             }
         }
     }

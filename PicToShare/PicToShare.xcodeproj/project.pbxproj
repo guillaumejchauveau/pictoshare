@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		12830838675CFA3A3B43F710 /* Pods_PicToShare.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C6D76A44CD73EB6042CCB79 /* Pods_PicToShare.framework */; };
+		950AD17C2649A249004686E1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 950AD17A2649A249004686E1 /* Localizable.strings */; };
 		95BD8EAF2616311100D83532 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95BD8EAE2616311100D83532 /* Assets.xcassets */; };
 		95BD8EC92616344100D83532 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EC52616344100D83532 /* Configuration.swift */; };
 		95BD8ECA2616344100D83532 /* Importation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EC62616344100D83532 /* Importation.swift */; };
@@ -17,7 +19,7 @@
 		95F876C926459BFD006AEA66 /* UserContextsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F876C826459BFD006AEA66 /* UserContextsView.swift */; };
 		95F876CB26459E30006AEA66 /* ListSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F876CA26459E30006AEA66 /* ListSettingsView.swift */; };
 		95F95102261B9A7C00000A93 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F95101261B9A7C00000A93 /* App.swift */; };
-		B0BDB9602645930D00A86FA7 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0BDB95F2645930D00A86FA7 /* NotificationManager.swift */; };
+		B0BDB9602645930D00A86FA7 /* ErrorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0BDB95F2645930D00A86FA7 /* ErrorManager.swift */; };
 		F9A7C08D79F175A83BD76A0E /* DocumentIntegrators.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C28A555F204F09D31E55 /* DocumentIntegrators.swift */; };
 		F9A7C33E0FC489A18F38CE51 /* ContinuityCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C938489000F68C95D3D7 /* ContinuityCamera.swift */; };
 		F9A7C6884F6D835DFBD3F4FB /* DocumentTypesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7CB5497C834E0B122F3A0 /* DocumentTypesView.swift */; };
@@ -27,6 +29,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1C6D76A44CD73EB6042CCB79 /* Pods_PicToShare.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PicToShare.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		950AD17B2649A249004686E1 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; lineEnding = 0; name = en; path = PicToShare/en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		950AD17D2649A263004686E1 /* fr */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; lineEnding = 0; name = fr; path = PicToShare/fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		95BD8EA72616311000D83532 /* PicToShare.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PicToShare.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		95BD8EAE2616311100D83532 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		95BD8EB32616311100D83532 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -40,7 +45,9 @@
 		95F876C826459BFD006AEA66 /* UserContextsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserContextsView.swift; sourceTree = "<group>"; };
 		95F876CA26459E30006AEA66 /* ListSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListSettingsView.swift; sourceTree = "<group>"; };
 		95F95101261B9A7C00000A93 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
-		B0BDB95F2645930D00A86FA7 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		987CF50435E8F1FD6D904357 /* Pods-PicToShare.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PicToShare.debug.xcconfig"; path = "Target Support Files/Pods-PicToShare/Pods-PicToShare.debug.xcconfig"; sourceTree = "<group>"; };
+		B0BDB95F2645930D00A86FA7 /* ErrorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorManager.swift; sourceTree = "<group>"; };
+		C2977C65D2B1CA0D1610B65D /* Pods-PicToShare.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PicToShare.release.xcconfig"; path = "Target Support Files/Pods-PicToShare/Pods-PicToShare.release.xcconfig"; sourceTree = "<group>"; };
 		F9A7C24A138F6321D385CD24 /* ViewUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewUtils.swift; sourceTree = "<group>"; };
 		F9A7C28A555F204F09D31E55 /* DocumentIntegrators.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DocumentIntegrators.swift; sourceTree = "<group>"; };
 		F9A7C6833306D3114D356C2E /* ImportationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImportationView.swift; sourceTree = "<group>"; };
@@ -54,12 +61,31 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				12830838675CFA3A3B43F710 /* Pods_PicToShare.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		40721CB7B0768601994D38DA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1C6D76A44CD73EB6042CCB79 /* Pods_PicToShare.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		747E847C2C623BD6E3D19E42 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				987CF50435E8F1FD6D904357 /* Pods-PicToShare.debug.xcconfig */,
+				C2977C65D2B1CA0D1610B65D /* Pods-PicToShare.release.xcconfig */,
+			);
+			name = Pods;
+			path = ../Pods;
+			sourceTree = "<group>";
+		};
 		950CC76E264425D8007E91AD /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -75,8 +101,11 @@
 		95BD8E9E2616311000D83532 = {
 			isa = PBXGroup;
 			children = (
+				950AD17A2649A249004686E1 /* Localizable.strings */,
 				95BD8EA92616311000D83532 /* PicToShare */,
 				95BD8EA82616311000D83532 /* Products */,
+				747E847C2C623BD6E3D19E42 /* Pods */,
+				40721CB7B0768601994D38DA /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -100,7 +129,7 @@
 				F9A7C938489000F68C95D3D7 /* ContinuityCamera.swift */,
 				95E67AD22643062400C17938 /* DocumentAnnotators.swift */,
 				F9A7C28A555F204F09D31E55 /* DocumentIntegrators.swift */,
-				B0BDB95F2645930D00A86FA7 /* NotificationManager.swift */,
+				B0BDB95F2645930D00A86FA7 /* ErrorManager.swift */,
 				F9A7CBD1B17DA9CD664A2158 /* StatusItem.swift */,
 				95DD6A972648444900DB2585 /* ServicesProvider.swift */,
 			);
@@ -125,6 +154,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 95BD8EB72616311100D83532 /* Build configuration list for PBXNativeTarget "PicToShare" */;
 			buildPhases = (
+				8A075AD527675A38B70346BD /* [CP] Check Pods Manifest.lock */,
 				95BD8EA32616311000D83532 /* Sources */,
 				95BD8EA42616311000D83532 /* Frameworks */,
 				95BD8EA52616311000D83532 /* Resources */,
@@ -134,8 +164,6 @@
 			dependencies = (
 			);
 			name = PicToShare;
-			packageProductDependencies = (
-			);
 			productName = PicToShare;
 			productReference = 95BD8EA72616311000D83532 /* PicToShare.app */;
 			productType = "com.apple.product-type.application";
@@ -160,12 +188,9 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
-				Base,
 				fr,
 			);
 			mainGroup = 95BD8E9E2616311000D83532;
-			packageReferences = (
-			);
 			productRefGroup = 95BD8EA82616311000D83532 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -181,10 +206,36 @@
 			buildActionMask = 2147483647;
 			files = (
 				95BD8EAF2616311100D83532 /* Assets.xcassets in Resources */,
+				950AD17C2649A249004686E1 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		8A075AD527675A38B70346BD /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PicToShare-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		95BD8EA32616311000D83532 /* Sources */ = {
@@ -199,7 +250,7 @@
 				95BD8ECC2616344100D83532 /* Types.swift in Sources */,
 				95BD8ECB2616344100D83532 /* Utils.swift in Sources */,
 				95F95102261B9A7C00000A93 /* App.swift in Sources */,
-				B0BDB9602645930D00A86FA7 /* NotificationManager.swift in Sources */,
+				B0BDB9602645930D00A86FA7 /* ErrorManager.swift in Sources */,
 				F9A7C33E0FC489A18F38CE51 /* ContinuityCamera.swift in Sources */,
 				95F876CB26459E30006AEA66 /* ListSettingsView.swift in Sources */,
 				F9A7C6884F6D835DFBD3F4FB /* DocumentTypesView.swift in Sources */,
@@ -211,6 +262,18 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		950AD17A2649A249004686E1 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				950AD17B2649A249004686E1 /* en */,
+				950AD17D2649A263004686E1 /* fr */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		95BD8EB52616311100D83532 /* Debug */ = {
@@ -334,6 +397,7 @@
 		};
 		95BD8EB82616311100D83532 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 987CF50435E8F1FD6D904357 /* Pods-PicToShare.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -356,6 +420,7 @@
 		};
 		95BD8EB92616311100D83532 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C2977C65D2B1CA0D1610B65D /* Pods-PicToShare.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
