@@ -27,7 +27,7 @@ class StatusMenuDelegate: NSObject, NSMenuDelegate {
     /// Called every time the menu will open. Used to update the list of user
     /// contexts.
     func menuWillOpen(_ menu: NSMenu) {
-        // Removes the previous list.
+        // Empties the list.
         while menu.numberOfItems > 3 {
             menu.removeItem(at: 3)
         }

@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// View for editing Document Types in the settings.
 struct DocumentTypesView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
 
@@ -17,13 +18,14 @@ struct DocumentTypesView: View {
 
     var body: some View {
         VStack(alignment: .leading) {
+            // Uses a custom View to make a Navigation View with all the Types.
             ListSettingsView(items: $configurationManager.types,
                     add: configurationManager.addType,
                     remove: configurationManager.removeType,
                     landing: Landing()) { index in
                 DocumentTypeView(
                         description: $configurationManager.types[index].description,
-                        documentProcessingScript: $configurationManager.types[index].documentProcessorScript,
+                        documentProcessorScript: $configurationManager.types[index].documentProcessorScript,
                         copyBeforeProcessing: $configurationManager.types[index].copyBeforeProcessing,
                         removeOriginalOnProcessingByproduct: $configurationManager.types[index].removeOriginalOnProcessingByproduct,
                         documentAnnotators: $configurationManager.types[index].documentAnnotators,
@@ -34,11 +36,15 @@ struct DocumentTypesView: View {
     }
 }
 
+/// A View for editing a Document Type.
 struct DocumentTypeView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
 
+    // Tried to store the Type itself as an ObservedObject, doesn't work, tried
+    // to move the bindings in a constructor, doesn't work either, so we're
+    // stuck with a ton of lines.
     @Binding var description: String
-    @Binding var documentProcessingScript: URL?
+    @Binding var documentProcessorScript: URL?
     @Binding var copyBeforeProcessing: Bool?
     @Binding var removeOriginalOnProcessingByproduct: Bool?
     @Binding var documentAnnotators: Set<HashableDocumentAnnotator>
@@ -72,7 +78,7 @@ struct DocumentTypeView: View {
             GroupBox(label: Text("pts.processingScript")) {
                 VStack(alignment: .leading) {
                     HStack {
-                        if let scriptName = documentProcessingScript?.lastPathComponent {
+                        if let scriptName = documentProcessorScript?.lastPathComponent {
                             Text(scriptName)
                                     .font(.system(size: 12))
                                     .lineLimit(1)
@@ -91,24 +97,24 @@ struct DocumentTypeView: View {
                             Image(systemName: "folder")
                         }.fileImporter(isPresented: $chooseScriptFile,
                                 allowedContentTypes: [.osaScript]) { result in
-                            documentProcessingScript = try? result.get()
+                            documentProcessorScript = try? result.get()
                         }
 
                         Button(action: {
-                            documentProcessingScript = nil
+                            documentProcessorScript = nil
                             copyBeforeProcessing = true
                             removeOriginalOnProcessingByproduct = false
                         }) {
                             Image(systemName: "trash")
-                        }.disabled(documentProcessingScript == nil)
+                        }.disabled(documentProcessorScript == nil)
                     }.padding(EdgeInsets(top: 0, leading: 2, bottom: 0, trailing: 2))
 
                     Toggle("pts.settings.types.copyBeforeProcessing",
                             isOn: Binding<Bool>($copyBeforeProcessing)!)
-                            .disabled(documentProcessingScript == nil)
+                            .disabled(documentProcessorScript == nil)
                     Toggle("pts.settings.types.removeOriginalOnProcessingByproduct",
                             isOn: Binding<Bool>($removeOriginalOnProcessingByproduct)!)
-                            .disabled(documentProcessingScript == nil)
+                            .disabled(documentProcessorScript == nil)
                 }
             }
 

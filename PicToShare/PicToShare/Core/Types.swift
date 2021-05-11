@@ -1,11 +1,13 @@
 import Foundation
 
-/// Object providing a list of keywords to add to imported Documents.
-/// The keywords are usually based on information in the current context.
+/// Object providing a list of Annotations to add to imported Documents.
+/// The Annotations are usually based on information in the current context.
 protocol DocumentAnnotator: CustomStringConvertible {
     typealias CompletionHandler = ([String]) -> Void
 
-    ///
+    /// Document Annotator can run asynchronously (to ask permission to access a
+    /// resource for example), so this function takes a completion callback.
+    /// The callback must be called with an array of Annotations.
     func makeAnnotations(_ completion: @escaping CompletionHandler)
 }
 
@@ -30,8 +32,8 @@ protocol PartialImportationConfiguration {
     var additionalDocumentAnnotations: [String] { get }
     /// The Document Integrators that will use the Document.
     var documentIntegrators: Set<HashableDocumentIntegrator> { get }
-    /// The URL of the folder containing links to all Documents of this Type.
-    var folder: URL? { get }
+    /// The URL of the folder where a bookmark should be placed.
+    var bookmarkFolder: URL? { get }
 }
 
 
@@ -55,7 +57,7 @@ extension PartialImportationConfiguration {
     var documentIntegrators: Set<HashableDocumentIntegrator> {
         []
     }
-    var folder: URL? {
+    var bookmarkFolder: URL? {
         nil
     }
 }

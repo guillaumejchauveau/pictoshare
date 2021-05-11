@@ -1,7 +1,7 @@
 import SwiftUI
 import Quartz
 
-
+/// SwiftUI View wrapper for QLPreviewView
 struct FilePreviewView: NSViewRepresentable {
     @EnvironmentObject var importationManager: ImportationManager
 
@@ -19,7 +19,7 @@ struct FilePreviewView: NSViewRepresentable {
     }
 }
 
-
+/// View for selecting a Document Type on importation.
 struct ImportationView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
     @EnvironmentObject var importationManager: ImportationManager
@@ -28,21 +28,23 @@ struct ImportationView: View {
     var body: some View {
         VStack {
             FilePreviewView()
-            HStack {
-                Text(importationManager.queueHead?.lastPathComponent ?? "")
-            }
+            Text(importationManager.queueHead?.lastPathComponent ?? "")
         }
         VStack {
             GroupBox {
                 ScrollView {
-                    Spacer()
                     Picker("", selection: $selectedType) {
                         ForEach(configurationManager.types.indices,
                                 id: \.self) { index in
-                            Text(configurationManager.types[index].description)
-                                    .frame(width: 200)
+                            HStack {
+                                Text(configurationManager.types[index].description)
+                                Spacer()
+                            }
                         }
-                    }.pickerStyle(RadioGroupPickerStyle())
+                    }
+                            .pickerStyle(RadioGroupPickerStyle())
+                            .frame(width: 200)
+                            .padding(EdgeInsets(top: 5, leading: 0, bottom: 5, trailing: 0))
                 }
             }
             HStack {
@@ -81,7 +83,9 @@ struct ImportationView: View {
                     }
 
                     importationManager.importDocument(document, with: type, context)
-                }.buttonStyle(AccentButtonStyle())
+                }
+                        .buttonStyle(AccentButtonStyle())
+                        .disabled(selectedType >= configurationManager.types.count)
             }
         }
     }

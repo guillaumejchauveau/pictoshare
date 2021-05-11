@@ -3,16 +3,16 @@ import SwiftUI
 @main
 struct PTSApp: App {
     private let configurationManager = ConfigurationManager(
-            "PTSFolder",
-            "Continuity",
-            [
+            "PTSFolder", // Name for the main PicToShare folder.
+            "Continuity", // Name for the sub-folder where Continuity Camera Documents are saved.
+            [ // List of available Document Annotators.
                 CurrentCalendarEventsDocumentAnnotator(),
                 GeoLocalizationDocumentAnnotator()
             ],
-            [
+            [ // List of available Document Integrators.
                 CurrentCalendarEventsDocumentIntegrator()
             ])
-    private let importationManager: ImportationManager
+    private let importationManager = ImportationManager()
 
     private let statusItem: NSStatusItem
     private let statusItemMenuDelegate: StatusMenuDelegate
@@ -32,8 +32,6 @@ struct PTSApp: App {
         configurationManager.loadTypes()
         configurationManager.loadContexts()
         configurationManager.saveTypes()
-
-        importationManager = ImportationManager(configurationManager)
 
         // Creates default Document Types.
         if !FileManager.default.fileExists(

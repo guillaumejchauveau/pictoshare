@@ -1,6 +1,6 @@
 import SwiftUI
 
-
+/// View for editing User Contexts in the settings.
 struct UserContextsView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
 
@@ -18,6 +18,7 @@ struct UserContextsView: View {
 
     var body: some View {
         VStack(alignment: .leading) {
+            // Uses a custom View to make a Navigation View with all the Contexts.
             ListSettingsView(items: $configurationManager.contexts,
                     add: configurationManager.addContext,
                     remove: configurationManager.removeContext,
@@ -33,6 +34,7 @@ struct UserContextsView: View {
 }
 
 
+/// A View for editing a User Context.
 struct UserContextView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
 

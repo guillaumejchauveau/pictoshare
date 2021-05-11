@@ -18,7 +18,7 @@ class DocumentTypeMetadata: PartialImportationConfiguration, ObservableObject,
     }
     @Published var documentIntegrators: Set<HashableDocumentIntegrator>
 
-    var folder: URL? {
+    var bookmarkFolder: URL? {
         configurationManager.documentFolderURL.appendingPathComponent(savedDescription)
     }
 
@@ -87,10 +87,14 @@ extension PicToShareError {
 
 /// Responsible of Core Objects configuration and storage.
 class ConfigurationManager: ObservableObject {
+    /// List of available Document Annotators.
     var documentAnnotators: [HashableDocumentAnnotator]
+    /// List of available Document Integrators.
     var documentIntegrators: [HashableDocumentIntegrator]
 
+    /// URL of the main PTS folder.
     let documentFolderURL: URL
+    /// URL of the folder where Continuity Camera Documents are saved.
     let continuityFolderURL: URL
 
     /// The configured Document Types.
@@ -99,6 +103,7 @@ class ConfigurationManager: ObservableObject {
     /// The configured Importation Contexts.
     @Published var contexts: [UserContextMetadata] = []
 
+    /// The User Context currently selected.
     private var currentContext_: UserContextMetadata? = nil
     var currentUserContext: UserContextMetadata? {
         get {
@@ -106,17 +111,26 @@ class ConfigurationManager: ObservableObject {
         }
         set {
             currentContext_ = newValue
+            // Saves the current User Context to persistent storage.
             setPreference("currentUserContext", (newValue?.description ?? "") as CFString)
             objectWillChange.send()
         }
     }
 
+    /// Initializes the Configuration Manager with static parameters.
+    ///
+    /// - Parameters:
+    ///   - ptsFolderName: Name for the main PicToShare folder.
+    ///   - continuityFolderName: Name for the sub-folder where Continuity Camera Documents are saved.
+    ///   - documentAnnotators: List of available Document Annotators.
+    ///   - documentIntegrators: List of available Document Integrators.
     init(_ ptsFolderName: String,
          _ continuityFolderName: String,
          _ documentAnnotators: [DocumentAnnotator] = [],
          _ documentIntegrators: [DocumentIntegrator] = []) {
         self.documentAnnotators = documentAnnotators.map(HashableDocumentAnnotator.init)
         self.documentIntegrators = documentIntegrators.map(HashableDocumentIntegrator.init)
+
         let userDocumentsURL = try! FileManager.default
                 .url(for: .documentDirectory,
                 in: .userDomainMask,
@@ -152,12 +166,16 @@ class ConfigurationManager: ObservableObject {
         }
         saveContexts()
     }
+}
 
-    //**************************************************************************
-    // The following methods are responsible of the persistence of the
-    // configured Core Objects.
-    //**************************************************************************
-
+/// Methods responsible for the persistence of the Configuration.
+///
+/// Persistent storage is based on CFPreferences. Documents Types and User
+/// Contexts are stored in two different keys, each with an array of
+/// dictionaries (called declarations). The dictionaries hold data for all the
+/// properties, converted to CRPropertyLists. In order to load the data, we need
+/// to check the types of the values and cast them back to the appropriate type.
+extension ConfigurationManager {
     /// Helper function to read data from key-value persistent storage.
     ///
     /// - Parameter key: The key of the value to read.
@@ -185,9 +203,12 @@ class ConfigurationManager: ObservableObject {
         CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
 
         types.removeAll()
+        /// The array of Type declarations.
         let typeDeclarations = getPreference("types")
                 as? Array<CFPropertyList> ?? []
         for rawDeclaration in typeDeclarations {
+            // Now we check the type of each value, ignoring the declaration if
+            // it is invalid or using a default value.
             guard let declaration = rawDeclaration
                     as? Dictionary<String, Any> else {
                 continue
@@ -212,7 +233,7 @@ class ConfigurationManager: ObservableObject {
             let removeOriginalOnProcessingByproduct = declaration["removeOriginalOnProcessingByproduct"]
                     as? Bool ?? false
 
-            var typeAnnotators: Set<HashableDocumentAnnotator> = []
+            var declaredAnnotators: Set<HashableDocumentAnnotator> = []
             let annotatorDeclarations = declaration["documentAnnotators"]
                     as? Array<CFPropertyList> ?? []
             for rawAnnotatorDeclaration in annotatorDeclarations {
@@ -220,11 +241,11 @@ class ConfigurationManager: ObservableObject {
                         as? String,
                    let annotator = documentAnnotators
                            .first(where: { $0.description == annotatorDescription }) {
-                    typeAnnotators.insert(annotator)
+                    declaredAnnotators.insert(annotator)
                 }
             }
 
-            var typeIntegrators: Set<HashableDocumentIntegrator> = []
+            var declaredIntegrators: Set<HashableDocumentIntegrator> = []
             let integratorDeclarations = declaration["documentIntegrators"]
                     as? Array<CFPropertyList> ?? []
             for rawIntegratorDeclaration in integratorDeclarations {
@@ -232,7 +253,7 @@ class ConfigurationManager: ObservableObject {
                         as? String,
                    let integrator = documentIntegrators
                            .first(where: { $0.description == integratorDescription }) {
-                    typeIntegrators.insert(integrator)
+                    declaredIntegrators.insert(integrator)
                 }
             }
 
@@ -241,8 +262,8 @@ class ConfigurationManager: ObservableObject {
                     documentProcessorScript,
                     copyBeforeProcessing,
                     removeOriginalOnProcessingByproduct,
-                    typeAnnotators,
-                    typeIntegrators))
+                    declaredAnnotators,
+                    declaredIntegrators))
         }
     }
 
@@ -251,9 +272,12 @@ class ConfigurationManager: ObservableObject {
         CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
 
         contexts.removeAll()
+        /// The array of Context declarations.
         let contextDeclarations = getPreference("contexts")
                 as? Array<CFPropertyList> ?? []
         for rawDeclaration in contextDeclarations {
+            // Now we check the type of each value, ignoring the declaration if
+            // it is invalid or using a default value.
             guard let declaration = rawDeclaration
                     as? Dictionary<String, Any> else {
                 continue
@@ -264,7 +288,7 @@ class ConfigurationManager: ObservableObject {
                 continue
             }
 
-            var contextAnnotators: Set<HashableDocumentAnnotator> = []
+            var declaredAnnotators: Set<HashableDocumentAnnotator> = []
             let annotatorDeclarations = declaration["documentAnnotators"]
                     as? Array<CFPropertyList> ?? []
             for rawAnnotatorDeclaration in annotatorDeclarations {
@@ -272,11 +296,11 @@ class ConfigurationManager: ObservableObject {
                         as? String,
                    let annotator = documentAnnotators
                            .first(where: { $0.description == annotatorDescription }) {
-                    contextAnnotators.insert(annotator)
+                    declaredAnnotators.insert(annotator)
                 }
             }
 
-            var contextIntegrators: Set<HashableDocumentIntegrator> = []
+            var declaredIntegrators: Set<HashableDocumentIntegrator> = []
             let integratorDeclarations = declaration["documentIntegrators"]
                     as? Array<CFPropertyList> ?? []
             for rawIntegratorDeclaration in integratorDeclarations {
@@ -284,19 +308,20 @@ class ConfigurationManager: ObservableObject {
                         as? String,
                    let integrator = documentIntegrators
                            .first(where: { $0.description == integratorDescription }) {
-                    contextIntegrators.insert(integrator)
+                    declaredIntegrators.insert(integrator)
                 }
             }
 
             contexts.append(UserContextMetadata(description,
                     self,
-                    contextAnnotators,
-                    contextIntegrators))
+                    declaredAnnotators,
+                    declaredIntegrators))
         }
 
-        if let savedCurrentDescription = getPreference("currentUserContext") as? String {
+        // Loads the current user context saved to persistent storage.
+        if let savedCurrentContextDescription = getPreference("currentUserContext") as? String {
             currentUserContext = contexts.first {
-                $0.description == savedCurrentDescription
+                $0.description == savedCurrentContextDescription
             }
         }
     }
@@ -362,7 +387,7 @@ class ConfigurationManager: ObservableObject {
     }
 }
 
-
+/// Utility to convert the object to a usable form for persistent storage.
 extension DocumentTypeMetadata: CFPropertyListable {
     func toCFPropertyList() -> CFPropertyList {
         [
@@ -376,6 +401,7 @@ extension DocumentTypeMetadata: CFPropertyListable {
     }
 }
 
+/// Utility to convert the object to a usable form for persistent storage.
 extension UserContextMetadata: CFPropertyListable {
     func toCFPropertyList() -> CFPropertyList {
         [
