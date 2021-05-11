@@ -77,8 +77,8 @@ class ImportationManager: ObservableObject {
         return document
     }
 
-    /// Imports the given with a list of partial importation configuration used
-    /// to create the complete one.
+    /// Imports the given Document with a list of partial importation
+    /// configuration used to create the complete one.
     func importDocument(_ document: URL, with configurations: PartialImportationConfiguration?...) {
         do {
             let configuration = try ImportationConfiguration(configurations)
@@ -88,7 +88,7 @@ class ImportationManager: ObservableObject {
         }
     }
 
-    /// Imports the given with a complete importation configuration.
+    /// Imports the given Document with a complete importation configuration.
     func importDocument(_ document: URL, with configuration: ImportationConfiguration) {
         guard document.isFileURL else {
             return
