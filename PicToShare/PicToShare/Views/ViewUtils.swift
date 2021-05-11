@@ -46,19 +46,20 @@ extension NSTextField {
     }
 }
 
+/// A View that toggles the presence of an item in a set, using a Toggle.
 struct SetItemToggleView<Item>: View where Item: CustomStringConvertible, Item: Hashable {
-    @Binding var selected: Set<Item>
+    /// The item.
     var item: Item
-    @State var state: Bool
+    /// The set to insert the item into.
+    @Binding var selected: Set<Item>
 
     var body: some View {
         Toggle(item.description, isOn: Binding<Bool>(
                 get: {
-                    state
+                    selected.contains(item)
                 },
                 set: {
-                    state = $0
-                    if state {
+                    if $0 {
                         selected.insert(item)
                     } else {
                         selected.remove(item)
@@ -68,22 +69,15 @@ struct SetItemToggleView<Item>: View where Item: CustomStringConvertible, Item: 
     }
 }
 
-struct SetGroupView<Label, Item>: View where Label: View, Item: CustomStringConvertible, Item: Hashable {
-    var label: Label
-    @Binding var available: Dictionary<String, Item>
+/// A View that allows the user to select a set of items from a list.
+struct SetOptionsView<Item>: View where Item: CustomStringConvertible, Item: Hashable {
+    @Binding var options: [Item]
     @Binding var selected: Set<Item>
 
     var body: some View {
-        GroupBox(label: label) {
-            HStack {
-                VStack(alignment: .leading) {
-                    ForEach(available.values.map({ $0 }), id: \.self) { item in
-                        SetItemToggleView(selected: $selected,
-                                item: item,
-                                state: selected.contains(item))
-                    }
-                }
-                Spacer()
+        VStack(alignment: .leading) {
+            ForEach(options, id: \.self) { item in
+                SetItemToggleView(item: item, selected: $selected)
             }
         }
     }

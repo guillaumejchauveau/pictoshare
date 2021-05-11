@@ -1,17 +1,23 @@
 import SwiftUI
 
-
+/// A View that allows the user navigate in a list of items, and add or remove
+/// items.
 struct ListSettingsView<Item, Landing, Content>: View
         where Item: CustomStringConvertible, Landing: View, Content: View {
     @State private var selection: Int? = nil
     @State private var showNewItemForm = false
     @State private var newItemDescription = ""
 
+    /// The list of items.
     @Binding var items: [Item]
+    /// Callback for adding a new item, using a description.
     var add: (String) -> Void
+    /// Callback for removing an item at a given index.
     var remove: (Int) -> Void
+    /// Landing View displayed when no items are selected.
     var landing: Landing
-    @ViewBuilder var content: (_ index: Int) -> Content
+    /// View builder taking the index of the selected item.
+    @ViewBuilder var content: (Int) -> Content
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -26,16 +32,17 @@ struct ListSettingsView<Item, Landing, Content>: View
                 }
                 landing
             }.sheet(isPresented: $showNewItemForm) {
+                // New item form.
                 Form {
-                    TextField("Nom", text: $newItemDescription)
+                    TextField("name", text: $newItemDescription)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                     HStack {
                         Spacer(minLength: 50)
-                        Button("Annuler") {
+                        Button("cancel") {
                             showNewItemForm = false
                             newItemDescription = ""
                         }
-                        Button("Créer") {
+                        Button("create") {
                             add(newItemDescription)
                             selection = items.count - 1
                             showNewItemForm = false
@@ -48,9 +55,11 @@ struct ListSettingsView<Item, Landing, Content>: View
                 }.padding()
             }
             HStack {
+                // Add item button.
                 Button(action: { showNewItemForm = true }) {
                     Image(systemName: "plus")
                 }
+                // Remove item button.
                 Button(action: {
                     guard let index: Int = selection else {
                         return

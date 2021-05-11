@@ -1,6 +1,6 @@
 import SwiftUI
 
-
+/// View for editing User Contexts in the settings.
 struct UserContextsView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
 
@@ -10,16 +10,15 @@ struct UserContextsView: View {
                 Image(systemName: "questionmark.circle").imageScale(.large)
                         .font(.system(size: 30))
                         .offset(y: -80)
-                Text("""
-                     Créez des contextes pour adapter l'importation selon votre activité.
-                     Les annotations et intégrations configurées seront ajoutées à celles du type de document.
-                     """).font(.system(size: 16, weight: .light)).lineSpacing(5)
+                Text("pts.settings.userContexts.landing")
+                        .font(.system(size: 16, weight: .light)).lineSpacing(5)
             }.frame(width: 400)
         }
     }
 
     var body: some View {
         VStack(alignment: .leading) {
+            // Uses a custom View to make a Navigation View with all the Contexts.
             ListSettingsView(items: $configurationManager.contexts,
                     add: configurationManager.addContext,
                     remove: configurationManager.removeContext,
@@ -35,6 +34,7 @@ struct UserContextsView: View {
 }
 
 
+/// A View for editing a User Context.
 struct UserContextView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
 
@@ -54,7 +54,7 @@ struct UserContextView: View {
 
     var body: some View {
         Form {
-            GroupBox(label: Text("Nom")) {
+            GroupBox(label: Text("name")) {
                 HStack {
                     TextField("", text: $editingDescription, onCommit: validateDescription)
                             .textFieldStyle(PlainTextFieldStyle())
@@ -66,13 +66,23 @@ struct UserContextView: View {
                 }
             }
 
-            SetGroupView(label: Text("Annotations"),
-                    available: $configurationManager.documentAnnotators,
-                    selected: $documentAnnotators)
+            GroupBox(label: Text("pts.annotations")) {
+                HStack {
+                    SetOptionsView(
+                            options: $configurationManager.documentAnnotators,
+                            selected: $documentAnnotators)
+                    Spacer()
+                }
+            }
 
-            SetGroupView(label: Text("Intégrations"),
-                    available: $configurationManager.documentIntegrators,
-                    selected: $documentIntegrators)
+            GroupBox(label: Text("pts.integrations")) {
+                HStack {
+                    SetOptionsView(
+                            options: $configurationManager.documentIntegrators,
+                            selected: $documentIntegrators)
+                    Spacer()
+                }
+            }
         }.padding()
     }
 }

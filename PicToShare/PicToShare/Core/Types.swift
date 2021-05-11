@@ -1,15 +1,14 @@
 import Foundation
 
-/// Object providing a list of keywords to add to imported Documents.
-/// The keywords are usually based on information in the current context.
+/// Object providing a list of Annotations to add to imported Documents.
+/// The Annotations are usually based on information in the current context.
 protocol DocumentAnnotator: CustomStringConvertible {
     typealias CompletionHandler = ([String]) -> Void
 
+    /// Document Annotator can run asynchronously (to ask permission to access a
+    /// resource for example), so this function takes a completion callback.
+    /// The callback must be called with an array of Annotations.
     func makeAnnotations(_ completion: @escaping CompletionHandler)
-}
-
-enum DocumentAnnotatorError: Error {
-    case permissionError
 }
 
 /// Object attaching the Document file to an external application or content.
@@ -18,30 +17,53 @@ protocol DocumentIntegrator: CustomStringConvertible {
 }
 
 
-protocol DocumentType: CustomStringConvertible {
+/// Object providing some Importation Configuration parameters.
+/// Partials can be merged to create a complete Configuration.
+protocol PartialImportationConfiguration {
     /// A path to the script used to process the Document.
     var documentProcessorScript: URL? { get }
     /// Indicates if a copy of the file should be made before running the script.
-    var copyBeforeProcessing: Bool { get }
+    var copyBeforeProcessing: Bool? { get }
     /// Indicates if a the original file should be removed if the script creates new files.
-    var removeOriginalOnProcessingByproduct: Bool { get }
+    var removeOriginalOnProcessingByproduct: Bool? { get }
     /// The Document Annotators used to annotate the Document.
     var documentAnnotators: Set<HashableDocumentAnnotator> { get }
+    /// Additional annotations to add to the Document.
+    var additionalDocumentAnnotations: [String] { get }
     /// The Document Integrators that will use the Document.
     var documentIntegrators: Set<HashableDocumentIntegrator> { get }
-    /// The URL of the folder containing links to all Documents of this Type.
-    var folder: URL { get }
-}
-
-protocol UserContext: CustomStringConvertible {
-    /// Additional Document Annotators.
-    var documentAnnotators: Set<HashableDocumentAnnotator> { get }
-    /// Additional Document Integrators.
-    var documentIntegrators: Set<HashableDocumentIntegrator> { get }
+    /// The URL of the folder where a bookmark should be placed.
+    var bookmarkFolder: URL? { get }
 }
 
 
-// As Protocols cannot conform to Hashable, the following implement a compromise.
+/// Default implementation for Partial Configuration.
+extension PartialImportationConfiguration {
+    var documentProcessorScript: URL? {
+        nil
+    }
+    var copyBeforeProcessing: Bool? {
+        nil
+    }
+    var removeOriginalOnProcessingByproduct: Bool? {
+        nil
+    }
+    var documentAnnotators: Set<HashableDocumentAnnotator> {
+        []
+    }
+    var additionalDocumentAnnotations: [String] {
+        []
+    }
+    var documentIntegrators: Set<HashableDocumentIntegrator> {
+        []
+    }
+    var bookmarkFolder: URL? {
+        nil
+    }
+}
+
+
+// As Protocols cannot conform to Hashable, the following wrappers are used.
 
 struct HashableDocumentAnnotator: DocumentAnnotator, Hashable {
     static func ==(lhs: HashableDocumentAnnotator, rhs: HashableDocumentAnnotator) -> Bool {
