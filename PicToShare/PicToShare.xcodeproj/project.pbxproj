@@ -19,8 +19,8 @@
 		95F876C926459BFD006AEA66 /* UserContextsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F876C826459BFD006AEA66 /* UserContextsView.swift */; };
 		95F876CB26459E30006AEA66 /* ListSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F876CA26459E30006AEA66 /* ListSettingsView.swift */; };
 		95F95102261B9A7C00000A93 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F95101261B9A7C00000A93 /* App.swift */; };
-		B0BDB9602645930D00A86FA7 /* ErrorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0BDB95F2645930D00A86FA7 /* ErrorManager.swift */; };
 		F9A7C08D79F175A83BD76A0E /* DocumentIntegrators.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C28A555F204F09D31E55 /* DocumentIntegrators.swift */; };
+		F9A7C31C772B6AD463E9640D /* ErrorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C278767B513C7ACBBF10 /* ErrorManager.swift */; };
 		F9A7C33E0FC489A18F38CE51 /* ContinuityCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C938489000F68C95D3D7 /* ContinuityCamera.swift */; };
 		F9A7C6884F6D835DFBD3F4FB /* DocumentTypesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7CB5497C834E0B122F3A0 /* DocumentTypesView.swift */; };
 		F9A7C856ABCC5868A2849686 /* ImportationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C6833306D3114D356C2E /* ImportationView.swift */; };
@@ -46,9 +46,9 @@
 		95F876CA26459E30006AEA66 /* ListSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListSettingsView.swift; sourceTree = "<group>"; };
 		95F95101261B9A7C00000A93 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		987CF50435E8F1FD6D904357 /* Pods-PicToShare.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PicToShare.debug.xcconfig"; path = "Target Support Files/Pods-PicToShare/Pods-PicToShare.debug.xcconfig"; sourceTree = "<group>"; };
-		B0BDB95F2645930D00A86FA7 /* ErrorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorManager.swift; sourceTree = "<group>"; };
 		C2977C65D2B1CA0D1610B65D /* Pods-PicToShare.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PicToShare.release.xcconfig"; path = "Target Support Files/Pods-PicToShare/Pods-PicToShare.release.xcconfig"; sourceTree = "<group>"; };
 		F9A7C24A138F6321D385CD24 /* ViewUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewUtils.swift; sourceTree = "<group>"; };
+		F9A7C278767B513C7ACBBF10 /* ErrorManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorManager.swift; sourceTree = "<group>"; };
 		F9A7C28A555F204F09D31E55 /* DocumentIntegrators.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DocumentIntegrators.swift; sourceTree = "<group>"; };
 		F9A7C6833306D3114D356C2E /* ImportationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImportationView.swift; sourceTree = "<group>"; };
 		F9A7C938489000F68C95D3D7 /* ContinuityCamera.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContinuityCamera.swift; sourceTree = "<group>"; };
@@ -129,7 +129,6 @@
 				F9A7C938489000F68C95D3D7 /* ContinuityCamera.swift */,
 				95E67AD22643062400C17938 /* DocumentAnnotators.swift */,
 				F9A7C28A555F204F09D31E55 /* DocumentIntegrators.swift */,
-				B0BDB95F2645930D00A86FA7 /* ErrorManager.swift */,
 				F9A7CBD1B17DA9CD664A2158 /* StatusItem.swift */,
 				95DD6A972648444900DB2585 /* ServicesProvider.swift */,
 			);
@@ -143,6 +142,7 @@
 				95BD8EC62616344100D83532 /* Importation.swift */,
 				95BD8EC82616344100D83532 /* Types.swift */,
 				95BD8EC72616344100D83532 /* Utils.swift */,
+				F9A7C278767B513C7ACBBF10 /* ErrorManager.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -250,7 +250,6 @@
 				95BD8ECC2616344100D83532 /* Types.swift in Sources */,
 				95BD8ECB2616344100D83532 /* Utils.swift in Sources */,
 				95F95102261B9A7C00000A93 /* App.swift in Sources */,
-				B0BDB9602645930D00A86FA7 /* ErrorManager.swift in Sources */,
 				F9A7C33E0FC489A18F38CE51 /* ContinuityCamera.swift in Sources */,
 				95F876CB26459E30006AEA66 /* ListSettingsView.swift in Sources */,
 				F9A7C6884F6D835DFBD3F4FB /* DocumentTypesView.swift in Sources */,
@@ -258,6 +257,7 @@
 				F9A7C89AF6396B2FCF324263 /* ViewUtils.swift in Sources */,
 				F9A7C08D79F175A83BD76A0E /* DocumentIntegrators.swift in Sources */,
 				F9A7CA86CCAA0E2623FC62DA /* StatusItem.swift in Sources */,
+				F9A7C31C772B6AD463E9640D /* ErrorManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
