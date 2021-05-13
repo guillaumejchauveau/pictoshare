@@ -57,7 +57,7 @@ class DocumentTypeMetadata: PartialImportationConfiguration, ObservableObject,
         calendarResourceSubscriber = calendarResource.objectWillChange.sink { [self] in
             // Postpones call to wait for the object to actually change.
             DispatchQueue.main
-                .asyncAfter(deadline: .now() + .milliseconds(100)) {
+                    .asyncAfter(deadline: .now() + .milliseconds(100)) {
                 if temporaryCalendarsIdentifiers.isEmpty {
                     // Filters the calendars if some have been removed by the user.
                     self.calendars = self.calendars.intersection(Set<EKCalendar>(calendarResource.calendars))
@@ -118,18 +118,18 @@ class UserContextMetadata: PartialImportationConfiguration, ObservableObject,
         calendarResourceSubscriber = calendarResource.objectWillChange.sink { [self] in
             // Postpones call to wait for the object to actually change.
             DispatchQueue.main
-                .asyncAfter(deadline: .now() + .milliseconds(100)) {
-                    if temporaryCalendarsIdentifiers.isEmpty {
-                        // Filters the calendars if some have been removed by the user.
-                        self.calendars = self.calendars.intersection(Set<EKCalendar>(calendarResource.calendars))
-                    } else {
-                        // Registers the actual calendars using the provided calendar identifiers.
-                        self.calendars = Set<EKCalendar>(calendarResource.calendars.filter {
-                            temporaryCalendarsIdentifiers.contains($0.calendarIdentifier)
-                        })
-                        temporaryCalendarsIdentifiers = []
-                    }
+                    .asyncAfter(deadline: .now() + .milliseconds(100)) {
+                if temporaryCalendarsIdentifiers.isEmpty {
+                    // Filters the calendars if some have been removed by the user.
+                    self.calendars = self.calendars.intersection(Set<EKCalendar>(calendarResource.calendars))
+                } else {
+                    // Registers the actual calendars using the provided calendar identifiers.
+                    self.calendars = Set<EKCalendar>(calendarResource.calendars.filter {
+                        temporaryCalendarsIdentifiers.contains($0.calendarIdentifier)
+                    })
+                    temporaryCalendarsIdentifiers = []
                 }
+            }
         }
     }
 }
@@ -314,13 +314,13 @@ extension ConfigurationManager {
             }
 
             let documentType = DocumentTypeMetadata(description,
-                                                    self,
-                                                    calendarResource,
-                                                    documentProcessorScript,
-                                                    copyBeforeProcessing,
-                                                    removeOriginalOnProcessingByproduct,
-                                                    declaredAnnotators,
-                                                    declaredIntegrators)
+                    self,
+                    calendarResource,
+                    documentProcessorScript,
+                    copyBeforeProcessing,
+                    removeOriginalOnProcessingByproduct,
+                    declaredAnnotators,
+                    declaredIntegrators)
 
             // The list of available calendars in the Calendar Resource may not
             // be up to date, and refreshing it is an asynchronous process, so
@@ -329,10 +329,10 @@ extension ConfigurationManager {
             // will register the actual calendars automatically.
             var calendarIdentifiers: [String] = []
             let calendarDeclarations = declaration["calendars"]
-                as? Array<CFPropertyList> ?? []
+                    as? Array<CFPropertyList> ?? []
             for rawCalendarDeclaration in calendarDeclarations {
                 if let calendarDeclaration = rawCalendarDeclaration
-                    as? String {
+                        as? String {
                     calendarIdentifiers.append(calendarDeclaration)
                 }
             }
@@ -388,10 +388,10 @@ extension ConfigurationManager {
             }
 
             let userContext = UserContextMetadata(description,
-                                                 self,
-                                                 calendarResource,
-                                                 declaredAnnotators,
-                                                 declaredIntegrators)
+                    self,
+                    calendarResource,
+                    declaredAnnotators,
+                    declaredIntegrators)
 
             // The list of available calendars in the Calendar Resource may not
             // be up to date, and refreshing it is an asyncronous process, so
@@ -400,10 +400,10 @@ extension ConfigurationManager {
             // will register the actual calendars automatically.
             var calendarIdentifiers: [String] = []
             let calendarDeclarations = declaration["calendars"]
-                as? Array<CFPropertyList> ?? []
+                    as? Array<CFPropertyList> ?? []
             for rawCalendarDeclaration in calendarDeclarations {
                 if let calendarDeclaration = rawCalendarDeclaration
-                    as? String {
+                        as? String {
                     calendarIdentifiers.append(calendarDeclaration)
                 }
             }

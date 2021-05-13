@@ -93,8 +93,8 @@ struct UserContextView: View {
                     HStack {
                         VStack(alignment: .leading) {
                             SetOptionsView(
-                                options: $calendarResource.calendars,
-                                selected: $calendars
+                                    options: $calendarResource.calendars,
+                                    selected: $calendars
                             ).padding(.bottom, 5)
 
                             HStack {

@@ -180,18 +180,20 @@ class ImportationManager: ObservableObject {
             annotator.makeAnnotations(with: configuration, annotationResults.complete)
         }
 
+        var bookmarks: [URL] = []
         for url in urls {
             do {
                 let bookmarkData = try url.bookmarkData(options: [.suitableForBookmarkFile])
-                try URL.writeBookmarkData(bookmarkData,
-                        to: configuration.bookmarkFolder.appendingPathComponent(url.lastPathComponent))
+                let bookmarkUrl = configuration.bookmarkFolder.appendingPathComponent(url.lastPathComponent)
+                try URL.writeBookmarkData(bookmarkData, to: bookmarkUrl)
+                bookmarks.append(bookmarkUrl)
             } catch {
                 ErrorManager.error(.importation, key: "pts.error.importation.bookmark")
             }
         }
 
         for integrator in configuration.documentIntegrators {
-            integrator.integrate(documents: urls, with: configuration)
+            integrator.integrate(documents: urls, bookmarks: bookmarks, with: configuration)
         }
     }
 }

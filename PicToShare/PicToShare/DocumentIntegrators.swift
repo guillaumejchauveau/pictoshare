@@ -14,9 +14,9 @@ struct CurrentCalendarEventsDocumentIntegrator: DocumentIntegrator {
         self.calendarResource = calendarResource
     }
 
-    func integrate(documents: [URL], with configuration: ImportationConfiguration) {
+    func integrate(documents: [URL], bookmarks: [URL], with configuration: ImportationConfiguration) {
         calendarResource.getCurrentEvents(in: configuration.calendars) { events in
-            let documentsString = documents.map {
+            let documentsString = bookmarks.map {
                 $0.absoluteString
             }.joined(separator: "\n")
 

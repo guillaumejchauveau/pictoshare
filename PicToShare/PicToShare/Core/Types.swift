@@ -10,13 +10,13 @@ protocol DocumentAnnotator: CustomStringConvertible {
     /// resource for example), so this function takes a completion callback.
     /// The callback must be called with an array of Annotations.
     func makeAnnotations(
-        with: ImportationConfiguration,
-        _ completion: @escaping CompletionHandler)
+            with: ImportationConfiguration,
+            _ completion: @escaping CompletionHandler)
 }
 
 /// Object attaching the Document file to an external application or content.
 protocol DocumentIntegrator: CustomStringConvertible {
-    func integrate(documents: [URL], with: ImportationConfiguration)
+    func integrate(documents: [URL], bookmarks: [URL], with: ImportationConfiguration)
 }
 
 
@@ -132,8 +132,8 @@ struct HashableDocumentAnnotator: DocumentAnnotator, Hashable {
     }
 
     func makeAnnotations(
-        with configuration: ImportationConfiguration,
-        _ completion: @escaping CompletionHandler) {
+            with configuration: ImportationConfiguration,
+            _ completion: @escaping CompletionHandler) {
         annotator.makeAnnotations(with: configuration, completion)
     }
 
@@ -158,8 +158,8 @@ struct HashableDocumentIntegrator: DocumentIntegrator, Hashable {
     }
 
 
-    func integrate(documents: [URL], with configuration: ImportationConfiguration) {
-        integrator.integrate(documents: documents, with: configuration)
+    func integrate(documents: [URL], bookmarks: [URL], with configuration: ImportationConfiguration) {
+        integrator.integrate(documents: documents, bookmarks: bookmarks, with: configuration)
     }
 
     var description: String {
