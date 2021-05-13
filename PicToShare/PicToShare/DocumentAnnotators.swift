@@ -1,6 +1,5 @@
 // This file contains all the Document Annotator implementations for PicToShare.
 
-import EventKit
 import CoreLocation
 import MapKit
 
@@ -10,36 +9,23 @@ import MapKit
 struct CurrentCalendarEventsDocumentAnnotator: DocumentAnnotator {
     let description = NSLocalizedString("pts.annotators.currentCalendarEvents", comment: "")
 
-    private let store = EKEventStore()
+    private let calendarResource: CalendarsResource
 
-    func makeAnnotations(_ completion: @escaping CompletionHandler) {
-        // Requests permission to access the calendar.
-        store.requestAccess(to: .event) { granted, error in
-            guard granted, error == nil else {
-                ErrorManager.error(.currentCalendarEventsDocumentAnnotator,
-                        key: "pts.error.annotators.currentCalendarEvents.permissions")
-                completion([])
-                return
-            }
+    init(_ calendarResource: CalendarsResource) {
+        self.calendarResource = calendarResource
+    }
 
-            // Query for all active events in all calendars.
-            let predicate = store.predicateForEvents(withStart: Date(),
-                    end: Date(),
-                    calendars: nil)
-
-            let keywords = store.events(matching: predicate).compactMap {
+    func makeAnnotations(
+            with configuration: ImportationConfiguration,
+            _ completion: @escaping CompletionHandler) {
+        calendarResource.getCurrentEvents(in: configuration.calendars) { events in
+            completion(events.compactMap {
                 $0.title
-            }
-
-            completion(keywords)
+            })
         }
     }
 }
 
-extension PicToShareError {
-    static let currentCalendarEventsDocumentAnnotator =
-            PicToShareError(type: "pts.error.annotators.currentCalendarEvents")
-}
 
 /// Geo localization annotator: adds the country, city, and place names of the
 /// current location.
@@ -75,7 +61,9 @@ struct GeoLocalizationDocumentAnnotator: DocumentAnnotator {
         locationManager.delegate = delegate
     }
 
-    func makeAnnotations(_ completion: @escaping CompletionHandler) {
+    func makeAnnotations(
+            with configuration: ImportationConfiguration,
+            _ completion: @escaping CompletionHandler) {
         guard CLLocationManager.locationServicesEnabled() else {
             ErrorManager.error(.geoLocalizationDocumentAnnotator,
                     key: "pts.error.annotators.geoLocalization.service")

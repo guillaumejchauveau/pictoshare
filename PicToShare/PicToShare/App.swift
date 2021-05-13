@@ -2,17 +2,10 @@ import SwiftUI
 
 @main
 struct PTSApp: App {
-    private let configurationManager = ConfigurationManager(
-            "PTSFolder", // Name for the main PicToShare folder.
-            "Continuity", // Name for the sub-folder where Continuity Camera Documents are saved.
-            [ // List of available Document Annotators.
-                CurrentCalendarEventsDocumentAnnotator(),
-                GeoLocalizationDocumentAnnotator()
-            ],
-            [ // List of available Document Integrators.
-                CurrentCalendarEventsDocumentIntegrator()
-            ])
+    private let configurationManager: ConfigurationManager
     private let importationManager = ImportationManager()
+
+    private let calendarResource = CalendarsResource()
 
     private let statusItem: NSStatusItem
     private let statusItemMenuDelegate: StatusMenuDelegate
@@ -27,18 +20,31 @@ struct PTSApp: App {
     /// PTS entry point.
     /// Initializes application managers and OS integrations.
     init() {
+        configurationManager = ConfigurationManager(
+                "PTSFolder", // Name for the main PicToShare folder.
+                "Continuity", // Name for the sub-folder where Continuity Camera Documents are saved.
+                [// List of available Document Annotators.
+                    CurrentCalendarEventsDocumentAnnotator(calendarResource),
+                    GeoLocalizationDocumentAnnotator()
+                ],
+                [// List of available Document Integrators.
+                    CurrentCalendarEventsDocumentIntegrator(calendarResource)
+                ],
+                calendarResource)
         // Loads the configuration from persistent storage and creates folders
         // if necessary.
         configurationManager.loadTypes()
         configurationManager.loadContexts()
         configurationManager.saveTypes()
 
+        calendarResource.refreshCalendars()
+
         // Creates default Document Types.
         if !FileManager.default.fileExists(
                 atPath: configurationManager.documentFolderURL.path) {
-            configurationManager.addType(with: "Carte de visite")
-            configurationManager.addType(with: "Affiche événement")
-            configurationManager.addType(with: "Tableau blanc")
+            configurationManager.addType(with: NSLocalizedString("pts.defaultDocumentTypes.1", comment: ""))
+            configurationManager.addType(with: NSLocalizedString("pts.defaultDocumentTypes.2", comment: ""))
+            configurationManager.addType(with: NSLocalizedString("pts.defaultDocumentTypes.3", comment: ""))
             configurationManager.saveTypes()
         }
 
@@ -67,7 +73,9 @@ struct PTSApp: App {
         }.handlesExternalEvents(matching: Set(arrayLiteral: "main"))
 
         Settings {
-            SettingsView().environmentObject(configurationManager)
+            SettingsView()
+                    .environmentObject(configurationManager)
+                    .environmentObject(calendarResource)
         }
     }
 }

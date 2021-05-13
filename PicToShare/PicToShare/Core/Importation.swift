@@ -1,53 +1,10 @@
 import Foundation
+import EventKit
 
 extension PicToShareError {
     static let importation = PicToShareError(type: "pts.error.importation")
 }
 
-/// Holds all the information required to import a Document.
-struct ImportationConfiguration {
-    /// A path to the script used to process the Document.
-    var documentProcessorScript: URL? = nil
-    /// Indicates if a copy of the file should be made before running the script.
-    var copyBeforeProcessing: Bool = true
-    /// Indicates if a the original file should be removed if the script creates new files.
-    var removeOriginalOnProcessingByproduct: Bool = false
-    /// The Document Annotators used to annotate the Document.
-    var documentAnnotators: Set<HashableDocumentAnnotator> = []
-    /// Additional annotations to add to the Document.
-    var additionalDocumentAnnotations: [String] = []
-    /// The Document Integrators that will use the Document.
-    var documentIntegrators: Set<HashableDocumentIntegrator> = []
-    /// The URL of the folder where a bookmark should be placed.
-    var bookmarkFolder: URL
-
-    /// Creates a complete configuration using partial configurations.
-    init(_ partials: [PartialImportationConfiguration?]) throws {
-        var chosenBookmarkFolder: URL? = nil
-        for partial in partials.compactMap({ $0 }) {
-            if let script = partial.documentProcessorScript {
-                documentProcessorScript = script
-            }
-            if let copy = partial.copyBeforeProcessing {
-                copyBeforeProcessing = copy
-            }
-            if let remove = partial.removeOriginalOnProcessingByproduct {
-                removeOriginalOnProcessingByproduct = remove
-            }
-            if let folder = partial.bookmarkFolder {
-                chosenBookmarkFolder = folder
-            }
-            documentAnnotators = documentAnnotators.union(partial.documentAnnotators)
-            additionalDocumentAnnotations.append(contentsOf: partial.additionalDocumentAnnotations)
-            documentIntegrators = documentIntegrators.union(partial.documentIntegrators)
-        }
-
-        guard let bookmarkFolder = chosenBookmarkFolder else {
-            throw PicToShareError.importation
-        }
-        self.bookmarkFolder = bookmarkFolder
-    }
-}
 
 /// Object responsible of the Importation process.
 class ImportationManager: ObservableObject {
@@ -220,7 +177,7 @@ class ImportationManager: ObservableObject {
                 configuration.additionalDocumentAnnotations)
 
         for annotator in configuration.documentAnnotators {
-            annotator.makeAnnotations(annotationResults.complete)
+            annotator.makeAnnotations(with: configuration, annotationResults.complete)
         }
 
         for url in urls {
@@ -234,7 +191,7 @@ class ImportationManager: ObservableObject {
         }
 
         for integrator in configuration.documentIntegrators {
-            integrator.integrate(documents: urls)
+            integrator.integrate(documents: urls, with: configuration)
         }
     }
 }

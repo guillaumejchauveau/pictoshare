@@ -1,4 +1,5 @@
 import SwiftUI
+import EventKit
 
 /// View for editing User Contexts in the settings.
 struct UserContextsView: View {
@@ -27,6 +28,7 @@ struct UserContextsView: View {
                         description: $configurationManager.contexts[index].description,
                         documentAnnotators: $configurationManager.contexts[index].documentAnnotators,
                         documentIntegrators: $configurationManager.contexts[index].documentIntegrators,
+                        calendars: $configurationManager.contexts[index].calendars,
                         editingDescription: configurationManager.contexts[index].description)
             }
         }
@@ -37,10 +39,12 @@ struct UserContextsView: View {
 /// A View for editing a User Context.
 struct UserContextView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
+    @EnvironmentObject var calendarResource: CalendarsResource
 
     @Binding var description: String
     @Binding var documentAnnotators: Set<HashableDocumentAnnotator>
     @Binding var documentIntegrators: Set<HashableDocumentIntegrator>
+    @Binding var calendars: Set<EKCalendar>
 
     @State var editingDescription: String
 
@@ -53,37 +57,57 @@ struct UserContextView: View {
     }
 
     var body: some View {
-        Form {
-            GroupBox(label: Text("name")) {
-                HStack {
-                    TextField("", text: $editingDescription, onCommit: validateDescription)
-                            .textFieldStyle(PlainTextFieldStyle())
-                            .padding(2)
-                    Spacer()
-                    Button(action: validateDescription) {
-                        Image(systemName: "checkmark")
-                    }.disabled(description == editingDescription)
+        ScrollView {
+            Form {
+                GroupBox(label: Text("name")) {
+                    HStack {
+                        TextField("", text: $editingDescription, onCommit: validateDescription)
+                                .textFieldStyle(PlainTextFieldStyle())
+                                .padding(2)
+                        Spacer()
+                        Button(action: validateDescription) {
+                            Image(systemName: "checkmark")
+                        }.disabled(description == editingDescription)
+                    }
                 }
-            }
 
-            GroupBox(label: Text("pts.annotations")) {
-                HStack {
-                    SetOptionsView(
-                            options: $configurationManager.documentAnnotators,
-                            selected: $documentAnnotators)
-                    Spacer()
+                GroupBox(label: Text("pts.annotations")) {
+                    HStack {
+                        SetOptionsView(
+                                options: $configurationManager.documentAnnotators,
+                                selected: $documentAnnotators)
+                        Spacer()
+                    }
                 }
-            }
 
-            GroupBox(label: Text("pts.integrations")) {
-                HStack {
-                    SetOptionsView(
-                            options: $configurationManager.documentIntegrators,
-                            selected: $documentIntegrators)
-                    Spacer()
+                GroupBox(label: Text("pts.integrations")) {
+                    HStack {
+                        SetOptionsView(
+                                options: $configurationManager.documentIntegrators,
+                                selected: $documentIntegrators)
+                        Spacer()
+                    }
                 }
-            }
-        }.padding()
+
+                GroupBox(label: Text("pts.resources.calendars")) {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            SetOptionsView(
+                                options: $calendarResource.calendars,
+                                selected: $calendars
+                            ).padding(.bottom, 5)
+
+                            HStack {
+                                Button(action: calendarResource.refreshCalendars) {
+                                    Image(systemName: "arrow.clockwise")
+                                }
+                                Text("refresh")
+                            }
+                        }
+                        Spacer()
+                    }
+                }
+            }.padding()
+        }
     }
 }
-

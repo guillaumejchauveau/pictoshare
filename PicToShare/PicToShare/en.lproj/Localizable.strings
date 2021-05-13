@@ -4,6 +4,7 @@
 "create" = "Create";
 "ignore" = "Ignore";
 "import" = "Import";
+"refresh" = "Refresh";
 
 "pts.open" = "Open PicToShare";
 "pts.openPTSFolder" = "Go to PicToShare folder";
@@ -14,6 +15,10 @@
 "pts.annotations" = "Context annotations";
 "pts.integrations" = "Integrations";
 "pts.copySuffix" = "copy";
+
+"pts.defaultDocumentTypes.1" = "Visit card";
+"pts.defaultDocumentTypes.2" = "Event poster";
+"pts.defaultDocumentTypes.3" = "Whiteboard";
 
 "pts.landing.title" = "Use the toolbar to import";
 "pts.landing.continuity" = "Take a picture with a connected device";
@@ -28,9 +33,11 @@
 
 "pts.settings.userContexts.landing" = "Create event types to adapt the importation depending on your activity.\nContext annotations and integrations will be added to those in the document type.";
 
-"pts.annotators.currentCalendarEvents" = "Current events";
+"pts.annotators.currentCalendarEvents" = "Current calendars events";
 "pts.annotators.geoLocalization" = "Geolocalisation";
-"pts.integrators.currentCalendarEvents" = "Add to current events";
+"pts.integrators.currentCalendarEvents" = "Add to current calendars events";
+
+"pts.resources.calendars" = "Calendars";
 
 "pts.error.configuration" = "Configuration problem";
 "pts.error.configuration.changeTypeDescription" = "PicToShare could not rename the folder of type “%@”.";
@@ -46,14 +53,11 @@
 "pts.error.continuity" = "Continuity Camera error";
 "pts.error.continuity.save" = "PicToShare could not save the file coming from Continuity.";
 
-"pts.error.annotators.currentCalendarEvents" = "Calendar annotation failed";
-"pts.error.annotators.currentCalendarEvents.permissions" = "PicToShare is not authorized to access the calendar.";
-
 "pts.error.annotators.geoLocalization" = "Geo localization failed";
 "pts.error.annotators.geoLocalization.service" = "Localization service disabled.";
 "pts.error.annotators.geoLocalization.permissions" = "PicToShare is not authorized to access the location.";
 "pts.error.annotators.geoLocalization.location" = "PicToShare could not access the location.";
 
-"pts.error.integrators.currentCalendarEvents" = "Calendar integration failed";
-"pts.error.integrators.currentCalendarEvents.permissions" = "PicToShare is not authorized to access the calendar.";
-"pts.error.integrators.currentCalendarEvents.integrate" = "PicToShare could not update the calendar to add a link to the document.";
+"pts.error.resources.calendars" = "Calendars operation failed";
+"pts.error.resources.calendars.permissions" = "PicToShare is not authorized to access calendars";
+"pts.error.resources.calendars.save" = "PicToShare could not edit calendars.";

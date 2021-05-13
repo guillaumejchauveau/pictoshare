@@ -4,6 +4,7 @@
 "create" = "Créer";
 "ignore" = "Ignorer";
 "import" = "Importer";
+"refresh" = "Rafraichir";
 
 "pts.open" = "Ouvrir PicToShare";
 "pts.openPTSFolder" = "Aller au dossier PicToShare";
@@ -14,6 +15,10 @@
 "pts.annotations" = "Annotations de contexte";
 "pts.integrations" = "Intégrations";
 "pts.copySuffix" = "copie";
+
+"pts.defaultDocumentTypes.1" = "Carte de visite";
+"pts.defaultDocumentTypes.2" = "Affiche événement";
+"pts.defaultDocumentTypes.3" = "Tableau blanc";
 
 "pts.landing.title" = "Utilisez la barre d'outil pour importer";
 "pts.landing.continuity" = "Prendre une photo avec un appareil connecté";
@@ -28,9 +33,11 @@
 
 "pts.settings.userContexts.landing" = "Créez des types d'événement pour adapter l'importation selon votre activité.\nLes annotations de contexte et intégrations configurées seront ajoutées à celles du type de document.";
 
-"pts.annotators.currentCalendarEvents" = "Événements en cours";
+"pts.annotators.currentCalendarEvents" = "Événements des calendriers en cours";
 "pts.annotators.geoLocalization" = "Géolocalisation";
-"pts.integrators.currentCalendarEvents" = "Ajouter aux événements en cours";
+"pts.integrators.currentCalendarEvents" = "Ajouter aux événements des calendriers en cours";
+
+"pts.resources.calendars" = "Calendriers";
 
 "pts.error.configuration" = "Problème de configuration";
 "pts.error.configuration.changeTypeDescription" = "PicToShare n'a pas pu renommer le dossier du type « %@ ».";
@@ -46,14 +53,11 @@
 "pts.error.continuity" = "Erreur avec Continuity Camera";
 "pts.error.continuity.save" = "PicToShare n'a pas pu enregistrer le fichier provenant de Continuity.";
 
-"pts.error.annotators.currentCalendarEvents" = "Échec d'annotation avec le calendrier.";
-"pts.error.annotators.currentCalendarEvents.permissions" = "PicToShare n'a pas l'autorisation d'accèder au calendrier.";
-
 "pts.error.annotators.geoLocalization" = "Échec d'annotation avec la géolocalisation";
 "pts.error.annotators.geoLocalization.service" = "Le service de localisation est désactivé.";
 "pts.error.annotators.geoLocalization.permissions" = "PicToShare n'a pas l'autorisation d'accèder à l'emplacement.";
 "pts.error.annotators.geoLocalization.location" = "PicToShare n'a pas pu accèder à l'emplacement.";
 
-"pts.error.integrators.currentCalendarEvents" = "Échec d'intégration au calendrier";
-"pts.error.integrators.currentCalendarEvents.permissions" = "PicToShare n'a pas l'autorisation d'accèder au calendrier.";
-"pts.error.integrators.currentCalendarEvents.integrate" = "PicToShare n'a pas pu éditer le calendrier pour y intégrer un lien vers le fichier.";
+"pts.error.resources.calendars" = "Échec d'opération sur les calendriers";
+"pts.error.resources.calendars.permissions" = "PicToShare n'a pas l'autorisation d'accèder aux calendriers.";
+"pts.error.resources.calendars.save" = "PicToShare n'a pas pu éditer les calendriers.";
