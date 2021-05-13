@@ -17,9 +17,9 @@ class ContinuityCameraController: NSViewController, NSServicesMenuRequestor {
         button.isTransparent = true
         button.menu = NSMenu()
         button.menu!.addItem(
-            NSMenuItem(title: NSLocalizedString("pts.continuity.menuItemTitle", comment: ""),
-                       action: nil,
-                       keyEquivalent: ""))
+                NSMenuItem(title: NSLocalizedString("pts.continuity.menuItemTitle", comment: ""),
+                        action: nil,
+                        keyEquivalent: ""))
         view = button
     }
 

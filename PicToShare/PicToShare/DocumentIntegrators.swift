@@ -1,6 +1,6 @@
 // This file contains all the Document Integrator implementations for PicToShare.
 
-import Foundation
+import SwiftUI
 import EventKit
 
 
@@ -9,49 +9,71 @@ import EventKit
 struct CurrentCalendarEventsDocumentIntegrator: DocumentIntegrator {
     let description = NSLocalizedString("pts.integrators.currentCalendarEvents", comment: "")
 
-    private let store = EKEventStore()
+    private let calendarResource: CalendarsResource
 
-    /// ATM, it can fail after asking for rights to use the Calendar. Reasons are unknown.
-    /// It fails at the store.save line.
-    func integrate(documents: [URL]) {
-        store.requestAccess(to: .event) { granted, error in
-            guard granted && error == nil else {
-                ErrorManager.error(.currentCalendarEventsDocumentIntegrator,
-                        key: "pts.error.integrators.currentCalendarEvents.permissions")
+    /// Modal view for confirming which events should be edited with a link to the imported Document.
+    private struct ConfirmationModalContentView: View {
+        let calendarResource: CalendarsResource
+
+        /// Link string.
+        let documentsString: String
+        @State var availableEvents: [EKEvent]
+        @State var selectedEvents: Set<EKEvent>
+
+        var body: some View {
+            VStack {
+                Text("pts.integrators.currentCalendarEvents.confirmation")
+                        .font(.system(size: 15))
+                        .multilineTextAlignment(.center)
+                        .padding(.bottom, 10)
+                GroupBox {
+                    ScrollView {
+                        HStack {
+                            SetOptionsView(options: $availableEvents, selected: $selectedEvents)
+                            Spacer()
+                        }
+                    }
+                }
+                HStack {
+                    Button("cancel") {
+                        ModalManager.popQueueHead()
+                    }
+                    Button("confirm") {
+                        for event in selectedEvents {
+                            event.notes = event.hasNotes
+                                    ? event.notes! + "\n" + documentsString
+                                    : documentsString
+                        }
+                        calendarResource.save(events: selectedEvents.map({ $0 }))
+                        ModalManager.popQueueHead()
+                    }.buttonStyle(AccentButtonStyle())
+                }
+            }.frame(width: 250)
+        }
+    }
+
+    init(_ calendarResource: CalendarsResource) {
+        self.calendarResource = calendarResource
+    }
+
+    func integrate(
+            documents: [URL],
+            bookmarks: [URL],
+            with configuration: ImportationConfiguration) {
+        calendarResource.getCurrentEvents(in: configuration.calendars) { events in
+            if events.isEmpty {
                 return
             }
-
-            let documentsString = documents.map {
+            let documentsString = bookmarks.map {
                 $0.absoluteString
             }.joined(separator: "\n")
 
-            // Created a query that will only select the events occurring now, from all calendars.
-            let predicate = store.predicateForEvents(withStart: Date(),
-                    end: Date(),
-                    calendars: nil)
-
-            // Fetches the events matching the predicate.
-            let events = store.events(matching: predicate)
-
-            for event in events {
-                let notes = event.hasNotes
-                        ? event.notes! + "\n" + documentsString
-                        : documentsString
-
-                event.notes = notes
-
-                do {
-                    try store.save(event, span: .thisEvent)
-                } catch {
-                    ErrorManager.error(.currentCalendarEventsDocumentIntegrator,
-                            key: "pts.error.integrators.currentCalendarEvents.integrate")
-                }
-            }
+            /// Asks confirmation to the user.
+            ModalManager.queue(
+                    ConfirmationModalContentView(calendarResource: calendarResource,
+                            documentsString: documentsString,
+                            availableEvents: events,
+                            selectedEvents: Set<EKEvent>(events)))
         }
     }
-}
-
-extension PicToShareError {
-    static let currentCalendarEventsDocumentIntegrator =
-            PicToShareError(type: "pts.error.integrators.currentCalendarEvents")
 }

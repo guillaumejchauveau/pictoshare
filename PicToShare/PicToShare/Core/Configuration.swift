@@ -1,11 +1,14 @@
 import Foundation
 import Combine
+import EventKit
 
 
+/// Implementation of a Partial Importation Configuration, presented to the user as `Document Type`.
 class DocumentTypeMetadata: PartialImportationConfiguration, ObservableObject,
         CustomStringConvertible {
     private let configurationManager: ConfigurationManager
     private var subscriber: AnyCancellable!
+    private var calendarResourceSubscriber: AnyCancellable!
 
     var savedDescription: String
     @Published var description: String
@@ -18,17 +21,22 @@ class DocumentTypeMetadata: PartialImportationConfiguration, ObservableObject,
     }
     @Published var documentIntegrators: Set<HashableDocumentIntegrator>
 
+    @Published var calendars: Set<EKCalendar> = []
+    var temporaryCalendarsIdentifiers: [String] = []
+
     var bookmarkFolder: URL? {
         configurationManager.documentFolderURL.appendingPathComponent(savedDescription)
     }
 
     init(_ description: String,
          _ configurationManager: ConfigurationManager,
+         _ calendarResource: CalendarsResource,
          _ documentProcessorScript: URL? = nil,
          _ copyBeforeProcessing: Bool = true,
          _ removeOriginalOnProcessingByproduct: Bool = false,
          _ documentAnnotators: Set<HashableDocumentAnnotator> = [],
-         _ documentIntegrators: Set<HashableDocumentIntegrator> = []) {
+         _ documentIntegrators: Set<HashableDocumentIntegrator> = [],
+         _ calendars: Set<EKCalendar> = []) {
         self.configurationManager = configurationManager
         self.description = description
         savedDescription = description
@@ -37,15 +45,35 @@ class DocumentTypeMetadata: PartialImportationConfiguration, ObservableObject,
         self.removeOriginalOnProcessingByproduct = removeOriginalOnProcessingByproduct
         self.documentAnnotators = documentAnnotators
         self.documentIntegrators = documentIntegrators
+        self.calendars = calendars
+
         subscriber = self.objectWillChange.sink {
+            // Postpones call to wait for the object to actually change.
             DispatchQueue.main
                     .asyncAfter(deadline: .now() + .milliseconds(100)) {
                 configurationManager.save(type: self)
             }
         }
+        calendarResourceSubscriber = calendarResource.objectWillChange.sink { [self] in
+            // Postpones call to wait for the object to actually change.
+            DispatchQueue.main
+                    .asyncAfter(deadline: .now() + .milliseconds(100)) {
+                if temporaryCalendarsIdentifiers.isEmpty {
+                    // Filters the calendars if some have been removed by the user.
+                    self.calendars = self.calendars.intersection(Set<EKCalendar>(calendarResource.calendars))
+                } else {
+                    // Registers the actual calendars using the provided calendar identifiers.
+                    self.calendars = Set<EKCalendar>(calendarResource.calendars.filter {
+                        temporaryCalendarsIdentifiers.contains($0.calendarIdentifier)
+                    })
+                    temporaryCalendarsIdentifiers = []
+                }
+            }
+        }
     }
 }
 
+/// Implementation of a Partial Importation Configuration, presented to the user as `User Context`.
 class UserContextMetadata: PartialImportationConfiguration, ObservableObject,
         CustomStringConvertible, Equatable, Identifiable {
     static func ==(lhs: UserContextMetadata, rhs: UserContextMetadata) -> Bool {
@@ -54,6 +82,7 @@ class UserContextMetadata: PartialImportationConfiguration, ObservableObject,
 
     private let configurationManager: ConfigurationManager
     private var subscriber: AnyCancellable!
+    private var calendarResourceSubscriber: AnyCancellable!
 
     var savedDescription: String
     @Published var description: String
@@ -63,19 +92,43 @@ class UserContextMetadata: PartialImportationConfiguration, ObservableObject,
     }
     @Published var documentIntegrators: Set<HashableDocumentIntegrator>
 
+    @Published var calendars: Set<EKCalendar> = []
+    var temporaryCalendarsIdentifiers: [String] = []
+
     init(_ description: String,
          _ configurationManager: ConfigurationManager,
+         _ calendarResource: CalendarsResource,
          _ documentAnnotators: Set<HashableDocumentAnnotator> = [],
-         _ documentIntegrators: Set<HashableDocumentIntegrator> = []) {
+         _ documentIntegrators: Set<HashableDocumentIntegrator> = [],
+         _ calendars: Set<EKCalendar> = []) {
         self.configurationManager = configurationManager
         self.description = description
         savedDescription = description
         self.documentAnnotators = documentAnnotators
         self.documentIntegrators = documentIntegrators
+        self.calendars = calendars
+
         subscriber = self.objectWillChange.sink {
+            // Postpones call to wait for the object to actually change.
             DispatchQueue.main
                     .asyncAfter(deadline: .now() + .milliseconds(100)) {
                 configurationManager.saveContexts()
+            }
+        }
+        calendarResourceSubscriber = calendarResource.objectWillChange.sink { [self] in
+            // Postpones call to wait for the object to actually change.
+            DispatchQueue.main
+                    .asyncAfter(deadline: .now() + .milliseconds(100)) {
+                if temporaryCalendarsIdentifiers.isEmpty {
+                    // Filters the calendars if some have been removed by the user.
+                    self.calendars = self.calendars.intersection(Set<EKCalendar>(calendarResource.calendars))
+                } else {
+                    // Registers the actual calendars using the provided calendar identifiers.
+                    self.calendars = Set<EKCalendar>(calendarResource.calendars.filter {
+                        temporaryCalendarsIdentifiers.contains($0.calendarIdentifier)
+                    })
+                    temporaryCalendarsIdentifiers = []
+                }
             }
         }
     }
@@ -87,6 +140,7 @@ extension PicToShareError {
 
 /// Responsible of Core Objects configuration and storage.
 class ConfigurationManager: ObservableObject {
+    private let calendarResource: CalendarsResource
     /// List of available Document Annotators.
     var documentAnnotators: [HashableDocumentAnnotator]
     /// List of available Document Integrators.
@@ -127,9 +181,11 @@ class ConfigurationManager: ObservableObject {
     init(_ ptsFolderName: String,
          _ continuityFolderName: String,
          _ documentAnnotators: [DocumentAnnotator] = [],
-         _ documentIntegrators: [DocumentIntegrator] = []) {
+         _ documentIntegrators: [DocumentIntegrator] = [],
+         _ calendarResource: CalendarsResource) {
         self.documentAnnotators = documentAnnotators.map(HashableDocumentAnnotator.init)
         self.documentIntegrators = documentIntegrators.map(HashableDocumentIntegrator.init)
+        self.calendarResource = calendarResource
 
         let userDocumentsURL = try! FileManager.default
                 .url(for: .documentDirectory,
@@ -144,7 +200,7 @@ class ConfigurationManager: ObservableObject {
 
     /// Configures a new Document Type.
     func addType(with description: String) {
-        types.append(DocumentTypeMetadata(description, self))
+        types.append(DocumentTypeMetadata(description, self, calendarResource))
         saveTypes()
     }
 
@@ -155,7 +211,7 @@ class ConfigurationManager: ObservableObject {
 
     /// Configures a new Importation Context.
     func addContext(with description: String) {
-        contexts.append(UserContextMetadata(description, self))
+        contexts.append(UserContextMetadata(description, self, calendarResource))
         saveContexts()
     }
 
@@ -257,13 +313,32 @@ extension ConfigurationManager {
                 }
             }
 
-            types.append(DocumentTypeMetadata(description,
+            let documentType = DocumentTypeMetadata(description,
                     self,
+                    calendarResource,
                     documentProcessorScript,
                     copyBeforeProcessing,
                     removeOriginalOnProcessingByproduct,
                     declaredAnnotators,
-                    declaredIntegrators))
+                    declaredIntegrators)
+
+            // The list of available calendars in the Calendar Resource may not
+            // be up to date, and refreshing it is an asynchronous process, so
+            // we just store the calendar identifiers in a temporary variable in
+            // the Document Type. The next time calendars are updated, the Type
+            // will register the actual calendars automatically.
+            var calendarIdentifiers: [String] = []
+            let calendarDeclarations = declaration["calendars"]
+                    as? Array<CFPropertyList> ?? []
+            for rawCalendarDeclaration in calendarDeclarations {
+                if let calendarDeclaration = rawCalendarDeclaration
+                        as? String {
+                    calendarIdentifiers.append(calendarDeclaration)
+                }
+            }
+            documentType.temporaryCalendarsIdentifiers = calendarIdentifiers
+
+            types.append(documentType)
         }
     }
 
@@ -312,10 +387,29 @@ extension ConfigurationManager {
                 }
             }
 
-            contexts.append(UserContextMetadata(description,
+            let userContext = UserContextMetadata(description,
                     self,
+                    calendarResource,
                     declaredAnnotators,
-                    declaredIntegrators))
+                    declaredIntegrators)
+
+            // The list of available calendars in the Calendar Resource may not
+            // be up to date, and refreshing it is an asyncronous process, so
+            // we just store the calendar identifiers in a temporary variable in
+            // the Document Type. The next time calendars are updated, the Type
+            // will register the actual calendars automatically.
+            var calendarIdentifiers: [String] = []
+            let calendarDeclarations = declaration["calendars"]
+                    as? Array<CFPropertyList> ?? []
+            for rawCalendarDeclaration in calendarDeclarations {
+                if let calendarDeclaration = rawCalendarDeclaration
+                        as? String {
+                    calendarIdentifiers.append(calendarDeclaration)
+                }
+            }
+            userContext.temporaryCalendarsIdentifiers = calendarIdentifiers
+
+            contexts.append(userContext)
         }
 
         // Loads the current user context saved to persistent storage.
@@ -396,7 +490,8 @@ extension DocumentTypeMetadata: CFPropertyListable {
             "copyBeforeProcessing": copyBeforeProcessing ?? true,
             "removeOriginalOnProcessingByproduct": removeOriginalOnProcessingByproduct ?? false,
             "documentAnnotators": documentAnnotators.map({ $0.description }) as CFArray,
-            "documentIntegrators": documentIntegrators.map({ $0.description }) as CFArray
+            "documentIntegrators": documentIntegrators.map({ $0.description }) as CFArray,
+            "calendars": calendars.map({ $0.calendarIdentifier }) as CFArray
         ] as CFPropertyList
     }
 }
@@ -407,7 +502,8 @@ extension UserContextMetadata: CFPropertyListable {
         [
             "description": description,
             "documentAnnotators": documentAnnotators.map({ $0.description }) as CFArray,
-            "documentIntegrators": documentIntegrators.map({ $0.description }) as CFArray
+            "documentIntegrators": documentIntegrators.map({ $0.description }) as CFArray,
+            "calendars": calendars.map({ $0.calendarIdentifier }) as CFArray
         ] as CFPropertyList
     }
 }
