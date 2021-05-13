@@ -1,4 +1,5 @@
 import SwiftUI
+import EventKit
 
 /// View for editing Document Types in the settings.
 struct DocumentTypesView: View {
@@ -30,6 +31,7 @@ struct DocumentTypesView: View {
                         removeOriginalOnProcessingByproduct: $configurationManager.types[index].removeOriginalOnProcessingByproduct,
                         documentAnnotators: $configurationManager.types[index].documentAnnotators,
                         documentIntegrators: $configurationManager.types[index].documentIntegrators,
+                        calendars: $configurationManager.types[index].calendars,
                         editingDescription: configurationManager.types[index].description)
             }
         }
@@ -39,6 +41,7 @@ struct DocumentTypesView: View {
 /// A View for editing a Document Type.
 struct DocumentTypeView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
+    @EnvironmentObject var calendarResource: CalendarsResource
 
     // Tried to store the Type itself as an ObservedObject, doesn't work, tried
     // to move the bindings in a constructor, doesn't work either, so we're
@@ -49,6 +52,7 @@ struct DocumentTypeView: View {
     @Binding var removeOriginalOnProcessingByproduct: Bool?
     @Binding var documentAnnotators: Set<HashableDocumentAnnotator>
     @Binding var documentIntegrators: Set<HashableDocumentIntegrator>
+    @Binding var calendars: Set<EKCalendar>
 
     @State private var chooseScriptFile = false
     @State var editingDescription: String
@@ -62,79 +66,100 @@ struct DocumentTypeView: View {
     }
 
     var body: some View {
-        Form {
-            GroupBox(label: Text("name")) {
-                HStack {
-                    TextField("", text: $editingDescription, onCommit: validateDescription)
-                            .textFieldStyle(PlainTextFieldStyle())
-                            .padding(2)
-                    Spacer()
-                    Button(action: validateDescription) {
-                        Image(systemName: "checkmark")
-                    }.disabled(description == editingDescription)
-                }
-            }
-
-            GroupBox(label: Text("pts.processingScript")) {
-                VStack(alignment: .leading) {
+        ScrollView {
+            Form {
+                GroupBox(label: Text("name")) {
                     HStack {
-                        if let scriptName = documentProcessorScript?.lastPathComponent {
-                            Text(scriptName)
-                                    .font(.system(size: 12))
-                                    .lineLimit(1)
-                                    .truncationMode(.head)
-                        } else {
-                            Text("pts.settings.types.noProcessingScript")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.gray)
-                        }
-
+                        TextField("", text: $editingDescription, onCommit: validateDescription)
+                                .textFieldStyle(PlainTextFieldStyle())
+                                .padding(2)
                         Spacer()
+                        Button(action: validateDescription) {
+                            Image(systemName: "checkmark")
+                        }.disabled(description == editingDescription)
+                    }
+                }
 
-                        Button(action: {
-                            chooseScriptFile = true
-                        }) {
-                            Image(systemName: "folder")
-                        }.fileImporter(isPresented: $chooseScriptFile,
-                                allowedContentTypes: [.osaScript]) { result in
-                            documentProcessorScript = try? result.get()
+                GroupBox(label: Text("pts.processingScript")) {
+                    VStack(alignment: .leading) {
+                        HStack {
+                            if let scriptName = documentProcessorScript?.lastPathComponent {
+                                Text(scriptName)
+                                        .font(.system(size: 12))
+                                        .lineLimit(1)
+                                        .truncationMode(.head)
+                            } else {
+                                Text("pts.settings.types.noProcessingScript")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.gray)
+                            }
+
+                            Spacer()
+
+                            Button(action: {
+                                chooseScriptFile = true
+                            }) {
+                                Image(systemName: "folder")
+                            }.fileImporter(isPresented: $chooseScriptFile,
+                                    allowedContentTypes: [.osaScript]) { result in
+                                documentProcessorScript = try? result.get()
+                            }
+
+                            Button(action: {
+                                documentProcessorScript = nil
+                                copyBeforeProcessing = true
+                                removeOriginalOnProcessingByproduct = false
+                            }) {
+                                Image(systemName: "trash")
+                            }.disabled(documentProcessorScript == nil)
+                        }.padding(EdgeInsets(top: 0, leading: 2, bottom: 0, trailing: 2))
+
+                        Toggle("pts.settings.types.copyBeforeProcessing",
+                                isOn: Binding<Bool>($copyBeforeProcessing)!)
+                                .disabled(documentProcessorScript == nil)
+                        Toggle("pts.settings.types.removeOriginalOnProcessingByproduct",
+                                isOn: Binding<Bool>($removeOriginalOnProcessingByproduct)!)
+                                .disabled(documentProcessorScript == nil)
+                    }
+                }
+
+                GroupBox(label: Text("pts.annotations")) {
+                    HStack {
+                        SetOptionsView(
+                                options: $configurationManager.documentAnnotators,
+                                selected: $documentAnnotators)
+                        Spacer()
+                    }
+                }
+
+                GroupBox(label: Text("pts.integrations")) {
+                    HStack {
+                        SetOptionsView(
+                                options: $configurationManager.documentIntegrators,
+                                selected: $documentIntegrators)
+                        Spacer()
+                    }
+                }
+
+                GroupBox(label: Text("pts.resources.calendars")) {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            SetOptionsView(
+                                    options: $calendarResource.calendars,
+                                    selected: $calendars
+                            ).padding(.bottom, 5)
+
+                            HStack {
+                                Button(action: calendarResource.refreshCalendars) {
+                                    Image(systemName: "arrow.clockwise")
+                                }
+                                Text("refresh")
+                            }
                         }
-
-                        Button(action: {
-                            documentProcessorScript = nil
-                            copyBeforeProcessing = true
-                            removeOriginalOnProcessingByproduct = false
-                        }) {
-                            Image(systemName: "trash")
-                        }.disabled(documentProcessorScript == nil)
-                    }.padding(EdgeInsets(top: 0, leading: 2, bottom: 0, trailing: 2))
-
-                    Toggle("pts.settings.types.copyBeforeProcessing",
-                            isOn: Binding<Bool>($copyBeforeProcessing)!)
-                            .disabled(documentProcessorScript == nil)
-                    Toggle("pts.settings.types.removeOriginalOnProcessingByproduct",
-                            isOn: Binding<Bool>($removeOriginalOnProcessingByproduct)!)
-                            .disabled(documentProcessorScript == nil)
+                        Spacer()
+                    }
                 }
-            }
-
-            GroupBox(label: Text("pts.annotations")) {
-                HStack {
-                    SetOptionsView(
-                            options: $configurationManager.documentAnnotators,
-                            selected: $documentAnnotators)
-                    Spacer()
-                }
-            }
-
-            GroupBox(label: Text("pts.integrations")) {
-                HStack {
-                    SetOptionsView(
-                            options: $configurationManager.documentIntegrators,
-                            selected: $documentIntegrators)
-                    Spacer()
-                }
-            }
-        }.padding()
+            }.padding()
+        }
     }
 }
