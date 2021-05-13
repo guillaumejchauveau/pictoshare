@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		12830838675CFA3A3B43F710 /* Pods_PicToShare.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C6D76A44CD73EB6042CCB79 /* Pods_PicToShare.framework */; };
+		950092C7264D5CC200804DE5 /* ModalManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 950092C6264D5CC200804DE5 /* ModalManager.swift */; };
 		950AD17C2649A249004686E1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 950AD17A2649A249004686E1 /* Localizable.strings */; };
 		95BD8EAF2616311100D83532 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95BD8EAE2616311100D83532 /* Assets.xcassets */; };
 		95BD8EC92616344100D83532 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD8EC52616344100D83532 /* Configuration.swift */; };
@@ -31,6 +32,7 @@
 
 /* Begin PBXFileReference section */
 		1C6D76A44CD73EB6042CCB79 /* Pods_PicToShare.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PicToShare.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		950092C6264D5CC200804DE5 /* ModalManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalManager.swift; sourceTree = "<group>"; };
 		950AD17B2649A249004686E1 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; lineEnding = 0; name = en; path = PicToShare/en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		950AD17D2649A263004686E1 /* fr */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; lineEnding = 0; name = fr; path = PicToShare/fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		95BD8EA72616311000D83532 /* PicToShare.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PicToShare.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -141,6 +143,7 @@
 		95BD8EBD2616338700D83532 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				950092C6264D5CC200804DE5 /* ModalManager.swift */,
 				95BD8EC52616344100D83532 /* Configuration.swift */,
 				95BD8EC62616344100D83532 /* Importation.swift */,
 				95BD8EC82616344100D83532 /* Types.swift */,
@@ -258,6 +261,7 @@
 				F9A7C6884F6D835DFBD3F4FB /* DocumentTypesView.swift in Sources */,
 				F9A7C856ABCC5868A2849686 /* ImportationView.swift in Sources */,
 				F9A7C89AF6396B2FCF324263 /* ViewUtils.swift in Sources */,
+				950092C7264D5CC200804DE5 /* ModalManager.swift in Sources */,
 				F9A7C08D79F175A83BD76A0E /* DocumentIntegrators.swift in Sources */,
 				F9A7CA86CCAA0E2623FC62DA /* StatusItem.swift in Sources */,
 				F9A7C31C772B6AD463E9640D /* ErrorManager.swift in Sources */,

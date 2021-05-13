@@ -85,6 +85,8 @@ struct MainView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
     @EnvironmentObject var importationManager: ImportationManager
 
+    @ObservedObject private var modalManager = ModalManager.instance
+
     /// State of the file system importation window.
     @State private var showFilePrompt = false
     /// State of the user context create sheet.
@@ -94,28 +96,13 @@ struct MainView: View {
 
     var body: some View {
         HStack {
-            if importationManager.queueHead != nil {
+            if !ModalManager.isEmpty {
+                ModalManager.view!
+            } else if importationManager.queueHead != nil {
                 ImportationView()
             } else {
                 // Landing view if no documents are queued for importation.
-                VStack(alignment: .leading) {
-                    Text("pts.landing.title")
-                            .font(.system(size: 20))
-                            .padding(.bottom, 10)
-                    HStack {
-                        Image(systemName: "camera").imageScale(.large)
-                                .font(.system(size: 16))
-                        Text("pts.landing.continuity")
-                                .font(.system(size: 16, weight: .light))
-                    }
-                            .padding(.bottom, 5)
-                    HStack {
-                        Image(systemName: "internaldrive").imageScale(.large)
-                                .font(.system(size: 16))
-                        Text("pts.landing.filesystem")
-                                .font(.system(size: 16, weight: .light))
-                    }
-                }
+                LandingView()
             }
         }.frame(width: 480, height: 300).padding()
                 // User context create sheet. Allows the user to create a new
@@ -192,6 +179,29 @@ struct MainView: View {
                         }
                     }
                 }
+    }
+}
+
+struct LandingView: View {
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text("pts.landing.title")
+                    .font(.system(size: 20))
+                    .padding(.bottom, 10)
+            HStack {
+                Image(systemName: "camera").imageScale(.large)
+                        .font(.system(size: 16))
+                Text("pts.landing.continuity")
+                        .font(.system(size: 16, weight: .light))
+            }
+                    .padding(.bottom, 5)
+            HStack {
+                Image(systemName: "internaldrive").imageScale(.large)
+                        .font(.system(size: 16))
+                Text("pts.landing.filesystem")
+                        .font(.system(size: 16, weight: .light))
+            }
+        }
     }
 }
 

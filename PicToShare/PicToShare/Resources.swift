@@ -83,6 +83,12 @@ extension EKCalendar {
     }
 }
 
+extension EKEvent {
+    open override var description: String {
+        title
+    }
+}
+
 extension PicToShareError {
     static let calendarsResource =
             PicToShareError(type: "pts.error.resources.calendars")

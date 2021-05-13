@@ -8,7 +8,7 @@ extension PicToShareError {
 
 /// Object responsible of the Importation process.
 class ImportationManager: ObservableObject {
-    private var importationQueue: [URL] = []
+    @Published private var importationQueue: [URL] = []
 
     /// Top importation queue Document.
     var queueHead: URL? {
@@ -18,20 +18,16 @@ class ImportationManager: ObservableObject {
     /// Adds a Document to the queue.
     func queue(document url: URL) {
         importationQueue.append(url)
-        objectWillChange.send()
     }
 
     /// Adds multiple Documents to the queue.
     func queue<S>(documents urls: S) where S.Element == URL, S: Sequence {
         importationQueue.append(contentsOf: urls)
-        objectWillChange.send()
     }
 
     /// Removes the top Document of the queue and returns it.
     func popQueueHead() -> URL? {
-        let document = importationQueue.removeFirst()
-        objectWillChange.send()
-        return document
+        importationQueue.removeFirst()
     }
 
     /// Imports the given Document with a list of partial importation
