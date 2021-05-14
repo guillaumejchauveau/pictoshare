@@ -12,6 +12,7 @@
 "delete" = "Delete";
 
 "pts.open" = "Open PicToShare";
+"pts.quit" = "Quit PicToShare";
 "pts.openPTSFolder" = "Go to PicToShare folder";
 "pts.documentTypes" = "Document types";
 "pts.userContexts" = "Event types";
