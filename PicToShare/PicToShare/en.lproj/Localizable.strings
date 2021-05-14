@@ -7,7 +7,7 @@
 "refresh" = "Refresh";
 "confirm" = "Confirm";
 "confirm.delete" = "Delete ?";
-"return" = "Retour";
+"return" = "Go back";
 "operation.irreversible" = "This operation is irreversible.";
 "delete" = "Delete";
 
@@ -32,7 +32,7 @@
 
 "pts.continuity.menuItemTitle" = "No connected devices";
 
-"pts.import.ignore.confirm.title" = "Cancel dpcument importation ?";
+"pts.import.ignore.confirm.title" = "Cancel document importation ?";
 "pts.import.ignore.confirm.message" = "The original file won't be deleted.";
 
 "pts.settings.types.landing" = "Create document types to adapt the importation parameters.\nYou can specify a script to transform the document before importation.";
