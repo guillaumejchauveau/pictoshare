@@ -17,6 +17,11 @@ struct PTSApp: App {
         NSWorkspace.shared.open(URL(string: "pictoshare://main")!)
     }
 
+    /// Quits the PTS application from anywhere.
+    static func quitPTS() {
+        NSApp.terminate(nil)
+    }
+
     /// PTS entry point.
     /// Initializes application managers and OS integrations.
     init() {
@@ -116,14 +121,14 @@ struct MainView: View {
                             Button("cancel") {
                                 showNewContextForm = false
                                 newContextDescription = ""
-                            }
+                            }.keyboardShortcut(.cancelAction)
                             Button("create") {
                                 configurationManager.addContext(with: newContextDescription)
                                 showNewContextForm = false
                                 newContextDescription = ""
                                 configurationManager.currentUserContext = configurationManager.contexts.last
                             }
-                                    .buttonStyle(AccentButtonStyle())
+                                    .keyboardShortcut(.defaultAction)
                                     .disabled(newContextDescription.isEmpty)
                         }
                     }.padding()

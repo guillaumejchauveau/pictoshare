@@ -7,6 +7,8 @@ struct ListSettingsView<Item, Landing, Content>: View
     @State private var selection: Int? = nil
     @State private var showNewItemForm = false
     @State private var newItemDescription = ""
+    @State private var showConfirmItemDeletion = false
+    @State private var confirmItemDeletionIndex: Int? = nil
 
     /// The list of items.
     @Binding var items: [Item]
@@ -41,15 +43,14 @@ struct ListSettingsView<Item, Landing, Content>: View
                         Button("cancel") {
                             showNewItemForm = false
                             newItemDescription = ""
-                        }
+                        }.keyboardShortcut(.cancelAction)
                         Button("create") {
                             add(newItemDescription)
                             selection = items.count - 1
                             showNewItemForm = false
                             newItemDescription = ""
                         }
-                                .keyboardShortcut(.return)
-                                .buttonStyle(AccentButtonStyle())
+                                .keyboardShortcut(.defaultAction)
                                 .disabled(newItemDescription.isEmpty)
                     }
                 }.padding()
@@ -61,27 +62,40 @@ struct ListSettingsView<Item, Landing, Content>: View
                 }
                 // Remove item button.
                 Button(action: {
-                    guard let index: Int = selection else {
+                    guard let index = selection else {
                         return
                     }
-
-                    if items.count == 1 {
-                        selection = nil
-                    } else if index != 0 {
-                        selection! -= 1
-                    }
-                    // Workaround for a bug where the NavigationView won't clear the
-                    // content of the destination view if we remove right after
-                    // unselect.
-                    DispatchQueue.main
-                            .asyncAfter(deadline: .now() + .milliseconds(200)) {
-                        if index < items.count {
-                            remove(index)
-                        }
-                    }
+                    confirmItemDeletionIndex = index
+                    showConfirmItemDeletion = true
                 }) {
                     Image(systemName: "minus")
                 }.disabled(selection == nil)
+                        .alert(isPresented: $showConfirmItemDeletion) {
+                            Alert(
+                                    title: Text("confirm.delete"),
+                                    message: Text("operation.irreversible"),
+                                    primaryButton: .destructive(Text("delete")) {
+                                        guard let index = confirmItemDeletionIndex else {
+                                            return
+                                        }
+                                        confirmItemDeletionIndex = nil
+                                        if items.count == 1 {
+                                            selection = nil
+                                        } else if index != 0 {
+                                            selection! -= 1
+                                        }
+                                        // Workaround for a bug where the NavigationView won't clear the
+                                        // content of the destination view if we remove right after
+                                        // unselect.
+                                        DispatchQueue.main
+                                                .asyncAfter(deadline: .now() + .milliseconds(200)) {
+                                            if index < items.count {
+                                                remove(index)
+                                            }
+                                        }
+                                    },
+                                    secondaryButton: .cancel())
+                        }
             }
                     .buttonStyle(BorderedButtonStyle())
                     .padding([.leading, .bottom, .trailing])
