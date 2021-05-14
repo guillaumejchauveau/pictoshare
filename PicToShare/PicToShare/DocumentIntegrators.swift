@@ -37,7 +37,7 @@ struct CurrentCalendarEventsDocumentIntegrator: DocumentIntegrator {
                 HStack {
                     Button("cancel") {
                         ModalManager.popQueueHead()
-                    }
+                    }.keyboardShortcut(.cancelAction)
                     Button("confirm") {
                         for event in selectedEvents {
                             event.notes = event.hasNotes
@@ -46,7 +46,7 @@ struct CurrentCalendarEventsDocumentIntegrator: DocumentIntegrator {
                         }
                         calendarResource.save(events: selectedEvents.map({ $0 }))
                         ModalManager.popQueueHead()
-                    }.buttonStyle(AccentButtonStyle())
+                    }.keyboardShortcut(.defaultAction)
                 }
             }.frame(width: 250)
         }

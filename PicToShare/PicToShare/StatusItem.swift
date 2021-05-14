@@ -3,6 +3,8 @@ import AppKit
 /// Delegate for the PicToShare status item menu.
 class StatusMenuDelegate: NSObject, NSMenuDelegate {
     private let configurationManager: ConfigurationManager
+    private let userContextsStartItem = NSMenuItem.separator()
+    private let userContextsEndItem = NSMenuItem.separator()
 
     init(_ configurationManager: ConfigurationManager, _ menu: NSMenu) {
         self.configurationManager = configurationManager
@@ -19,7 +21,14 @@ class StatusMenuDelegate: NSObject, NSMenuDelegate {
                 action: #selector(openFolderInFinder),
                 keyEquivalent: "")
                 .target = self
-        menu.addItem(NSMenuItem.separator())
+        menu.addItem(userContextsStartItem)
+        // Between those items will be the user contexts.
+        menu.addItem(userContextsEndItem)
+        // Quit PTS.
+        menu.addItem(withTitle: NSLocalizedString("pts.quit", comment: ""),
+                action: #selector(quitPTS),
+                keyEquivalent: "")
+                .target = self
 
         menu.delegate = self
     }
@@ -27,9 +36,12 @@ class StatusMenuDelegate: NSObject, NSMenuDelegate {
     /// Called every time the menu will open. Used to update the list of user
     /// contexts.
     func menuWillOpen(_ menu: NSMenu) {
+        let userContextsFirstItemIndex = menu.index(of: userContextsStartItem) + 1
         // Empties the list.
-        while menu.numberOfItems > 3 {
-            menu.removeItem(at: 3)
+        var removingItem: NSMenuItem? = menu.item(at: userContextsFirstItemIndex)
+        while removingItem != userContextsEndItem && removingItem != nil {
+            menu.removeItem(removingItem!)
+            removingItem = menu.item(at: userContextsFirstItemIndex)
         }
 
         let current = configurationManager.currentUserContext
@@ -38,18 +50,25 @@ class StatusMenuDelegate: NSObject, NSMenuDelegate {
         var contexts: [UserContextMetadata?] = [nil]
         contexts.append(contentsOf: configurationManager.contexts)
 
+        var insertIndex = userContextsFirstItemIndex
         for context in contexts {
-            let item = menu.addItem(
+            let item = menu.insertItem(
                     withTitle: context?.description ?? NSLocalizedString("pts.userContext.nil", comment: ""),
-                    action: #selector(selectUserContext), keyEquivalent: "")
+                    action: #selector(selectUserContext), keyEquivalent: "",
+                    at: insertIndex)
             item.target = self
             item.state = current == context ? .on : .off
             item.representedObject = context
+            insertIndex += 1
         }
     }
 
     @objc func openPTS(_ sender: Any) {
         PTSApp.openPTS()
+    }
+
+    @objc func quitPTS(_ sender: Any) {
+        PTSApp.quitPTS()
     }
 
     @objc func openFolderInFinder(_ sender: Any) {

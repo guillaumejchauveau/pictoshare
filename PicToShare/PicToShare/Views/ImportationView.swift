@@ -24,6 +24,7 @@ struct ImportationView: View {
     @EnvironmentObject var configurationManager: ConfigurationManager
     @EnvironmentObject var importationManager: ImportationManager
     @State private var selectedType = 0
+    @State private var showConfirmIgnore = false
 
     var body: some View {
         VStack {
@@ -52,8 +53,18 @@ struct ImportationView: View {
                     guard importationManager.queueHead != nil else {
                         return
                     }
-                    _ = importationManager.popQueueHead()
+                    showConfirmIgnore = true
                 }
+                        .keyboardShortcut(.cancelAction)
+                        .alert(isPresented: $showConfirmIgnore) {
+                            Alert(
+                                    title: Text("pts.import.ignore.confirm.title"),
+                                    message: Text("pts.import.ignore.confirm.message"),
+                                    primaryButton: .destructive(Text("ignore")) {
+                                        _ = importationManager.popQueueHead()
+                                    },
+                                    secondaryButton: .cancel(Text("return")))
+                        }
                 Button("import") {
                     guard importationManager.queueHead != nil else {
                         return
@@ -84,7 +95,7 @@ struct ImportationView: View {
 
                     importationManager.importDocument(document, with: type, context)
                 }
-                        .buttonStyle(AccentButtonStyle())
+                        .keyboardShortcut(.defaultAction)
                         .disabled(selectedType >= configurationManager.types.count)
             }
         }
