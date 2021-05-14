@@ -6,8 +6,13 @@
 "import" = "Importer";
 "refresh" = "Rafraichir";
 "confirm" = "Confirmer";
+"confirm.delete" = "Supprimer ?";
+"return" = "Retour";
+"operation.irreversible" = "Cette operation est irréversible.";
+"delete" = "Supprimer";
 
 "pts.open" = "Ouvrir PicToShare";
+"pts.quit" = "Quitter PicToShare";
 "pts.openPTSFolder" = "Aller au dossier PicToShare";
 "pts.documentTypes" = "Types de document";
 "pts.userContexts" = "Types d'événement";
@@ -26,6 +31,9 @@
 "pts.landing.filesystem" = "Choisir un ou plusieurs fichiers sur votre ordinateur";
 
 "pts.continuity.menuItemTitle" = "Aucun appareil disponible";
+
+"pts.import.ignore.confirm.title" = "Annuler l'importation de ce fichier ?";
+"pts.import.ignore.confirm.message" = "Le fichier original ne sera pas supprimé.";
 
 "pts.settings.types.landing" = "Créez des types de documents pour adapter les paramètres d'importation.\nVous pouvez spécifier un script pour transformer le document avant de l'importer.";
 "pts.settings.types.noProcessingScript" = "Aucun script associé";
