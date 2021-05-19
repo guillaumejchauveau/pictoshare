@@ -68,12 +68,14 @@ struct CurrentCalendarEventsDocumentIntegrator: DocumentIntegrator {
                 $0.absoluteString
             }.joined(separator: "\n")
 
-            /// Asks confirmation to the user.
-            ModalManager.queue(
-                    ConfirmationModalContentView(calendarResource: calendarResource,
-                            documentsString: documentsString,
-                            availableEvents: events,
-                            selectedEvents: Set<EKEvent>(events)))
+            DispatchQueue.main.async {
+                /// Asks confirmation to the user.
+                ModalManager.queue(
+                        ConfirmationModalContentView(calendarResource: calendarResource,
+                                documentsString: documentsString,
+                                availableEvents: events,
+                                selectedEvents: Set<EKEvent>(events)))
+                }
         }
     }
 }
