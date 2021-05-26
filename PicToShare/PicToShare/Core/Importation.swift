@@ -41,6 +41,11 @@ class ImportationManager: ObservableObject {
         }
     }
 
+    /// Converts a URL in order to use it as a processing script argument.
+    private func convert(url: URL) -> String {
+        "\"\(url.absoluteString.removingPercentEncoding!)\""
+    }
+
     /// Imports the given Document with a complete importation configuration.
     func importDocument(_ document: URL, with configuration: ImportationConfiguration) {
         guard document.isFileURL else {
@@ -72,9 +77,9 @@ class ImportationManager: ObservableObject {
         scriptProcess.currentDirectoryURL = documentFolder
         scriptProcess.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
         scriptProcess.arguments = [
-            configuration.documentProcessorScript!.path,
-            document.path,
-            document.deletingPathExtension().path
+            configuration.documentProcessorScript!.absoluteString,
+            convert(url: document),
+            convert(url: document.deletingPathExtension())
         ]
 
         // Script callback.
